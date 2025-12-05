@@ -70,7 +70,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           ref={fileInputRef}
           type="file"
           accept={accept}
-          disabled={!applicationId || uploading}
+          disabled={uploading}
           className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
@@ -78,7 +78,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           type="button"
           variant="outline"
           size="sm"
-          disabled={!applicationId || uploading}
+          disabled={uploading}
           onClick={() => fileInputRef.current?.click()}
         >
           {uploadedName ? "Replace document" : "Upload document"}
@@ -94,18 +94,13 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
             type="button"
             variant="outline"
             size="sm"
-            disabled={uploading || !applicationId || !uploadedPath}
+            disabled={uploading || !uploadedPath}
             onClick={() => handleDownload()}
           >
             Download document
           </Button>
         </div>
         {error && <div className="text-sm text-red-600">{error}</div>}
-        {!applicationId && (
-          <div className="text-xs text-slate-500">
-            Save your application to generate an ID before uploading.
-          </div>
-        )}
       </div>
     </div>
   )
