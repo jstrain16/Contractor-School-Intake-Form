@@ -155,12 +155,15 @@ function renderSection(label: string, data?: Record<string, unknown> | null) {
   return (
     <details className="border rounded-md p-3 bg-slate-50">
       <summary className="cursor-pointer text-sm font-medium text-slate-800">{label}</summary>
-      <div className="mt-2 space-y-2 text-sm">
+      <div className="mt-3 space-y-3 text-sm">
         {entries.length === 0 && <div className="text-slate-600">No responses</div>}
         {entries.map(([k, v]) => (
-          <div key={k} className="grid grid-cols-[180px,1fr] gap-2 items-start">
-            <div className="text-slate-700 font-medium">{formatKey(k)}</div>
-            <div className="text-slate-800">{formatValue(v)}</div>
+          <div
+            key={k}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm"
+          >
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
+            <div className="mt-1 text-slate-900">{formatValue(v)}</div>
           </div>
         ))}
       </div>
