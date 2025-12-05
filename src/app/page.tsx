@@ -48,25 +48,76 @@ export default function HomePage() {
     load()
   }, [isLoaded, isSignedIn, setApplicationId])
 
-  const statusList: StatusItem[] = useMemo(() => {
+  const statusList = useMemo(() => {
     const d = wizardData || {}
     const isGeneral = d.step0?.licenseType === "general"
-    return [
-      { label: "Account Setup", done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email },
-      { label: "Pre-Licensure / Exemption", done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0 },
-      { label: "Business Entity & EIN", done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin },
-      { label: "General Liability", done: d.step3?.hasGlInsurance === true },
-      { label: "Workers Compensation", done: (d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true) },
-      { label: "Experience / Qualifier", done: isGeneral ? !!d.step4?.hasExperience : true },
-      { label: "Business & Law Exam", done: isGeneral ? d.step5?.examStatus === "passed" : true },
-      { label: "DOPL Application", done: d.step6?.doplAppCompleted === true },
+    const weights = {
+      licenseSetup: 5,
+      preLicensure: 15,
+      business: 25,
+      gl: 9, // part of insurance total 20
+      wc: 11, // part of insurance total 20
+      experience: 10,
+      exams: 10,
+      dopl: 2,
+    }
+
+    const items: Array<StatusItem & { weight: number }> = [
+      {
+        label: "Account Setup",
+        done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email,
+        weight: weights.licenseSetup,
+      },
+      {
+        label: "Pre-Licensure / Education",
+        done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0,
+        weight: weights.preLicensure,
+      },
+      {
+        label: "Business Entity, FEIN & Banking",
+        done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin,
+        weight: weights.business,
+      },
+      {
+        label: "General Liability",
+        done: d.step3?.hasGlInsurance === true,
+        weight: weights.gl,
+      },
+      {
+        label: "Workers Compensation",
+        done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true,
+        weight: weights.wc,
+      },
+      {
+        label: "Experience / Qualifier",
+        done: isGeneral ? !!d.step4?.hasExperience : true,
+        weight: weights.experience,
+      },
+      {
+        label: "Business & Law Exam",
+        done: isGeneral ? d.step5?.examStatus === "passed" : true,
+        weight: weights.exams,
+      },
+      {
+        label: "DOPL Application",
+        done: d.step6?.doplAppCompleted === true,
+        weight: weights.dopl,
+      },
     ]
+
+    const rawTotal = items.reduce((sum, item) => sum + item.weight, 0)
+    const rawCompleted = items.filter((i) => i.done).reduce((sum, item) => sum + item.weight, 0)
+    const progress = rawTotal > 0 ? Math.round((rawCompleted / rawTotal) * 100) : 0
+
+    return {
+      items,
+      progress,
+      nextUp: items.find((s) => !s.done)?.label ?? "Review & Submit",
+    }
   }, [wizardData])
 
-  const total = statusList.length
-  const completed = statusList.filter((s) => s.done).length
-  const progressPct = Math.round((completed / total) * 100)
-  const nextStepLabel = statusList.find((s) => !s.done)?.label ?? "Review & Submit"
+  const progressPct = statusList.progress
+  const nextStepLabel = statusList.nextUp
 
   const handleContinue = () => {
     router.push("/application")
@@ -129,7 +180,7 @@ export default function HomePage() {
                     <div className="bg-slate-900 h-full transition-all duration-300" style={{ width: `${progressPct}%` }} />
                   </div>
                   <div className="grid md:grid-cols-2 gap-3">
-                    {statusList.map((item) => (
+                    {statusList.items.map((item) => (
                       <div key={item.label} className="flex items-center justify-between rounded-md border px-3 py-2 bg-white">
                         <span className="text-sm text-slate-800">{item.label}</span>
                         <span className={`text-xs font-medium ${item.done ? "text-green-700" : "text-amber-700"}`}>
