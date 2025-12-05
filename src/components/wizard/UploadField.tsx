@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { useWizardStore } from "@/store/wizard-store"
 
 type UploadFieldProps = {
   label: string
@@ -22,15 +23,41 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
   const [uploadedName, setUploadedName] = useState<string | null>(null)
   const [uploadedPath, setUploadedPath] = useState<string | null>(null)
   const [loadingExisting, setLoadingExisting] = useState(false)
+  const storeApplicationId = useWizardStore((s) => s.applicationId)
+  const setStoreApplicationId = useWizardStore((s) => s.setApplicationId)
+  const [resolvedAppId, setResolvedAppId] = useState<string | null>(applicationId ?? storeApplicationId ?? null)
+
+  useEffect(() => {
+    setResolvedAppId(applicationId ?? storeApplicationId ?? null)
+  }, [applicationId, storeApplicationId])
+
+  const ensureApplicationId = async (): Promise<string | null> => {
+    if (resolvedAppId) return resolvedAppId
+    try {
+      const res = await fetch("/api/application", { method: "GET", cache: "no-store", credentials: "include" })
+      if (!res.ok) throw new Error("Could not initialize application")
+      const json = await res.json()
+      const newId = json.applicationId as string | null
+      if (newId) {
+        setResolvedAppId(newId)
+        setStoreApplicationId(newId)
+        return newId
+      }
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Could not initialize application"
+      setError(message)
+    }
+    return null
+  }
 
   useEffect(() => {
     const loadExisting = async () => {
-      if (!applicationId) return
+      if (!resolvedAppId) return
       setLoadingExisting(true)
       setError(null)
       try {
         const params = new URLSearchParams({
-          applicationId,
+          applicationId: resolvedAppId,
           step: String(step),
           fileType,
         })
@@ -53,14 +80,12 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
       }
     }
     loadExisting()
-  }, [applicationId, step, fileType])
+  }, [resolvedAppId, step, fileType])
 
   const handleFile = async (file?: File | null) => {
     if (!file) return
-    if (!applicationId) {
-      setError("Application not ready yet. Please wait a moment or refresh.")
-      return
-    }
+    const appId = await ensureApplicationId()
+    if (!appId) return
     setUploading(true)
     setError(null)
     try {
@@ -68,7 +93,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
       fd.append("file", file)
       fd.append("step", String(step))
       fd.append("fileType", fileType)
-      fd.append("applicationId", applicationId)
+      fd.append("applicationId", appId)
       const res = await fetch("/api/upload-attachment", {
         method: "POST",
         body: fd,
@@ -116,7 +141,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           type="button"
           variant="outline"
           size="sm"
-          disabled={uploading || !applicationId}
+          disabled={uploading}
           onClick={() => fileInputRef.current?.click()}
         >
           {uploadedName ? "Replace document" : "Upload document"}
@@ -140,9 +165,9 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
         </div>
         {loadingExisting && <div className="text-xs text-slate-500">Loading attachment...</div>}
         {error && <div className="text-sm text-red-600">{error}</div>}
-        {!applicationId && (
+        {!resolvedAppId && (
           <div className="text-xs text-amber-700">
-            Waiting for application to initialize. Save or refresh, then try again.
+            Waiting for application to initialize. Uploading will create it automatically.
           </div>
         )}
       </div>
