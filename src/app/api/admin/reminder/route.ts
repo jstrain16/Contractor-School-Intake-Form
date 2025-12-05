@@ -9,6 +9,7 @@ type ReminderRequest = {
   applicationId?: string
   draft?: string
   send?: boolean
+  includeData?: boolean
 }
 
 export async function POST(req: Request) {
@@ -22,6 +23,7 @@ export async function POST(req: Request) {
     const applicationId = body.applicationId
     const shouldSend = body.send === true
     const manualDraft = body.draft
+    const includeData = body.includeData !== false
 
     if (!applicationId) {
       return NextResponse.json({ error: "Missing applicationId" }, { status: 400 })
@@ -66,10 +68,16 @@ export async function POST(req: Request) {
     const draft =
       manualDraft && manualDraft.trim().length > 0
         ? manualDraft
-        : await generateDraft(appData, missingSteps, status.progress, {
-            workflowId: openaiWorkflowId,
-            assistantId: openaiAssistantId,
-          })
+        : await generateDraft(
+            appData,
+            missingSteps,
+            status.progress,
+            includeData ? appData : null,
+            {
+              workflowId: openaiWorkflowId,
+              assistantId: openaiAssistantId,
+            }
+          )
 
     if (!shouldSend) {
       return NextResponse.json({ draft, subject, missingSteps })
@@ -116,6 +124,7 @@ async function generateDraft(
   data: Partial<WizardData> | null,
   missing: ReturnType<typeof getMissingSteps>,
   progress: number,
+  fullData: Partial<WizardData> | null,
   opts?: { workflowId?: string; assistantId?: string }
 ) {
   try {
@@ -124,14 +133,20 @@ async function generateDraft(
     const namePart = firstName ? `Hi ${firstName},` : "Hello,"
     const missingList = missing.map((m) => `- ${m.label}: ${m.hint}`).join("\n")
 
+    const dataBlob =
+      fullData && Object.keys(fullData).length > 0
+        ? `\nFull application data (JSON):\n${JSON.stringify(fullData)}`
+        : ""
+
     const prompt = `
-Write a concise reminder email (plain text) to an applicant about their contractor license application. 
+Write a concise reminder email (plain text) to an applicant about their contractor license application.
 Tone: encouraging, clear, friendly. Keep it under 150 words. Include:
 - A greeting (${namePart})
 - Current progress: ${progress}% complete
 - Bulleted missing steps:
 ${missingList}
 - A short call to action to return and finish in the portal.
+${dataBlob}
 `
 
     const model = opts?.assistantId || opts?.workflowId || "gpt-4o-mini"

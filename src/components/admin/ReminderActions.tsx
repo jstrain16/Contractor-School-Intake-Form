@@ -15,6 +15,7 @@ export function ReminderActions({ applicationId, data, email }: Props) {
   const [draft, setDraft] = useState("")
   const [loading, setLoading] = useState(false)
   const [sendLoading, setSendLoading] = useState(false)
+  const [autoSendLoading, setAutoSendLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -23,10 +24,12 @@ export function ReminderActions({ applicationId, data, email }: Props) {
 
   const canSend = !!email
 
-  const callApi = async (send: boolean) => {
+  const callApi = async (send: boolean, autoSend = false) => {
     setError(null)
     setMessage(null)
-    if (send) {
+    if (autoSend) {
+      setAutoSendLoading(true)
+    } else if (send) {
       setSendLoading(true)
     } else {
       setLoading(true)
@@ -39,6 +42,7 @@ export function ReminderActions({ applicationId, data, email }: Props) {
           applicationId,
           draft: draft.trim() || undefined,
           send,
+          includeData: autoSend || undefined,
         }),
       })
       const json = await res.json()
@@ -55,7 +59,9 @@ export function ReminderActions({ applicationId, data, email }: Props) {
       const msg = e instanceof Error ? e.message : "Failed to process reminder"
       setError(msg)
     } finally {
-      if (send) {
+      if (autoSend) {
+        setAutoSendLoading(false)
+      } else if (send) {
         setSendLoading(false)
       } else {
         setLoading(false)
@@ -87,6 +93,14 @@ export function ReminderActions({ applicationId, data, email }: Props) {
             onClick={() => callApi(true)}
           >
             {sendLoading ? "Sending..." : "Send via Email"}
+          </Button>
+          <Button
+            size="sm"
+            disabled={!canSend || autoSendLoading}
+            onClick={() => callApi(true, true)}
+            className="bg-orange-600 text-white hover:bg-orange-500"
+          >
+            {autoSendLoading ? "AI Sending..." : "Send with AI Now"}
           </Button>
         </div>
       </div>
