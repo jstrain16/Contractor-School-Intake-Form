@@ -62,10 +62,14 @@ export async function POST(req: Request) {
         ? "Contractor application – next steps"
         : `Reminder: steps to finish your contractor application (${status.progress}%)`
 
+    const { openaiWorkflowId, openaiAssistantId } = getEmailEnv()
     const draft =
       manualDraft && manualDraft.trim().length > 0
         ? manualDraft
-        : await generateDraft(appData, missingSteps, status.progress)
+        : await generateDraft(appData, missingSteps, status.progress, {
+            workflowId: openaiWorkflowId,
+            assistantId: openaiAssistantId,
+          })
 
     if (!shouldSend) {
       return NextResponse.json({ draft, subject, missingSteps })
@@ -111,7 +115,8 @@ export async function POST(req: Request) {
 async function generateDraft(
   data: Partial<WizardData> | null,
   missing: ReturnType<typeof getMissingSteps>,
-  progress: number
+  progress: number,
+  opts?: { workflowId?: string; assistantId?: string }
 ) {
   try {
     const openai = getOpenAIClient()
@@ -129,8 +134,10 @@ ${missingList}
 - A short call to action to return and finish in the portal.
 `
 
+    const model = opts?.assistantId || opts?.workflowId || "gpt-4o-mini"
+
     const res = await openai.responses.create({
-      model: "gpt-4o-mini",
+      model,
       input: prompt,
       max_output_tokens: 260,
       temperature: 0.4,
