@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button"
 import { fetchWizardData } from "@/lib/wizard-api"
 import { useWizardStore } from "@/store/wizard-store"
 import { WizardData } from "@/lib/schemas"
-
-type StatusItem = {
-  label: string
-  done: boolean
-}
+import { buildStatus } from "@/lib/progress"
 
 export default function HomePage() {
   const router = useRouter()
@@ -25,75 +21,7 @@ export default function HomePage() {
   const resetStore = useWizardStore((s) => s.reset)
   const setApplicationId = useWizardStore((s) => s.setApplicationId)
 
-  const statusList = useMemo(() => {
-    const d = wizardData || {}
-    const licenseType = d.step0?.licenseType
-    const isGeneral = licenseType === "general"
-    const isSpecialty = licenseType === "specialty"
-    const weights = {
-      licenseSetup: 5,
-      preLicensure: 15,
-      business: 25,
-      gl: 9, // part of insurance total 20
-      wc: 11, // part of insurance total 20
-      experience: 10,
-      exams: 10,
-      dopl: 2,
-    }
-
-    const items: Array<StatusItem & { weight: number }> = [
-      {
-        label: "Account Setup",
-        done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email,
-        weight: weights.licenseSetup,
-      },
-      {
-        label: "Pre-Licensure / Education",
-        done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0,
-        weight: weights.preLicensure,
-      },
-      {
-        label: "Business Entity, FEIN & Banking",
-        done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin,
-        weight: weights.business,
-      },
-      {
-        label: "General Liability",
-        done: d.step3?.hasGlInsurance === true,
-        weight: weights.gl,
-      },
-      {
-        label: "Workers Compensation",
-        done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true,
-        weight: weights.wc,
-      },
-      {
-        label: "Experience / Qualifier",
-        done: isGeneral ? !!d.step4?.hasExperience : isSpecialty ? true : false,
-        weight: weights.experience,
-      },
-      {
-        label: "Business & Law Exam",
-        done: isGeneral ? d.step5?.examStatus === "passed" : isSpecialty ? true : false,
-        weight: weights.exams,
-      },
-      {
-        label: "DOPL Application",
-        done: d.step6?.doplAppCompleted === true,
-        weight: weights.dopl,
-      },
-    ]
-
-    const rawTotal = items.reduce((sum, item) => sum + item.weight, 0)
-    const rawCompleted = items.filter((i) => i.done).reduce((sum, item) => sum + item.weight, 0)
-    const progress = rawTotal > 0 ? Math.round((rawCompleted / rawTotal) * 100) : 0
-
-    return {
-      items,
-      progress,
-      nextUp: items.find((s) => !s.done)?.label ?? "Review & Submit",
-    }
-  }, [wizardData])
+  const statusList = useMemo(() => buildStatus(wizardData), [wizardData])
 
   useEffect(() => {
     if (!isLoaded) return

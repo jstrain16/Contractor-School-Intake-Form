@@ -5,6 +5,8 @@ import { requireAdminEmail } from "@/lib/admin-auth"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import { WizardData } from "@/lib/schemas"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
+import { buildStatus } from "@/lib/progress"
+import { ReminderActions } from "@/components/admin/ReminderActions"
 
 type ApplicationRow = {
   id: string
@@ -37,37 +39,6 @@ type AttachmentRow = {
 type DisplayUser = { name: string; email: string }
 type AdminAttachment = AttachmentRow & { signedUrl: string | null }
 type AdminRow = { app: ApplicationRow; profile?: ProfileRow; progress: number; attachments: AdminAttachment[] }
-
-const WEIGHTS = {
-  licenseSetup: 5,
-  preLicensure: 15,
-  business: 25,
-  gl: 9,
-  wc: 11,
-  experience: 10,
-  exams: 10,
-  dopl: 2,
-}
-
-function computeProgress(data: Partial<WizardData> | null): number {
-  const d = data || {}
-  const licenseType = d.step0?.licenseType
-  const isGeneral = licenseType === "general"
-  const isSpecialty = licenseType === "specialty"
-  const items = [
-    { done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email, weight: WEIGHTS.licenseSetup },
-    { done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0, weight: WEIGHTS.preLicensure },
-    { done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin, weight: WEIGHTS.business },
-    { done: d.step3?.hasGlInsurance === true, weight: WEIGHTS.gl },
-    { done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true, weight: WEIGHTS.wc },
-    { done: isGeneral ? !!d.step4?.hasExperience : isSpecialty ? true : false, weight: WEIGHTS.experience },
-    { done: isGeneral ? d.step5?.examStatus === "passed" : isSpecialty ? true : false, weight: WEIGHTS.exams },
-    { done: d.step6?.doplAppCompleted === true, weight: WEIGHTS.dopl },
-  ]
-  const total = items.reduce((sum, i) => sum + i.weight, 0)
-  const completed = items.filter((i) => i.done).reduce((sum, i) => sum + i.weight, 0)
-  return total > 0 ? Math.round((completed / total) * 100) : 0
-}
 
 async function fetchAdminData(): Promise<AdminRow[]> {
   const supabase = getSupabaseAdminClient()
@@ -117,7 +88,7 @@ async function fetchAdminData(): Promise<AdminRow[]> {
     return {
       app,
       profile,
-      progress: computeProgress(app.data ?? null),
+      progress: buildStatus(app.data ?? null).progress,
       attachments: attachmentsForApp,
     }
   })
@@ -213,6 +184,7 @@ export default async function AdminPage() {
           {rows.map(({ app, profile, progress, attachments }) => {
             const user = getDisplayUser(profile, app.data ?? null)
             const d: Partial<WizardData> = (app.data ?? {}) as Partial<WizardData>
+            const emailForReminder = profile?.email ?? d.step0?.email ?? null
             return (
               <details
                 key={app.id}
@@ -316,6 +288,8 @@ export default async function AdminPage() {
                       {renderSection("Review / Attestation", d.step7 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                   </div>
+
+                  <ReminderActions applicationId={app.id} data={d} email={emailForReminder} />
 
                   <details className="border rounded-md p-3 bg-slate-50">
                     <summary className="cursor-pointer text-sm font-medium text-slate-800">
