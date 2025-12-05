@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -21,6 +21,38 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
   const [error, setError] = useState<string | null>(null)
   const [uploadedName, setUploadedName] = useState<string | null>(null)
   const [uploadedPath, setUploadedPath] = useState<string | null>(null)
+  const [loadingExisting, setLoadingExisting] = useState(false)
+
+  useEffect(() => {
+    const loadExisting = async () => {
+      if (!applicationId) return
+      setLoadingExisting(true)
+      setError(null)
+      try {
+        const params = new URLSearchParams({
+          applicationId,
+          step: String(step),
+          fileType,
+        })
+        const res = await fetch(`/api/attachments?${params.toString()}`, { cache: "no-store" })
+        if (!res.ok) throw new Error("Failed to load existing attachment")
+        const json = await res.json()
+        const latest = json.attachments?.[0]
+        if (latest) {
+          setUploadedName(latest.metadata?.originalName ?? latest.path)
+          setUploadedPath(latest.path)
+        } else {
+          setUploadedName(null)
+          setUploadedPath(null)
+        }
+      } catch (e: any) {
+        setError(e?.message || "Could not load existing attachment")
+      } finally {
+        setLoadingExisting(false)
+      }
+    }
+    loadExisting()
+  }, [applicationId, step, fileType])
 
   const handleFile = async (file?: File | null) => {
     if (!file || !applicationId) return
@@ -100,6 +132,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
             Download document
           </Button>
         </div>
+        {loadingExisting && <div className="text-xs text-slate-500">Loading attachment...</div>}
         {error && <div className="text-sm text-red-600">{error}</div>}
       </div>
     </div>
