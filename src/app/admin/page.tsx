@@ -1,0 +1,216 @@
+"use server"
+
+import { redirect } from "next/navigation"
+import { requireAdminEmail } from "@/lib/admin-auth"
+import { getSupabaseAdminClient } from "@/lib/supabase-admin"
+import { WizardData } from "@/lib/schemas"
+
+type ApplicationRow = {
+  id: string
+  user_id: string
+  data: WizardData | null
+  updated_at: string | null
+  created_at: string | null
+  primary_trade: string | null
+  license_type: string | null
+}
+
+type ProfileRow = {
+  user_id: string
+  email: string | null
+  first_name: string | null
+  last_name: string | null
+  phone: string | null
+}
+
+type AttachmentRow = {
+  id: string
+  application_id: string
+  path: string
+  bucket: string
+  file_type: string | null
+  metadata: Record<string, unknown> | null
+  created_at: string | null
+}
+
+const WEIGHTS = {
+  licenseSetup: 5,
+  preLicensure: 15,
+  business: 25,
+  gl: 9,
+  wc: 11,
+  experience: 10,
+  exams: 10,
+  dopl: 2,
+}
+
+function computeProgress(data: Partial<WizardData> | null): number {
+  const d = data || {}
+  const isGeneral = d.step0?.licenseType === "general"
+  const items = [
+    { done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email, weight: WEIGHTS.licenseSetup },
+    { done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0, weight: WEIGHTS.preLicensure },
+    { done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin, weight: WEIGHTS.business },
+    { done: d.step3?.hasGlInsurance === true, weight: WEIGHTS.gl },
+    { done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true, weight: WEIGHTS.wc },
+    { done: isGeneral ? !!d.step4?.hasExperience : true, weight: WEIGHTS.experience },
+    { done: isGeneral ? d.step5?.examStatus === "passed" : true, weight: WEIGHTS.exams },
+    { done: d.step6?.doplAppCompleted === true, weight: WEIGHTS.dopl },
+  ]
+  const total = items.reduce((sum, i) => sum + i.weight, 0)
+  const completed = items.filter((i) => i.done).reduce((sum, i) => sum + i.weight, 0)
+  return total > 0 ? Math.round((completed / total) * 100) : 0
+}
+
+async function fetchAdminData() {
+  const supabase = getSupabaseAdminClient()
+
+  const { data: applications, error: appsError } = await supabase
+    .from("contractor_applications")
+    .select("id,user_id,data,updated_at,created_at,primary_trade,license_type")
+    .order("updated_at", { ascending: false })
+
+  if (appsError) throw appsError
+  const appRows = (applications || []) as ApplicationRow[]
+
+  const userIds = appRows.map((a) => a.user_id)
+  const { data: profiles, error: profileError } = await supabase
+    .from("user_profiles")
+    .select("user_id,email,first_name,last_name,phone")
+    .in("user_id", userIds)
+
+  if (profileError) throw profileError
+  const profileMap = new Map<string, ProfileRow>()
+  ;(profiles || []).forEach((p) => profileMap.set(p.user_id, p as ProfileRow))
+
+  const appIds = appRows.map((a) => a.id)
+  const { data: attachments, error: attError } = await supabase
+    .from("contractor_attachments")
+    .select("id,application_id,path,bucket,file_type,metadata,created_at")
+    .in("application_id", appIds)
+
+  if (attError) throw attError
+  const attachmentRows = (attachments || []) as AttachmentRow[]
+
+  // Signed URLs
+  const signedUrls = await Promise.all(
+    attachmentRows.map(async (att) => {
+      const { data, error } = await supabase.storage.from(att.bucket).createSignedUrl(att.path, 60 * 60)
+      return { id: att.id, signedUrl: error ? null : data?.signedUrl ?? null }
+    })
+  )
+  const signedMap = new Map(signedUrls.map((u) => [u.id, u.signedUrl]))
+
+  return appRows.map((app) => {
+    const attachmentsForApp = attachmentRows.filter((a) => a.application_id === app.id).map((a) => ({
+      ...a,
+      signedUrl: signedMap.get(a.id) ?? null,
+    }))
+    const profile = profileMap.get(app.user_id)
+    return {
+      app,
+      profile,
+      progress: computeProgress(app.data ?? null),
+      attachments: attachmentsForApp,
+    }
+  })
+}
+
+export default async function AdminPage() {
+  const { isAllowed } = await requireAdminEmail()
+  if (!isAllowed) {
+    redirect("/sign-in")
+  }
+
+  const rows = await fetchAdminData()
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Admin Portal</h1>
+            <p className="text-slate-600 text-sm">Review applicant progress, answers, and attachments.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          {rows.map(({ app, profile, progress, attachments }) => (
+            <div key={app.id} className="rounded-lg border bg-white p-4 space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-lg font-semibold text-slate-900">
+                    {profile?.first_name || profile?.last_name
+                      ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim()
+                      : profile?.email ?? "Unknown user"}
+                  </div>
+                  <div className="text-sm text-slate-600">{profile?.email ?? "No email on file"}</div>
+                  <div className="text-xs text-slate-500">
+                    Updated: {app.updated_at ? new Date(app.updated_at).toLocaleString() : "—"}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-slate-600">Progress</div>
+                  <div className="text-2xl font-bold text-slate-900">{progress}%</div>
+                </div>
+              </div>
+
+              <div className="text-sm text-slate-700">
+                <span className="font-medium">Primary Trade:</span> {app.primary_trade || "—"} |{" "}
+                <span className="font-medium">License Type:</span> {app.license_type || "—"}
+              </div>
+
+              <details className="border rounded-md p-3 bg-slate-50">
+                <summary className="cursor-pointer text-sm font-medium text-slate-800">Application answers</summary>
+                <pre className="mt-2 whitespace-pre-wrap text-xs text-slate-800">
+                  {JSON.stringify(app.data ?? {}, null, 2)}
+                </pre>
+              </details>
+
+              <details className="border rounded-md p-3 bg-slate-50">
+                <summary className="cursor-pointer text-sm font-medium text-slate-800">
+                  Attachments ({attachments.length})
+                </summary>
+                <div className="mt-2 space-y-2 text-sm">
+                  {attachments.length === 0 && <div className="text-slate-600">No attachments</div>}
+                  {attachments.map((att) => (
+                    <div key={att.id} className="flex items-center justify-between">
+                      {(() => {
+                        const originalName =
+                          typeof att.metadata?.originalName === "string" ? att.metadata.originalName : null
+                        const fallbackName = att.path.split("/").pop() || att.path
+                        const displayName = originalName ?? fallbackName
+                        return (
+                          <div>
+                            <div className="font-medium text-slate-800">{displayName}</div>
+                            <div className="text-xs text-slate-600">
+                              {att.file_type || "file"} •{" "}
+                              {att.created_at ? new Date(att.created_at).toLocaleString() : "—"}
+                            </div>
+                          </div>
+                        )
+                      })()}
+                      {att.signedUrl ? (
+                        <a
+                          href={att.signedUrl}
+                          className="text-blue-600 text-sm underline"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Download
+                        </a>
+                      ) : (
+                        <span className="text-xs text-red-600">No link</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
