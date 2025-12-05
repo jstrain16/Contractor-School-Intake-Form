@@ -185,8 +185,14 @@ export default async function AdminPage() {
 
   const rows = await fetchAdminData()
 
+  const progressBorder = (pct: number) => {
+    if (pct >= 80) return "border-l-green-500"
+    if (pct >= 40) return "border-l-amber-500"
+    return "border-l-slate-300"
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -200,7 +206,12 @@ export default async function AdminPage() {
             const user = getDisplayUser(profile, app.data ?? null)
             const d = app.data ?? {}
             return (
-              <details key={app.id} className="rounded-lg border bg-white group">
+              <details
+                key={app.id}
+                className={`rounded-xl border bg-white/90 backdrop-blur-sm group shadow-sm hover:shadow-md border-slate-200 ${progressBorder(
+                  progress
+                )} border-l-4`}
+              >
                 <summary className="flex items-center justify-between gap-4 p-4 cursor-pointer">
                   <div className="flex items-center gap-3">
                     <span className="text-slate-500 transition-transform duration-200 group-open:rotate-90">▶</span>
@@ -212,9 +223,17 @@ export default async function AdminPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-slate-600">Progress</div>
-                    <div className="text-2xl font-bold text-slate-900">{progress}%</div>
+                  <div className="flex items-center gap-3">
+                    <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
+                      <div
+                        className={`h-full ${progress >= 80 ? "bg-green-500" : "bg-gradient-to-r from-orange-500 to-orange-600"}`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Progress</div>
+                      <div className="text-xl font-bold text-slate-900">{progress}%</div>
+                    </div>
                   </div>
                 </summary>
                 <div className="border-t p-4 space-y-3">
