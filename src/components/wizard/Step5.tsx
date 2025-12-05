@@ -1,0 +1,132 @@
+"use client"
+
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { step5Schema, Step5Data } from "@/lib/schemas"
+import { useWizardStore } from "@/store/wizard-store"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+
+export function Step5() {
+  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  // Only General Contractors need this exam usually, but prompt says "General Contractors must pass...". 
+  // It doesn't explicitly say Specialty don't need it, but implies it. 
+  // "For General Contractors there are extra requirements... Prov Business & Law exam."
+  // I'll show a note if Specialty, or just let them fill it out if they want/need.
+  // I'll assume it's required for General, optional/hidden for Specialty?
+  // The Prompt Step 5 says: "From HBA: General Contractors must pass..."
+  // I'll stick to showing it for everyone but maybe marking it as required only for General in schema? 
+  // Current schema makes it optional effectively by defaults. I'll just show it.
+
+  const form = useForm<Step5Data>({
+    resolver: zodResolver(step5Schema),
+    defaultValues: {
+      examStatus: data.step5?.examStatus || "not_scheduled",
+      examDate: data.step5?.examDate || "",
+      examLocation: data.step5?.examLocation || "",
+      examPassedDate: data.step5?.examPassedDate || "",
+      examId: data.step5?.examId || "",
+    }
+  })
+
+  const examStatus = form.watch("examStatus")
+
+  const onSubmit = (values: Step5Data) => {
+    updateData("step5", values)
+    nextStep()
+  }
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>Exams & Testing (Prov Business & Law)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form id="step5-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          
+          <div className="space-y-3">
+            <Label className="text-base">Have you scheduled the Prov Business & Law Exam?</Label>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  value="not_scheduled" 
+                  {...form.register("examStatus")}
+                  className="w-4 h-4" 
+                />
+                <span>No, I need to schedule it</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  value="scheduled" 
+                  {...form.register("examStatus")}
+                  className="w-4 h-4" 
+                />
+                <span>Yes, it is scheduled</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input 
+                  type="radio" 
+                  value="passed" 
+                  {...form.register("examStatus")}
+                  className="w-4 h-4" 
+                />
+                <span>I have already passed</span>
+              </label>
+            </div>
+          </div>
+
+          {examStatus === "not_scheduled" && (
+             <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm">
+                You need to pass the Utah Business and Law Exam. <a href="#" className="underline font-medium">Click here to schedule with Prov</a>.
+             </div>
+          )}
+
+          {examStatus === "scheduled" && (
+             <div className="space-y-4 pl-4 border-l-2 border-slate-200">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <Label htmlFor="examDate">Exam Date</Label>
+                      <Input id="examDate" type="date" {...form.register("examDate")} />
+                   </div>
+                   <div className="space-y-2">
+                      <Label htmlFor="examLocation">Location</Label>
+                      <Input id="examLocation" {...form.register("examLocation")} />
+                   </div>
+                </div>
+             </div>
+          )}
+
+          {examStatus === "passed" && (
+             <div className="space-y-4 pl-4 border-l-2 border-slate-200">
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <Label htmlFor="examPassedDate">Date Passed</Label>
+                      <Input id="examPassedDate" type="date" {...form.register("examPassedDate")} />
+                   </div>
+                   <div className="space-y-2">
+                      <Label htmlFor="examId">Candidate / Exam ID</Label>
+                      <Input id="examId" {...form.register("examId")} />
+                   </div>
+                </div>
+                <div className="space-y-2">
+                   <Label>Upload Score Report</Label>
+                   <Input type="file" accept=".pdf,.jpg,.png" />
+                </div>
+             </div>
+          )}
+
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button variant="outline" onClick={prevStep}>Previous</Button>
+        <Button type="submit" form="step5-form">Next Step</Button>
+      </CardFooter>
+    </Card>
+  )
+}
+
+
