@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { getSupabaseServerClient } from "@/lib/supabase-server"
+import { auth as clerkAuth } from "@clerk/nextjs/server"
+import { createClient } from "@supabase/supabase-js"
 import { WizardData } from "@/lib/schemas"
 
 const EMPTY_DATA: WizardData = {
@@ -15,18 +16,15 @@ const EMPTY_DATA: WizardData = {
 
 export async function GET() {
   try {
-    const supabase = await getSupabaseServerClient()
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
-
-    if (userError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const supabase = getSupabaseAdmin()
+    const { userId: clerkUserId } = await clerkAuth()
+    const userId = clerkUserId || process.env.DEV_FALLBACK_USER_ID || null
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { data: existing, error: selectError } = await supabase
       .from("contractor_applications")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle()
 
     if (selectError && selectError.code !== "PGRST116") {
@@ -41,7 +39,7 @@ export async function GET() {
     // create new
     const { data: created, error: insertError } = await supabase
       .from("contractor_applications")
-      .insert({ user_id: user.id, data: EMPTY_DATA })
+      .insert({ user_id: userId, data: EMPTY_DATA })
       .select()
       .single()
 
@@ -59,13 +57,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const supabase = await getSupabaseServerClient()
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
-
-    if (userError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const supabase = getSupabaseAdmin()
+    const { userId: clerkUserId } = await clerkAuth()
+    const userId = clerkUserId || process.env.DEV_FALLBACK_USER_ID || null
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const body = await req.json()
     const data = (body?.data ?? {}) as Partial<WizardData>
@@ -91,7 +86,7 @@ export async function POST(req: Request) {
       .from("contractor_applications")
       .update(updates)
       .eq("id", applicationId)
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
 
     if (error) {
       console.error("Supabase POST error", error)
@@ -103,5 +98,14 @@ export async function POST(req: Request) {
     console.error("POST /api/wizard error", err)
     return NextResponse.json({ error: "Server error", detail: String(err) }, { status: 500 })
   }
+}
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error("Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)")
+  }
+  return createClient(url, serviceKey)
 }
 

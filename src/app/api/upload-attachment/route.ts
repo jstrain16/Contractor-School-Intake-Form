@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSupabaseServerClient } from "@/lib/supabase-server"
+import { auth as clerkAuth } from "@clerk/nextjs/server"
+import { createClient } from "@supabase/supabase-js"
 
 const BUCKET = "contractor-documents"
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await getSupabaseServerClient()
+    const supabase = getSupabaseAdmin()
     const formData = await req.formData()
 
     const file = formData.get("file") as File | null
@@ -17,11 +18,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing file or applicationId" }, { status: 400 })
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
-    if (userError || !user) {
+    const { userId: clerkUserId } = await clerkAuth()
+    const userId = clerkUserId || process.env.DEV_FALLBACK_USER_ID || null
+    if (!userId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
@@ -30,7 +29,7 @@ export async function POST(req: NextRequest) {
       .from("contractor_applications")
       .select("id")
       .eq("id", applicationId)
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .maybeSingle()
 
     if (appError) {
@@ -42,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = file.name.split(".").pop()
-    const path = `${user.id}/${applicationId}/${Date.now()}-${file.name}`
+    const path = `${userId}/${applicationId}/${Date.now()}-${file.name}`
 
     // Upload file to storage
     const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, {
@@ -60,7 +59,7 @@ export async function POST(req: NextRequest) {
       .from("contractor_attachments")
       .insert({
         application_id: applicationId,
-        user_id: user.id,
+        user_id: userId,
         bucket: BUCKET,
         path,
         file_type: fileType,
@@ -80,5 +79,14 @@ export async function POST(req: NextRequest) {
     console.error("upload-attachment error", err)
     return NextResponse.json({ error: "Server error", detail: String(err) }, { status: 500 })
   }
+}
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    throw new Error("Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)")
+  }
+  return createClient(url, serviceKey)
 }
 
