@@ -27,9 +27,9 @@ export function AuthPanel() {
     const user = userData.user
     if (!user) return
     await supabase
-      .from("profiles")
+      .from("user_profiles")
       .upsert({
-        id: user.id,
+        user_id: user.id,
         email: user.email ?? null,
       })
   }
