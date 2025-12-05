@@ -152,7 +152,7 @@ export default function HomePage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 via-amber-500 to-slate-800 shadow-lg">
               <span className="text-white text-lg font-semibold">CS</span>
             </div>
-            <div>
+          <div>
               <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Contractor School</h1>
               <p className="mt-1 text-sm md:text-base text-slate-600">
                 Track your licensing intake, progress, and documents in one place.
@@ -229,8 +229,8 @@ export default function HomePage() {
                               item.done ? "text-green-700 bg-green-50" : "text-amber-700 bg-amber-50"
                             } px-2 py-0.5 rounded-full`}
                           >
-                            {item.done ? "Complete" : "Pending"}
-                          </span>
+                          {item.done ? "Complete" : "Pending"}
+                        </span>
                         </div>
                         <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                           <div
