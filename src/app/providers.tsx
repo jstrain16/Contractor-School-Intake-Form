@@ -15,6 +15,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { ReactNode } from "react"
 import { useMemo } from "react"
+import { Shield } from "lucide-react"
 
 type ProvidersProps = {
   children: ReactNode
@@ -39,9 +40,12 @@ function AdminPortalButton() {
   return (
     <Link
       href="/admin"
-      className="text-sm text-slate-700 hover:text-slate-900 font-medium border border-slate-300 rounded-md px-3 py-1"
+      className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/40 hover:translate-y-[-1px]"
     >
-      Admin Portal
+      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shadow-inner shadow-orange-900/20 transition-transform duration-200 group-hover:scale-105">
+        <Shield className="h-4 w-4" />
+      </span>
+      <span className="leading-none">Admin Portal</span>
     </Link>
   )
 }
@@ -92,12 +96,6 @@ export function Providers({ children }: ProvidersProps) {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <Link
-                href="/"
-                className="text-sm text-blue-600 hover:underline font-medium"
-              >
-                See application status
-              </Link>
               <AdminPortalButton />
               <UserButton />
             </SignedIn>
