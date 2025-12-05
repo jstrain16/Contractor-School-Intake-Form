@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, useUser } from "@clerk/nextjs"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { fetchWizardData, saveWizardData } from "@/lib/wizard-api"
+import { fetchWizardData } from "@/lib/wizard-api"
 import { useWizardStore } from "@/store/wizard-store"
 import { WizardData } from "@/lib/schemas"
 
@@ -25,8 +25,15 @@ export default function HomePage() {
   const setApplicationId = useWizardStore((s) => s.setApplicationId)
 
   useEffect(() => {
+    if (!isLoaded) return
+    if (!isSignedIn) {
+      router.replace("/sign-in")
+    }
+  }, [isLoaded, isSignedIn, router])
+
+  useEffect(() => {
     const load = async () => {
-      if (!isLoaded) return
+      if (!isLoaded || !isSignedIn) return
       try {
         const res = await fetchWizardData()
         setWizardData((res.data || null) as Partial<WizardData> | null)
@@ -39,7 +46,7 @@ export default function HomePage() {
       }
     }
     load()
-  }, [isLoaded, setApplicationId])
+  }, [isLoaded, isSignedIn, setApplicationId])
 
   const statusList: StatusItem[] = useMemo(() => {
     const d = wizardData || {}
@@ -62,7 +69,7 @@ export default function HomePage() {
   const nextStepLabel = statusList.find((s) => !s.done)?.label ?? "Review & Submit"
 
   const handleContinue = () => {
-    router.push("/wizard")
+    router.push("/application")
   }
 
   const handleNewApplication = async () => {
@@ -73,7 +80,7 @@ export default function HomePage() {
       const res = await fetchWizardData() // will create if missing
       setWizardData((res.data || null) as Partial<WizardData> | null)
       setApplicationId(res.applicationId || null)
-      router.push("/wizard")
+      router.push("/application")
     } catch (err) {
       console.error(err)
       setError("Could not start a new application right now.")

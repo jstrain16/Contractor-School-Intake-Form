@@ -10,14 +10,13 @@ import { Step4 } from "@/components/wizard/Step4"
 import { Step5 } from "@/components/wizard/Step5"
 import { Step6 } from "@/components/wizard/Step6"
 import { Step7 } from "@/components/wizard/Step7"
-import { SignInButton, SignUpButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs"
+import { SignInButton, SignUpButton, SignedOut } from "@clerk/nextjs"
 import { fetchWizardData, saveWizardData } from "@/lib/wizard-api"
 
 export default function WizardPage() {
   const [mounted, setMounted] = useState(false)
   const [loadingServerData, setLoadingServerData] = useState(false)
-  const { user, isSignedIn } = useUser()
-  const { currentStep, reset, setStep } = useWizardStore()
+  const { currentStep, setStep } = useWizardStore()
   const wizardData = useWizardStore((state) => state.data)
   const updateData = useWizardStore((state) => state.updateData)
   const applicationId = useWizardStore((state) => state.applicationId)
@@ -53,14 +52,14 @@ export default function WizardPage() {
       }
     }
     load()
-  }, [updateData, setStep])
+  }, [updateData, setStep, setApplicationId])
 
   // Auto-save on data changes (requires applicationId)
   useEffect(() => {
     const save = async () => {
       if (!applicationId) return
       try {
-        await saveWizardData(wizardData as Record<string, any>, applicationId)
+        await saveWizardData(wizardData, applicationId)
       } catch (e) {
         console.error("Failed to save wizard data", e)
       }
@@ -99,14 +98,6 @@ export default function WizardPage() {
                 <button className="text-sm text-blue-600 underline">Clerk Sign Up</button>
               </SignUpButton>
             </SignedOut>
-            <SignedIn>
-              <button 
-                onClick={() => { if(confirm('Are you sure you want to reset all form data?')) reset() }} 
-                className="text-sm text-red-600 hover:underline"
-              >
-                Reset Form
-              </button>
-            </SignedIn>
           </div>
         </div>
 

@@ -22,6 +22,18 @@ export function AuthPanel() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const ensureProfileRow = async () => {
+    const { data: userData } = await supabase.auth.getUser()
+    const user = userData.user
+    if (!user) return
+    await supabase
+      .from("profiles")
+      .upsert({
+        id: user.id,
+        email: user.email ?? null,
+      })
+  }
+
   useEffect(() => {
     const getSession = async () => {
       const { data } = await supabase.auth.getSession()
@@ -51,18 +63,6 @@ export function AuthPanel() {
       listener?.subscription.unsubscribe()
     }
   }, [])
-
-  const ensureProfileRow = async () => {
-    const { data: userData } = await supabase.auth.getUser()
-    const user = userData.user
-    if (!user) return
-    await supabase
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        email: user.email ?? null,
-      })
-  }
 
   const handleSignUp = async () => {
     setLoading(true)

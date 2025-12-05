@@ -10,6 +10,8 @@ import {
   SignUpButton,
   UserButton,
 } from "@clerk/nextjs"
+import Link from "next/link"
+import Image from "next/image"
 import type { ReactNode } from "react"
 
 type ProvidersProps = {
@@ -41,14 +43,16 @@ export function Providers({ children }: ProvidersProps) {
       <ClerkLoaded>
         <header className="flex justify-between items-center p-4 gap-4 h-16 bg-white text-slate-900 border-b border-slate-200 shadow-sm">
           <div className="flex items-center gap-3">
-            <a href="/" className="flex items-center gap-2">
-              <img
+            <Link href="/" className="flex items-center gap-2">
+              <Image
                 src="https://beacontractor.com/wp-content/uploads/2021/08/logo.svg"
                 alt="Beacon Contractor"
+                width={120}
+                height={32}
                 className="h-8 w-auto"
               />
               <span className="text-sm font-semibold text-slate-800">Contractor Licensing Intake</span>
-            </a>
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <SignedOut>
@@ -60,12 +64,12 @@ export function Providers({ children }: ProvidersProps) {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <a
+              <Link
                 href="/"
                 className="text-sm text-blue-600 hover:underline font-medium"
               >
                 See application status
-              </a>
+              </Link>
               <UserButton />
             </SignedIn>
           </div>

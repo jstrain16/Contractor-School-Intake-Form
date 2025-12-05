@@ -1,17 +1,58 @@
 "use server"
 
 import { getSupabaseServerClient } from "@/lib/supabase-server"
-import { WizardData } from "@/lib/schemas"
+import { WizardData, Step0Data, Step4Data } from "@/lib/schemas"
 
 const EMPTY_DATA: WizardData = {
-  step0: {} as any,
-  step1: {} as any,
-  step2: {} as any,
-  step3: {} as any,
-  step4: {} as any,
-  step5: {} as any,
-  step6: {} as any,
-  step7: {} as any,
+  step0: {
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    preferredContact: "email",
+    licenseType: "specialty",
+    trade: "",
+    hasEmployees: false,
+    employeeCount: undefined,
+  },
+  step1: {
+    preLicensureCompleted: false,
+    courseProvider: "",
+    dateCompleted: "",
+    certificateNumber: "",
+    exemptions: [],
+    certificateFile: null as unknown as File,
+    degreeFile: null as unknown as File,
+  },
+  step2: {
+    hasEntityRegistered: false,
+    mailingAddressSame: true,
+    hasEin: false,
+    hasBusinessBankAccount: false,
+  },
+  step3: {
+    hasGlInsurance: false,
+    hasWorkersComp: false,
+    hasWcWaiver: false,
+  },
+  step4: {
+    qualifierDob: "",
+    hasExperience: false,
+    experienceEntries: [],
+    wantsInsuranceQuote: false,
+  },
+  step5: {
+    examStatus: "not_scheduled",
+  },
+  step6: {
+    doplAppCompleted: false,
+    reviewRequested: false,
+  },
+  step7: {
+    attested: true,
+    signature: "",
+    signatureDate: "",
+  },
 }
 
 export async function getOrCreateApplication() {
@@ -53,15 +94,15 @@ export async function saveApplicationData(applicationId: string, newData: Partia
   } = await supabase.auth.getUser()
   if (userError || !user) throw new Error("Not authenticated")
 
-  const step0 = newData.step0 ?? {}
-  const step4 = newData.step4 ?? {}
+  const step0 = (newData.step0 ?? {}) as Partial<Step0Data>
+  const step4 = (newData.step4 ?? {}) as Partial<Step4Data>
 
   const updates = {
     data: newData,
-    primary_trade: (step4 as any).primaryTrade ?? null,
-    license_type: (step0 as any).licenseType ?? null,
-    has_employees: (step0 as any).hasEmployees ?? null,
-    qualifier_dob: (step4 as any).qualifierDob ?? null,
+    primary_trade: step4.primaryTrade ?? null,
+    license_type: step0.licenseType ?? null,
+    has_employees: step0.hasEmployees ?? null,
+    qualifier_dob: step4.qualifierDob ?? null,
     updated_at: new Date().toISOString(),
   }
 

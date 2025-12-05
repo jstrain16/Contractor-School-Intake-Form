@@ -45,8 +45,9 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           setUploadedName(null)
           setUploadedPath(null)
         }
-      } catch (e: any) {
-        setError(e?.message || "Could not load existing attachment")
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Could not load existing attachment"
+        setError(message)
       } finally {
         setLoadingExisting(false)
       }
@@ -79,8 +80,9 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
       const json = await res.json()
       setUploadedName(file.name)
       setUploadedPath(json.attachment?.path ?? null)
-    } catch (e: any) {
-      setError(e?.message || "Upload failed")
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Upload failed"
+      setError(message)
     } finally {
       setUploading(false)
     }

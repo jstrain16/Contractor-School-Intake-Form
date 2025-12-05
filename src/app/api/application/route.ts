@@ -1,30 +1,70 @@
 import { NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { createClient } from "@supabase/supabase-js"
-import { WizardData } from "@/lib/schemas"
+import { WizardData, Step0Data, Step4Data } from "@/lib/schemas"
 
 const EMPTY_DATA: WizardData = {
-  step0: {} as any,
-  step1: {} as any,
-  step2: {} as any,
-  step3: {} as any,
-  step4: {} as any,
-  step5: {} as any,
-  step6: {} as any,
-  step7: {} as any,
+  step0: {
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    preferredContact: "email",
+    licenseType: "specialty",
+    trade: "",
+    hasEmployees: false,
+    employeeCount: undefined,
+  },
+  step1: {
+    preLicensureCompleted: false,
+    courseProvider: "",
+    dateCompleted: "",
+    certificateNumber: "",
+    exemptions: [],
+    certificateFile: null as unknown as File,
+    degreeFile: null as unknown as File,
+  },
+  step2: {
+    hasEntityRegistered: false,
+    mailingAddressSame: true,
+    hasEin: false,
+    hasBusinessBankAccount: false,
+  },
+  step3: {
+    hasGlInsurance: false,
+    hasWorkersComp: false,
+    hasWcWaiver: false,
+  },
+  step4: {
+    qualifierDob: "",
+    hasExperience: false,
+    experienceEntries: [],
+    wantsInsuranceQuote: false,
+  },
+  step5: {
+    examStatus: "not_scheduled",
+  },
+  step6: {
+    doplAppCompleted: false,
+    reviewRequested: false,
+  },
+  step7: {
+    attested: true,
+    signature: "",
+    signatureDate: "",
+  },
 }
 
 export async function GET() {
   try {
     const supabase = getSupabaseAdmin()
     const { userId: clerkUserId } = await clerkAuth()
-    const userId = clerkUserId || process.env.DEV_FALLBACK_USER_ID || null
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { data: existing, error: selectError } = await supabase
       .from("contractor_applications")
       .select("*")
-      .eq("user_id", userId)
+      .eq("user_id", clerkUserId)
       .maybeSingle()
 
     if (selectError && selectError.code !== "PGRST116") {
@@ -39,7 +79,7 @@ export async function GET() {
     // create new
     const { data: created, error: insertError } = await supabase
       .from("contractor_applications")
-      .insert({ user_id: userId, data: EMPTY_DATA })
+      .insert({ user_id: clerkUserId, data: EMPTY_DATA })
       .select()
       .single()
 
@@ -50,7 +90,7 @@ export async function GET() {
 
     return NextResponse.json({ data: created.data ?? null, applicationId: created.id })
   } catch (err) {
-    console.error("GET /api/wizard error", err)
+    console.error("GET /api/application error", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }
@@ -59,8 +99,7 @@ export async function POST(req: Request) {
   try {
     const supabase = getSupabaseAdmin()
     const { userId: clerkUserId } = await clerkAuth()
-    const userId = clerkUserId || process.env.DEV_FALLBACK_USER_ID || null
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const body = await req.json()
     const data = (body?.data ?? {}) as Partial<WizardData>
@@ -70,15 +109,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing applicationId" }, { status: 400 })
     }
 
-    const step0 = data.step0 ?? {}
-    const step4 = data.step4 ?? {}
+    const step0 = (data.step0 ?? {}) as Partial<Step0Data>
+    const step4 = (data.step4 ?? {}) as Partial<Step4Data>
 
     const updates = {
       data,
-      primary_trade: (step4 as any).primaryTrade ?? null,
-      license_type: (step0 as any).licenseType ?? null,
-      has_employees: (step0 as any).hasEmployees ?? null,
-      qualifier_dob: (step4 as any).qualifierDob ?? null,
+      primary_trade: step4.primaryTrade ?? null,
+      license_type: step0.licenseType ?? null,
+      has_employees: step0.hasEmployees ?? null,
+      qualifier_dob: step4.qualifierDob ?? null,
       updated_at: new Date().toISOString(),
     }
 
@@ -86,7 +125,7 @@ export async function POST(req: Request) {
       .from("contractor_applications")
       .update(updates)
       .eq("id", applicationId)
-      .eq("user_id", userId)
+      .eq("user_id", clerkUserId)
 
     if (error) {
       console.error("Supabase POST error", error)
@@ -94,8 +133,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    console.error("POST /api/wizard error", err)
+  } catch (err: unknown) {
+    console.error("POST /api/application error", err)
     return NextResponse.json({ error: "Server error", detail: String(err) }, { status: 500 })
   }
 }

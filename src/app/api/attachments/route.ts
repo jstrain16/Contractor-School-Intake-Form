@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ attachments: data ?? [] })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("GET /api/attachments error", err)
     return NextResponse.json({ error: "Server error", detail: String(err) }, { status: 500 })
   }

@@ -19,8 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { userId: clerkUserId } = await clerkAuth()
-    const userId = clerkUserId || process.env.DEV_FALLBACK_USER_ID || null
-    if (!userId) {
+    if (!clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
@@ -29,7 +28,7 @@ export async function POST(req: NextRequest) {
       .from("contractor_applications")
       .select("id")
       .eq("id", applicationId)
-      .eq("user_id", userId)
+      .eq("user_id", clerkUserId)
       .maybeSingle()
 
     if (appError) {
@@ -41,7 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = file.name.split(".").pop()
-    const path = `${userId}/${applicationId}/${Date.now()}-${file.name}`
+    const path = `${clerkUserId}/${applicationId}/${Date.now()}-${file.name}`
 
     // Upload file to storage
     const { error: uploadError } = await supabase.storage.from(BUCKET).upload(path, file, {
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
       .from("contractor_attachments")
       .insert({
         application_id: applicationId,
-        user_id: userId,
+        user_id: clerkUserId,
         bucket: BUCKET,
         path,
         file_type: fileType,
@@ -75,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ attachment })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("upload-attachment error", err)
     return NextResponse.json({ error: "Server error", detail: String(err) }, { status: 500 })
   }

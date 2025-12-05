@@ -7,7 +7,7 @@ interface WizardState {
   data: Partial<WizardData>
   applicationId?: string | null
   setApplicationId: (id: string | null) => void
-  updateData: (step: keyof WizardData, data: any) => void
+  updateData: <K extends keyof WizardData>(step: K, data: Partial<WizardData[K]>) => void
   nextStep: () => void
   prevStep: () => void
   setStep: (step: number) => void
@@ -19,7 +19,7 @@ const store: StateCreator<WizardState> = (set) => ({
   data: {},
   applicationId: null,
   setApplicationId: (id: string | null) => set({ applicationId: id }),
-  updateData: (step: keyof WizardData, newData: any) =>
+  updateData: (step, newData) =>
     set((state) => ({
       data: {
         ...state.data,
@@ -32,12 +32,12 @@ const store: StateCreator<WizardState> = (set) => ({
   reset: () => set({ currentStep: 0, data: {}, applicationId: null }),
 })
 
+const persistedStore = persist<WizardState>(store, {
+  name: 'wizard-storage',
+  storage: createJSONStorage(() => localStorage),
+}) as StateCreator<WizardState>
+
 export const useWizardStore = create<WizardState>()(
-  (typeof window !== 'undefined'
-    ? persist<WizardState>(store, {
-        name: 'wizard-storage',
-        storage: createJSONStorage(() => localStorage),
-      })
-    : store) as any
+  typeof window !== 'undefined' ? persistedStore : store
 )
 
