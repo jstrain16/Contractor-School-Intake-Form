@@ -31,11 +31,12 @@ function AdminPortalButton() {
       .filter(Boolean)
   }, [])
   const isAdmin = useMemo(() => {
-    const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase()
     const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
     if (metaAdmin) return true
-    return email ? adminAllowlist.includes(email) : false
-  }, [adminAllowlist, user?.primaryEmailAddress?.emailAddress, user?.publicMetadata])
+    const emails =
+      user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+    return emails.some((em) => adminAllowlist.includes(em as string))
+  }, [adminAllowlist, user?.emailAddresses, user?.publicMetadata])
 
   if (!isAdmin) return null
 

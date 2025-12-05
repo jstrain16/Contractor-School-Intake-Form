@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useWizardStore } from "@/store/wizard-store"
+import { useUser } from "@clerk/nextjs"
 
 type UploadFieldProps = {
   label: string
@@ -23,9 +24,11 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
   const [uploadedName, setUploadedName] = useState<string | null>(null)
   const [uploadedPath, setUploadedPath] = useState<string | null>(null)
   const [loadingExisting, setLoadingExisting] = useState(false)
+  const { isSignedIn } = useUser()
   const storeApplicationId = useWizardStore((s) => s.applicationId)
   const setStoreApplicationId = useWizardStore((s) => s.setApplicationId)
   const [resolvedAppId, setResolvedAppId] = useState<string | null>(applicationId ?? storeApplicationId ?? null)
+  const [initializing, setInitializing] = useState(false)
 
   useEffect(() => {
     setResolvedAppId(applicationId ?? storeApplicationId ?? null)
@@ -33,9 +36,17 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
 
   const ensureApplicationId = async (): Promise<string | null> => {
     if (resolvedAppId) return resolvedAppId
+    if (!isSignedIn) {
+      setError("Please sign in to upload files.")
+      return null
+    }
     try {
+      setInitializing(true)
       const res = await fetch("/api/application", { method: "GET", cache: "no-store", credentials: "include" })
-      if (!res.ok) throw new Error("Could not initialize application")
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || "Could not initialize application")
+      }
       const json = await res.json()
       const newId = json.applicationId as string | null
       if (newId) {
@@ -46,13 +57,15 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Could not initialize application"
       setError(message)
+    } finally {
+      setInitializing(false)
     }
     return null
   }
 
   useEffect(() => {
     const loadExisting = async () => {
-      if (!resolvedAppId) return
+      if (!resolvedAppId || !isSignedIn) return
       setLoadingExisting(true)
       setError(null)
       try {
@@ -80,7 +93,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
       }
     }
     loadExisting()
-  }, [resolvedAppId, step, fileType])
+  }, [resolvedAppId, step, fileType, isSignedIn])
 
   const handleFile = async (file?: File | null) => {
     if (!file) return
@@ -141,10 +154,10 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           type="button"
           variant="outline"
           size="sm"
-          disabled={uploading}
+          disabled={uploading || initializing || !isSignedIn}
           onClick={() => fileInputRef.current?.click()}
         >
-          {uploadedName ? "Replace document" : "Upload document"}
+          {initializing ? "Preparing..." : uploadedName ? "Replace document" : "Upload document"}
         </Button>
         {uploadedName && (
           <div className="flex items-center gap-2 text-sm text-slate-700">
@@ -165,7 +178,8 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
         </div>
         {loadingExisting && <div className="text-xs text-slate-500">Loading attachment...</div>}
         {error && <div className="text-sm text-red-600">{error}</div>}
-        {!resolvedAppId && (
+        {!isSignedIn && <div className="text-xs text-amber-700">Sign in to upload documents.</div>}
+        {!resolvedAppId && isSignedIn && (
           <div className="text-xs text-amber-700">
             Waiting for application to initialize. Uploading will create it automatically.
           </div>
