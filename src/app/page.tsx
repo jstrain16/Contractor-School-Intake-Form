@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, useUser } from "@clerk/nextjs"
+import { Hammer } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { fetchWizardData } from "@/lib/wizard-api"
@@ -50,7 +51,9 @@ export default function HomePage() {
 
   const statusList = useMemo(() => {
     const d = wizardData || {}
-    const isGeneral = d.step0?.licenseType === "general"
+    const licenseType = d.step0?.licenseType
+    const isGeneral = licenseType === "general"
+    const isSpecialty = licenseType === "specialty"
     const weights = {
       licenseSetup: 5,
       preLicensure: 15,
@@ -90,12 +93,12 @@ export default function HomePage() {
       },
       {
         label: "Experience / Qualifier",
-        done: isGeneral ? !!d.step4?.hasExperience : true,
+        done: isGeneral ? !!d.step4?.hasExperience : isSpecialty ? true : false,
         weight: weights.experience,
       },
       {
         label: "Business & Law Exam",
-        done: isGeneral ? d.step5?.examStatus === "passed" : true,
+        done: isGeneral ? d.step5?.examStatus === "passed" : isSpecialty ? true : false,
         weight: weights.exams,
       },
       {
@@ -183,21 +186,7 @@ export default function HomePage() {
               <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 shadow-lg">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-5 w-5"
-                      >
-                        <path d="M4 21v-7l4-4 3 3-4 4" />
-                        <path d="M14 7 9 2 7 4l5 5" />
-                        <path d="m14 7 3-3 3 3-3 3Z" />
-                        <path d="m9 18 3 3" />
-                      </svg>
+                      <Hammer className="h-5 w-5 text-white" strokeWidth={2.25} />
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Overall Progress</p>
@@ -248,7 +237,7 @@ export default function HomePage() {
                             className={`h-full rounded-full ${
                               item.done ? "bg-green-500" : "bg-gradient-to-r from-orange-500 to-orange-600"
                             }`}
-                            style={{ width: item.done ? "100%" : "35%" }}
+                            style={{ width: item.done ? "100%" : "0%" }}
                           />
                         </div>
                       </div>

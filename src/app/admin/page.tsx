@@ -48,15 +48,17 @@ const WEIGHTS = {
 
 function computeProgress(data: Partial<WizardData> | null): number {
   const d = data || {}
-  const isGeneral = d.step0?.licenseType === "general"
+  const licenseType = d.step0?.licenseType
+  const isGeneral = licenseType === "general"
+  const isSpecialty = licenseType === "specialty"
   const items = [
     { done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email, weight: WEIGHTS.licenseSetup },
     { done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0, weight: WEIGHTS.preLicensure },
     { done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin, weight: WEIGHTS.business },
     { done: d.step3?.hasGlInsurance === true, weight: WEIGHTS.gl },
     { done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true, weight: WEIGHTS.wc },
-    { done: isGeneral ? !!d.step4?.hasExperience : true, weight: WEIGHTS.experience },
-    { done: isGeneral ? d.step5?.examStatus === "passed" : true, weight: WEIGHTS.exams },
+    { done: isGeneral ? !!d.step4?.hasExperience : isSpecialty ? true : false, weight: WEIGHTS.experience },
+    { done: isGeneral ? d.step5?.examStatus === "passed" : isSpecialty ? true : false, weight: WEIGHTS.exams },
     { done: d.step6?.doplAppCompleted === true, weight: WEIGHTS.dopl },
   ]
   const total = items.reduce((sum, i) => sum + i.weight, 0)
