@@ -181,15 +181,29 @@ export default function HomePage() {
           <Card className="border-none shadow-lg bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 shadow-lg">
-                    <span className="text-white font-semibold">Progress</span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 shadow-lg">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-5 w-5"
+                      >
+                        <path d="M4 21v-7l4-4 3 3-4 4" />
+                        <path d="M14 7 9 2 7 4l5 5" />
+                        <path d="m14 7 3-3 3 3-3 3Z" />
+                        <path d="m9 18 3 3" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Overall Progress</p>
+                      <p className="text-lg font-bold text-slate-900">{progressPct}% complete</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Overall Progress</p>
-                    <p className="text-lg font-bold text-slate-900">{progressPct}% complete</p>
-                  </div>
-                </div>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
                   Next up: <span className="font-semibold text-slate-800">{nextStepLabel}</span>
                 </div>
