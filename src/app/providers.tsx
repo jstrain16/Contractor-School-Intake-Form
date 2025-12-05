@@ -9,13 +9,41 @@ import {
   SignInButton,
   SignUpButton,
   UserButton,
+  useUser,
 } from "@clerk/nextjs"
 import Link from "next/link"
 import Image from "next/image"
 import type { ReactNode } from "react"
+import { useMemo } from "react"
 
 type ProvidersProps = {
   children: ReactNode
+}
+
+function AdminPortalButton() {
+  const { user } = useUser()
+  const adminAllowlist = useMemo(() => {
+    const list = process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || ""
+    return list
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+  }, [])
+  const isAdmin = useMemo(() => {
+    const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase()
+    return email ? adminAllowlist.includes(email) : false
+  }, [adminAllowlist, user?.primaryEmailAddress?.emailAddress])
+
+  if (!isAdmin) return null
+
+  return (
+    <Link
+      href="/admin"
+      className="text-sm text-slate-700 hover:text-slate-900 font-medium border border-slate-300 rounded-md px-3 py-1"
+    >
+      Admin Portal
+    </Link>
+  )
 }
 
 export function Providers({ children }: ProvidersProps) {
@@ -70,6 +98,7 @@ export function Providers({ children }: ProvidersProps) {
               >
                 See application status
               </Link>
+              <AdminPortalButton />
               <UserButton />
             </SignedIn>
           </div>
