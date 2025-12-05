@@ -33,6 +33,8 @@ type AttachmentRow = {
   created_at: string | null
 }
 
+type DisplayUser = { name: string; email: string }
+
 const WEIGHTS = {
   licenseSetup: 5,
   preLicensure: 15,
@@ -116,6 +118,65 @@ async function fetchAdminData() {
   })
 }
 
+function formatKey(key: string) {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function formatValue(value: unknown): React.ReactNode {
+  if (value === null || value === undefined) return "—"
+  if (typeof value === "boolean") return value ? "Yes" : "No"
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "—"
+    return value.map((v, i) => <span key={i}>{formatValue(v)}{i < value.length - 1 ? ", " : ""}</span>)
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) return "—"
+    return (
+      <div className="space-y-1">
+        {entries.map(([k, v]) => (
+          <div key={k}>
+            <span className="font-medium">{formatKey(k)}:</span> {formatValue(v)}
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return String(value)
+}
+
+function renderSection(label: string, data?: Record<string, unknown> | null) {
+  const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined)
+  return (
+    <details className="border rounded-md p-3 bg-slate-50">
+      <summary className="cursor-pointer text-sm font-medium text-slate-800">{label}</summary>
+      <div className="mt-2 space-y-2 text-sm">
+        {entries.length === 0 && <div className="text-slate-600">No responses</div>}
+        {entries.map(([k, v]) => (
+          <div key={k} className="grid grid-cols-[180px,1fr] gap-2 items-start">
+            <div className="text-slate-700 font-medium">{formatKey(k)}</div>
+            <div className="text-slate-800">{formatValue(v)}</div>
+          </div>
+        ))}
+      </div>
+    </details>
+  )
+}
+
+function getDisplayUser(profile?: ProfileRow, data?: WizardData | null): DisplayUser {
+  const step0 = data?.step0
+  const nameParts = [
+    profile?.first_name ?? step0?.firstName ?? "",
+    profile?.last_name ?? step0?.lastName ?? "",
+  ].filter(Boolean)
+  const name = nameParts.join(" ") || profile?.email || step0?.email || "Unknown user"
+  const email = profile?.email ?? step0?.email ?? "No email on file"
+  return { name, email }
+}
+
 export default async function AdminPage() {
   const { isAllowed } = await requireAdminEmail()
   if (!isAllowed) {
@@ -135,16 +196,17 @@ export default async function AdminPage() {
         </div>
 
         <div className="grid gap-4">
-          {rows.map(({ app, profile, progress, attachments }) => (
+          {rows.map(({ app, profile, progress, attachments }) => {
+            const user = getDisplayUser(profile, app.data ?? null)
+            const d = app.data ?? {}
+            return (
             <div key={app.id} className="rounded-lg border bg-white p-4 space-y-3">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <div className="text-lg font-semibold text-slate-900">
-                    {profile?.first_name || profile?.last_name
-                      ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim()
-                      : profile?.email ?? "Unknown user"}
+                    {user.name}
                   </div>
-                  <div className="text-sm text-slate-600">{profile?.email ?? "No email on file"}</div>
+                  <div className="text-sm text-slate-600">{user.email}</div>
                   <div className="text-xs text-slate-500">
                     Updated: {app.updated_at ? new Date(app.updated_at).toLocaleString() : "—"}
                   </div>
@@ -160,12 +222,16 @@ export default async function AdminPage() {
                 <span className="font-medium">License Type:</span> {app.license_type || "—"}
               </div>
 
-              <details className="border rounded-md p-3 bg-slate-50">
-                <summary className="cursor-pointer text-sm font-medium text-slate-800">Application answers</summary>
-                <pre className="mt-2 whitespace-pre-wrap text-xs text-slate-800">
-                  {JSON.stringify(app.data ?? {}, null, 2)}
-                </pre>
-              </details>
+              <div className="space-y-2">
+                {renderSection("License Setup & Basic Info", d.step0 as Record<string, unknown>)}
+                {renderSection("Pre-Licensure / Education", d.step1 as Record<string, unknown>)}
+                {renderSection("Business Entity, FEIN & Banking", d.step2 as Record<string, unknown>)}
+                {renderSection("Insurance", d.step3 as Record<string, unknown>)}
+                {renderSection("Experience & Qualifier", d.step4 as Record<string, unknown>)}
+                {renderSection("Exams (Business & Law)", d.step5 as Record<string, unknown>)}
+                {renderSection("DOPL Application", d.step6 as Record<string, unknown>)}
+                {renderSection("Review / Attestation", d.step7 as Record<string, unknown>)}
+              </div>
 
               <details className="border rounded-md p-3 bg-slate-50">
                 <summary className="cursor-pointer text-sm font-medium text-slate-800">
@@ -207,7 +273,7 @@ export default async function AdminPage() {
                 </div>
               </details>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </div>
