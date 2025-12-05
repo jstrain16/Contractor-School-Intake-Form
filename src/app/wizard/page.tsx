@@ -27,10 +27,9 @@ export default function WizardPage() {
     setMounted(true)
   }, [])
 
-  // Load saved data when signed in
+  // Load saved data (now allowed signed-out with fallback)
   useEffect(() => {
     const load = async () => {
-      if (!isSignedIn) return
       setLoadingServerData(true)
       try {
         const res = await fetchWizardData()
@@ -54,12 +53,11 @@ export default function WizardPage() {
       }
     }
     load()
-  }, [isSignedIn, updateData, setStep])
+  }, [updateData, setStep])
 
-  // Auto-save on data changes when signed in
+  // Auto-save on data changes (requires applicationId)
   useEffect(() => {
     const save = async () => {
-      if (!isSignedIn) return
       if (!applicationId) return
       try {
         await saveWizardData(wizardData as Record<string, any>, applicationId)
@@ -69,7 +67,7 @@ export default function WizardPage() {
     }
     // save on every data change (only changes on submit)
     save()
-  }, [wizardData, isSignedIn, applicationId])
+  }, [wizardData, applicationId])
 
   if (!mounted) return <div className="p-8 text-center">Loading...</div>
   if (loadingServerData) return <div className="p-8 text-center">Loading your saved data...</div>
@@ -137,25 +135,9 @@ export default function WizardPage() {
           </div>
         </div>
 
-        <SignedOut>
-          <div className="p-6 rounded-lg border bg-white shadow-sm">
-            <p className="text-slate-800 mb-4">Please sign in to continue.</p>
-            <div className="flex gap-3">
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 rounded-md bg-slate-900 text-white text-sm">Sign In</button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="px-4 py-2 rounded-md border border-slate-300 text-sm">Sign Up</button>
-              </SignUpButton>
-            </div>
-          </div>
-        </SignedOut>
-
-        <SignedIn>
-          <div className="py-4">
-            <CurrentComponent />
-          </div>
-        </SignedIn>
+        <div className="py-4">
+          <CurrentComponent />
+        </div>
       </div>
     </div>
   )

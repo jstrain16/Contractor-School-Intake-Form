@@ -27,11 +27,6 @@ export default function HomePage() {
   useEffect(() => {
     const load = async () => {
       if (!isLoaded) return
-      if (!isSignedIn) {
-        setWizardData(null)
-        setLoading(false)
-        return
-      }
       try {
         const res = await fetchWizardData()
         setWizardData((res.data || null) as Partial<WizardData> | null)
@@ -44,7 +39,7 @@ export default function HomePage() {
       }
     }
     load()
-  }, [isLoaded, isSignedIn, setApplicationId])
+  }, [isLoaded, setApplicationId])
 
   const statusList: StatusItem[] = useMemo(() => {
     const d = wizardData || {}
@@ -75,11 +70,9 @@ export default function HomePage() {
     setError(null)
     try {
       resetStore()
-      if (isSignedIn) {
-        const res = await fetchWizardData() // will create if missing
-        setWizardData((res.data || null) as Partial<WizardData> | null)
-        setApplicationId(res.applicationId || null)
-      }
+      const res = await fetchWizardData() // will create if missing
+      setWizardData((res.data || null) as Partial<WizardData> | null)
+      setApplicationId(res.applicationId || null)
       router.push("/wizard")
     } catch (err) {
       console.error(err)
