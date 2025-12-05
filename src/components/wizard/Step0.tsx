@@ -53,9 +53,9 @@ export function Step0() {
       phone: data.step0?.phone || "",
       email: data.step0?.email || "",
       preferredContact: data.step0?.preferredContact || "email",
-      licenseType: data.step0?.licenseType,
+      licenseType: data.step0?.licenseType || "specialty",
       trade: data.step0?.trade || "",
-      hasEmployees: data.step0?.hasEmployees || false,
+      hasEmployees: data.step0?.hasEmployees ?? false,
       employeeCount: data.step0?.employeeCount,
     }
   })
