@@ -195,85 +195,88 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        <div className="grid gap-4">
+        <div className="space-y-3">
           {rows.map(({ app, profile, progress, attachments }) => {
             const user = getDisplayUser(profile, app.data ?? null)
             const d = app.data ?? {}
             return (
-            <div key={app.id} className="rounded-lg border bg-white p-4 space-y-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-lg font-semibold text-slate-900">
-                    {user.name}
-                  </div>
-                  <div className="text-sm text-slate-600">{user.email}</div>
-                  <div className="text-xs text-slate-500">
-                    Updated: {app.updated_at ? new Date(app.updated_at).toLocaleString() : "—"}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-slate-600">Progress</div>
-                  <div className="text-2xl font-bold text-slate-900">{progress}%</div>
-                </div>
-              </div>
-
-              <div className="text-sm text-slate-700">
-                <span className="font-medium">Primary Trade:</span> {app.primary_trade || "—"} |{" "}
-                <span className="font-medium">License Type:</span> {app.license_type || "—"}
-              </div>
-
-              <div className="space-y-2">
-                {renderSection("License Setup & Basic Info", d.step0 as Record<string, unknown>)}
-                {renderSection("Pre-Licensure / Education", d.step1 as Record<string, unknown>)}
-                {renderSection("Business Entity, FEIN & Banking", d.step2 as Record<string, unknown>)}
-                {renderSection("Insurance", d.step3 as Record<string, unknown>)}
-                {renderSection("Experience & Qualifier", d.step4 as Record<string, unknown>)}
-                {renderSection("Exams (Business & Law)", d.step5 as Record<string, unknown>)}
-                {renderSection("DOPL Application", d.step6 as Record<string, unknown>)}
-                {renderSection("Review / Attestation", d.step7 as Record<string, unknown>)}
-              </div>
-
-              <details className="border rounded-md p-3 bg-slate-50">
-                <summary className="cursor-pointer text-sm font-medium text-slate-800">
-                  Attachments ({attachments.length})
-                </summary>
-                <div className="mt-2 space-y-2 text-sm">
-                  {attachments.length === 0 && <div className="text-slate-600">No attachments</div>}
-                  {attachments.map((att) => (
-                    <div key={att.id} className="flex items-center justify-between">
-                      {(() => {
-                        const originalName =
-                          typeof att.metadata?.originalName === "string" ? att.metadata.originalName : null
-                        const fallbackName = att.path.split("/").pop() || att.path
-                        const displayName = originalName ?? fallbackName
-                        return (
-                          <div>
-                            <div className="font-medium text-slate-800">{displayName}</div>
-                            <div className="text-xs text-slate-600">
-                              {att.file_type || "file"} •{" "}
-                              {att.created_at ? new Date(att.created_at).toLocaleString() : "—"}
-                            </div>
-                          </div>
-                        )
-                      })()}
-                      {att.signedUrl ? (
-                        <a
-                          href={att.signedUrl}
-                          className="text-blue-600 text-sm underline"
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Download
-                        </a>
-                      ) : (
-                        <span className="text-xs text-red-600">No link</span>
-                      )}
+              <details key={app.id} className="rounded-lg border bg-white group">
+                <summary className="flex items-center justify-between gap-4 p-4 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-500 transition-transform duration-200 group-open:rotate-90">▶</span>
+                    <div className="flex flex-col">
+                      <span className="text-lg font-semibold text-slate-900">{user.name}</span>
+                      <span className="text-sm text-slate-600">{user.email}</span>
+                      <span className="text-xs text-slate-500">
+                        Updated: {app.updated_at ? new Date(app.updated_at).toLocaleString() : "—"}
+                      </span>
                     </div>
-                  ))}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-slate-600">Progress</div>
+                    <div className="text-2xl font-bold text-slate-900">{progress}%</div>
+                  </div>
+                </summary>
+                <div className="border-t p-4 space-y-3">
+                  <div className="text-sm text-slate-700">
+                    <span className="font-medium">Primary Trade:</span> {app.primary_trade || "—"} |{" "}
+                    <span className="font-medium">License Type:</span> {app.license_type || "—"}
+                  </div>
+
+                  <div className="space-y-2">
+                    {renderSection("License Setup & Basic Info", d.step0 as Record<string, unknown>)}
+                    {renderSection("Pre-Licensure / Education", d.step1 as Record<string, unknown>)}
+                    {renderSection("Business Entity, FEIN & Banking", d.step2 as Record<string, unknown>)}
+                    {renderSection("Insurance", d.step3 as Record<string, unknown>)}
+                    {renderSection("Experience & Qualifier", d.step4 as Record<string, unknown>)}
+                    {renderSection("Exams (Business & Law)", d.step5 as Record<string, unknown>)}
+                    {renderSection("DOPL Application", d.step6 as Record<string, unknown>)}
+                    {renderSection("Review / Attestation", d.step7 as Record<string, unknown>)}
+                  </div>
+
+                  <details className="border rounded-md p-3 bg-slate-50">
+                    <summary className="cursor-pointer text-sm font-medium text-slate-800">
+                      Attachments ({attachments.length})
+                    </summary>
+                    <div className="mt-2 space-y-2 text-sm">
+                      {attachments.length === 0 && <div className="text-slate-600">No attachments</div>}
+                      {attachments.map((att) => (
+                        <div key={att.id} className="flex items-center justify-between">
+                          {(() => {
+                            const originalName =
+                              typeof att.metadata?.originalName === "string" ? att.metadata.originalName : null
+                            const fallbackName = att.path.split("/").pop() || att.path
+                            const displayName = originalName ?? fallbackName
+                            return (
+                              <div>
+                                <div className="font-medium text-slate-800">{displayName}</div>
+                                <div className="text-xs text-slate-600">
+                                  {att.file_type || "file"} •{" "}
+                                  {att.created_at ? new Date(att.created_at).toLocaleString() : "—"}
+                                </div>
+                              </div>
+                            )
+                          })()}
+                          {att.signedUrl ? (
+                            <a
+                              href={att.signedUrl}
+                              className="text-blue-600 text-sm underline"
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Download
+                            </a>
+                          ) : (
+                            <span className="text-xs text-red-600">No link</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
                 </div>
               </details>
-            </div>
-          )})}
+            )
+          })}
         </div>
       </div>
     </div>
