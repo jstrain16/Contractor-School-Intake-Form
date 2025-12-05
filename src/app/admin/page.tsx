@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { requireAdminEmail } from "@/lib/admin-auth"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import { WizardData } from "@/lib/schemas"
+import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 
 type ApplicationRow = {
   id: string
@@ -248,14 +249,62 @@ export default async function AdminPage() {
                   </div>
 
                   <div className="space-y-2">
-                    {renderSection("License Setup & Basic Info", d.step0 as Record<string, unknown>)}
-                    {renderSection("Pre-Licensure / Education", d.step1 as Record<string, unknown>)}
-                    {renderSection("Business Entity, FEIN & Banking", d.step2 as Record<string, unknown>)}
-                    {renderSection("Insurance", d.step3 as Record<string, unknown>)}
-                    {renderSection("Experience & Qualifier", d.step4 as Record<string, unknown>)}
-                    {renderSection("Exams (Business & Law)", d.step5 as Record<string, unknown>)}
-                    {renderSection("DOPL Application", d.step6 as Record<string, unknown>)}
-                    {renderSection("Review / Attestation", d.step7 as Record<string, unknown>)}
+                    <AdminSectionBlock
+                      label="License Setup & Basic Info"
+                      sectionKey="step0"
+                      applicationId={app.id}
+                      data={d.step0 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("License Setup & Basic Info", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="Pre-Licensure / Education"
+                      sectionKey="step1"
+                      applicationId={app.id}
+                      data={d.step1 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("Pre-Licensure / Education", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="Business Entity, FEIN & Banking"
+                      sectionKey="step2"
+                      applicationId={app.id}
+                      data={d.step2 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("Business Entity, FEIN & Banking", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="Insurance"
+                      sectionKey="step3"
+                      applicationId={app.id}
+                      data={d.step3 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("Insurance", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="Experience & Qualifier"
+                      sectionKey="step4"
+                      applicationId={app.id}
+                      data={d.step4 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("Experience & Qualifier", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="Exams (Business & Law)"
+                      sectionKey="step5"
+                      applicationId={app.id}
+                      data={d.step5 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("Exams (Business & Law)", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="DOPL Application"
+                      sectionKey="step6"
+                      applicationId={app.id}
+                      data={d.step6 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("DOPL Application", sectionData)}
+                    />
+                    <AdminSectionBlock
+                      label="Review / Attestation"
+                      sectionKey="step7"
+                      applicationId={app.id}
+                      data={d.step7 as Record<string, unknown>}
+                      renderView={(sectionData) => renderSection("Review / Attestation", sectionData)}
+                    />
                   </div>
 
                   <details className="border rounded-md p-3 bg-slate-50">
