@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step2() {
-  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
   const form = useForm<Step2FormValues>({
     resolver: zodResolver(step2Schema),
     defaultValues: {
@@ -162,10 +163,13 @@ export function Step2() {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label>Proof of Registration Upload</Label>
-                  <Input type="file" />
-                </div>
+                <UploadField
+                  label="Proof of Registration Upload"
+                  step={2}
+                  fileType="registration_proof"
+                  applicationId={applicationId}
+                  accept=".pdf,.jpg,.png"
+                />
               </div>
             )}
           </div>
@@ -185,7 +189,13 @@ export function Step2() {
                 <Label htmlFor="federalEin">Federal EIN (FEIN)</Label>
                 <Input id="federalEin" {...form.register("federalEin")} />
                 <div className="text-xs text-slate-500">Recommended: Upload IRS EIN confirmation letter</div>
-                <Input type="file" className="mt-1" />
+                <UploadField
+                  label="IRS EIN confirmation letter"
+                  step={2}
+                  fileType="ein_letter"
+                  applicationId={applicationId}
+                  accept=".pdf,.jpg,.png"
+                />
               </div>
             ) : (
               <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-md">
@@ -207,8 +217,13 @@ export function Step2() {
              
              {hasBankAccount ? (
                <div className="space-y-2 pl-4 border-l-2 border-slate-200">
-                 <Label>Upload Voided Check (required)</Label>
-                 <Input type="file" />
+                 <UploadField
+                   label="Upload Voided Check (required)"
+                   step={2}
+                   fileType="voided_check"
+                   applicationId={applicationId}
+                   accept=".pdf,.jpg,.png"
+                 />
                </div>
              ) : (
                <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-md">

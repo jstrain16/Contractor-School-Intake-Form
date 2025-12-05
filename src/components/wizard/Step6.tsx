@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step6() {
-  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
   
   const form = useForm<Step6FormValues>({
     resolver: zodResolver(step6Schema),
@@ -71,8 +72,13 @@ export function Step6() {
 
           {appCompleted && (
              <div className="space-y-2 pl-4 border-l-2 border-slate-200">
-                <Label>Upload Completed DOPL Application</Label>
-                <Input type="file" accept=".pdf" />
+                <UploadField
+                  label="Upload Completed DOPL Application"
+                  step={6}
+                  fileType="dopl_application"
+                  applicationId={applicationId}
+                  accept=".pdf"
+                />
              </div>
           )}
 

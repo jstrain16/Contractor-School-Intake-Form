@@ -1,0 +1,99 @@
+"use client"
+
+import { useState } from "react"
+import { supabase } from "@/lib/supabaseClient"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+
+type UploadFieldProps = {
+  label: string
+  step: number
+  fileType: string
+  applicationId?: string | null
+  accept?: string
+}
+
+const BUCKET = "contractor-documents"
+
+export function UploadField({ label, step, fileType, applicationId, accept }: UploadFieldProps) {
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [uploadedName, setUploadedName] = useState<string | null>(null)
+  const [uploadedPath, setUploadedPath] = useState<string | null>(null)
+
+  const handleFile = async (file?: File | null) => {
+    if (!file || !applicationId) return
+    setUploading(true)
+    setError(null)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      fd.append("step", String(step))
+      fd.append("fileType", fileType)
+      fd.append("applicationId", applicationId)
+      const res = await fetch("/api/upload-attachment", {
+        method: "POST",
+        body: fd,
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || "Upload failed")
+      }
+      const json = await res.json()
+      setUploadedName(file.name)
+      setUploadedPath(json.attachment?.path ?? null)
+    } catch (e: any) {
+      setError(e?.message || "Upload failed")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    if (!uploadedPath) return
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(uploadedPath, 60 * 60) // 1 hour
+    if (error || !data?.signedUrl) {
+      setError(error?.message || "Could not generate download link")
+      return
+    }
+    window.open(data.signedUrl, "_blank", "noreferrer")
+  }
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="flex flex-col gap-2">
+        <input
+          type="file"
+          accept={accept}
+          disabled={!applicationId || uploading}
+          onChange={(e) => handleFile(e.target.files?.[0])}
+        />
+        {uploadedName && (
+          <div className="flex items-center gap-2 text-sm text-slate-700">
+            <span className="font-medium">Uploaded:</span>
+            <span>{uploadedName}</span>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" disabled={uploading || !applicationId} onClick={() => handleDownload()}>
+            Download document
+          </Button>
+          <Button type="button" size="sm" disabled={uploading || !applicationId} onClick={() => (document.activeElement as HTMLInputElement | null)?.blur()}>
+            Replace document
+          </Button>
+        </div>
+        {error && <div className="text-sm text-red-600">{error}</div>}
+        {!applicationId && (
+          <div className="text-xs text-slate-500">
+            Save your application to generate an ID before uploading.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+

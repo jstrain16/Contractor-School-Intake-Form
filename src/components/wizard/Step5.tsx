@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step5() {
-  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
   // Only General Contractors need this exam usually, but prompt says "General Contractors must pass...". 
   // It doesn't explicitly say Specialty don't need it, but implies it. 
   // "For General Contractors there are extra requirements... Prov Business & Law exam."
@@ -113,10 +114,13 @@ export function Step5() {
                       <Input id="examId" {...form.register("examId")} />
                    </div>
                 </div>
-                <div className="space-y-2">
-                   <Label>Upload Score Report</Label>
-                   <Input type="file" accept=".pdf,.jpg,.png" />
-                </div>
+                <UploadField
+                  label="Upload Score Report"
+                  step={5}
+                  fileType="exam_score_report"
+                  applicationId={applicationId}
+                  accept=".pdf,.jpg,.png"
+                />
              </div>
           )}
 

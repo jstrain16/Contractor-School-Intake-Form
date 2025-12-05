@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step3() {
-  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
   const hasEmployees = data.step0?.hasEmployees
 
   const form = useForm<Step3FormValues>({
@@ -66,10 +67,13 @@ export function Step3() {
 
             {hasGl && (
               <div className="space-y-4 pl-4 border-l-2 border-slate-200">
-                <div className="space-y-2">
-                   <Label>Upload General Liability Certificate (COI)</Label>
-                   <Input type="file" accept=".pdf,.jpg,.png" />
-                </div>
+                <UploadField
+                  label="Upload General Liability Certificate (COI)"
+                  step={3}
+                  fileType="gl_certificate"
+                  applicationId={applicationId}
+                  accept=".pdf,.jpg,.png"
+                />
               </div>
             )}
             {!hasGl && (
@@ -126,10 +130,13 @@ export function Step3() {
                           <Input id="wcExpirationDate" type="date" {...form.register("wcExpirationDate")} />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Upload Workers Comp Certificate</Label>
-                        <Input type="file" accept=".pdf,.jpg,.png" />
-                      </div>
+                      <UploadField
+                        label="Upload Workers Comp Certificate"
+                        step={3}
+                        fileType="wc_certificate"
+                        applicationId={applicationId}
+                        accept=".pdf,.jpg,.png"
+                      />
                     </div>
                  )}
 
@@ -165,8 +172,13 @@ export function Step3() {
 
                 {hasWaiver ? (
                   <div className="space-y-2 pl-4 border-l-2 border-slate-200">
-                    <Label>Upload Workers Comp Waiver</Label>
-                    <Input type="file" accept=".pdf,.jpg,.png" />
+                    <UploadField
+                      label="Upload Workers Comp Waiver"
+                      step={3}
+                      fileType="wc_waiver"
+                      applicationId={applicationId}
+                      accept=".pdf,.jpg,.png"
+                    />
                   </div>
                 ) : (
                   <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md text-sm">

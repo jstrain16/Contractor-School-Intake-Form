@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step1() {
-  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
   const form = useForm<Step1FormValues>({
     resolver: zodResolver(step1Schema),
     defaultValues: {
@@ -87,10 +88,13 @@ export function Step1() {
                   <Input id="certificateNumber" {...form.register("certificateNumber")} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Upload Prelicensure Certificate</Label>
-                <Input type="file" accept=".pdf,.jpg,.png" />
-              </div>
+              <UploadField
+                label="Upload Prelicensure Certificate"
+                step={1}
+                fileType="prelicensure_certificate"
+                applicationId={applicationId}
+                accept=".pdf,.jpg,.png"
+              />
             </div>
           )}
 
@@ -119,14 +123,24 @@ export function Step1() {
 
             {exemptions?.includes("degree") && (
                <div className="space-y-2 pl-6">
-                 <Label>Upload Degree Diploma / Transcript</Label>
-                 <Input type="file" accept=".pdf,.jpg,.png" />
+                 <UploadField
+                   label="Upload Degree Diploma / Transcript"
+                   step={1}
+                   fileType="degree_transcript"
+                   applicationId={applicationId}
+                   accept=".pdf,.jpg,.png"
+                 />
                </div>
             )}
             {exemptions?.includes("pe_license") && (
                <div className="space-y-2 pl-6">
-                 <Label>Upload PE License Documentation</Label>
-                 <Input type="file" accept=".pdf,.jpg,.png" />
+                 <UploadField
+                   label="Upload PE License Documentation"
+                   step={1}
+                   fileType="pe_license_doc"
+                   applicationId={applicationId}
+                   accept=".pdf,.jpg,.png"
+                 />
                </div>
             )}
           </div>

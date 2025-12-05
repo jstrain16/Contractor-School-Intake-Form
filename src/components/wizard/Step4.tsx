@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { UploadField } from "@/components/wizard/UploadField"
 import { Plus, Trash2 } from "lucide-react"
 
 export function Step4() {
-  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
   const hasEmployees = data.step0?.hasEmployees
 
   const form = useForm<Step4FormValues>({
@@ -63,8 +64,13 @@ export function Step4() {
               </div>
               {employeeWc ? (
                 <div className="pl-4 border-l-2 border-slate-200 space-y-2">
-                  <Label>Upload Workers Comp Certificate</Label>
-                  <Input type="file" accept=".pdf,.jpg,.png" />
+                  <UploadField
+                    label="Upload Workers Comp Certificate"
+                    step={4}
+                    fileType="wc_certificate_employee"
+                    applicationId={applicationId}
+                    accept=".pdf,.jpg,.png"
+                  />
                 </div>
               ) : (
                 <div className="p-3 bg-slate-50 rounded-md border space-y-2">
