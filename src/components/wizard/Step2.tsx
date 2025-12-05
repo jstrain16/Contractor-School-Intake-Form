@@ -221,7 +221,12 @@ export function Step2() {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={prevStep}>Previous</Button>
-        <Button type="submit" form="step2-form">Next Step</Button>
+        <Button
+          type="button"
+          onClick={() => form.handleSubmit(onSubmit, () => nextStep())()}
+        >
+          Next Step
+        </Button>
       </CardFooter>
     </Card>
   )

@@ -140,7 +140,13 @@ export function Step7() {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={prevStep}>Previous</Button>
-        <Button type="submit" form="step7-form" className="bg-green-600 hover:bg-green-700">Generate Application Packet</Button>
+        <Button
+          type="button"
+          onClick={() => window.open("https://beacontractor.com/contact-us/", "_blank", "noreferrer")}
+          className="bg-blue-600 hover:bg-blue-700"
+        >
+          Contact Contractor School team for help
+        </Button>
       </CardFooter>
     </Card>
   )

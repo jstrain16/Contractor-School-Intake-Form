@@ -60,6 +60,12 @@ export function Providers({ children }: ProvidersProps) {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              <a
+                href="/"
+                className="text-sm text-blue-600 hover:underline font-medium"
+              >
+                See application status
+              </a>
               <UserButton />
             </SignedIn>
           </div>
