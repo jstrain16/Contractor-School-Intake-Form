@@ -2,7 +2,7 @@
 
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step4Schema, Step4Data } from "@/lib/schemas"
+import { step4Schema, Step4Data, Step4FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,7 +14,7 @@ export function Step4() {
   const { data, updateData, nextStep, prevStep } = useWizardStore()
   const hasEmployees = data.step0?.hasEmployees
 
-  const form = useForm<Step4Data>({
+  const form = useForm<Step4FormValues>({
     resolver: zodResolver(step4Schema),
     defaultValues: {
       qualifierDob: data.step4?.qualifierDob || "",
@@ -36,8 +36,9 @@ export function Step4() {
   const hasExperience = form.watch("hasExperience")
   const employeeWc = form.watch("hasEmployeeWorkersComp")
 
-  const onSubmit = (values: Step4Data) => {
-    updateData("step4", values)
+  const onSubmit = (values: Step4FormValues) => {
+    const parsed: Step4Data = step4Schema.parse(values)
+    updateData("step4", parsed)
     nextStep()
   }
 

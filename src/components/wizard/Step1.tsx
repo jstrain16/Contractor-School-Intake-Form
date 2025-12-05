@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step1Schema, Step1Data } from "@/lib/schemas"
+import { step1Schema, Step1Data, Step1FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 
 export function Step1() {
   const { data, updateData, nextStep, prevStep } = useWizardStore()
-  const form = useForm<Step1Data>({
+  const form = useForm<Step1FormValues>({
     resolver: zodResolver(step1Schema),
     defaultValues: {
       preLicensureCompleted: data.step1?.preLicensureCompleted || false,
@@ -22,11 +22,12 @@ export function Step1() {
     }
   })
 
-  const completed = form.watch("preLicensureCompleted")
-  const exemptions = form.watch("exemptions")
+  const completed = form.watch("preLicensureCompleted") ?? false
+  const exemptions = form.watch("exemptions") ?? []
 
-  const onSubmit = (values: Step1Data) => {
-    updateData("step1", values)
+  const onSubmit = (values: Step1FormValues) => {
+    const parsed: Step1Data = step1Schema.parse(values)
+    updateData("step1", parsed)
     nextStep()
   }
 

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step6Schema, Step6Data } from "@/lib/schemas"
+import { step6Schema, Step6Data, Step6FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 export function Step6() {
   const { data, updateData, nextStep, prevStep } = useWizardStore()
   
-  const form = useForm<Step6Data>({
+  const form = useForm<Step6FormValues>({
     resolver: zodResolver(step6Schema),
     defaultValues: {
       doplAppCompleted: data.step6?.doplAppCompleted || false,
@@ -20,10 +20,11 @@ export function Step6() {
     }
   })
 
-  const appCompleted = form.watch("doplAppCompleted")
+  const appCompleted = form.watch("doplAppCompleted") ?? false
 
-  const onSubmit = (values: Step6Data) => {
-    updateData("step6", values)
+  const onSubmit = (values: Step6FormValues) => {
+    const parsed: Step6Data = step6Schema.parse(values)
+    updateData("step6", parsed)
     nextStep()
   }
 

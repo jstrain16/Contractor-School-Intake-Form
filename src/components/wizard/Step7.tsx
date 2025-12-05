@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step7Schema, Step7Data } from "@/lib/schemas"
+import { step7Schema, Step7Data, Step7FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ import { CheckCircle2, XCircle, AlertCircle } from "lucide-react"
 export function Step7() {
   const { data, updateData, prevStep, setStep } = useWizardStore()
   
-  const form = useForm<Step7Data>({
+  const form = useForm<Step7FormValues>({
     resolver: zodResolver(step7Schema),
     defaultValues: {
       attested: true, // Default to true for UI but user must confirm if we used a checkbox, but here we just show text
@@ -22,10 +22,11 @@ export function Step7() {
     }
   })
 
-  const onSubmit = (values: Step7Data) => {
-    // Final submission logic (mock)
+  const onSubmit = (values: Step7FormValues) => {
+    const parsed: Step7Data = step7Schema.parse(values)
+    updateData("step7", parsed)
     alert("Application Packet Generated! (Mock)")
-    console.log("Final Data:", { ...data, step7: values })
+    console.log("Final Data:", { ...data, step7: parsed })
   }
 
   // Helper to check status

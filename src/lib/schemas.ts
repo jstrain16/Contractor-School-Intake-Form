@@ -122,7 +122,7 @@ export const step6Schema = z.object({
 })
 
 export const step7Schema = z.object({
-  attested: z.literal(true, { errorMap: () => ({ message: "You must certify this information" }) }),
+  attested: z.literal(true, { message: "You must certify this information" }),
   signature: z.string().min(1, "Signature is required"),
   signatureDate: z.string().min(1),
 })
@@ -147,4 +147,14 @@ export type Step4Data = z.infer<typeof step4Schema>
 export type Step5Data = z.infer<typeof step5Schema>
 export type Step6Data = z.infer<typeof step6Schema>
 export type Step7Data = z.infer<typeof step7Schema>
+
+// Form input types (schema input shape) for react-hook-form + zodResolver
+export type Step0FormValues = z.input<typeof step0Schema>
+export type Step1FormValues = z.input<typeof step1Schema>
+export type Step2FormValues = z.input<typeof step2Schema>
+export type Step3FormValues = z.input<typeof step3Schema>
+export type Step4FormValues = z.input<typeof step4Schema>
+export type Step5FormValues = z.input<typeof step5Schema>
+export type Step6FormValues = z.input<typeof step6Schema>
+export type Step7FormValues = z.input<typeof step7Schema>
 

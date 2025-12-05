@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step5Schema, Step5Data } from "@/lib/schemas"
+import { step5Schema, Step5Data, Step5FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +20,7 @@ export function Step5() {
   // I'll stick to showing it for everyone but maybe marking it as required only for General in schema? 
   // Current schema makes it optional effectively by defaults. I'll just show it.
 
-  const form = useForm<Step5Data>({
+  const form = useForm<Step5FormValues>({
     resolver: zodResolver(step5Schema),
     defaultValues: {
       examStatus: data.step5?.examStatus || "not_scheduled",
@@ -31,10 +31,11 @@ export function Step5() {
     }
   })
 
-  const examStatus = form.watch("examStatus")
+  const examStatus = form.watch("examStatus") ?? "not_scheduled"
 
-  const onSubmit = (values: Step5Data) => {
-    updateData("step5", values)
+  const onSubmit = (values: Step5FormValues) => {
+    const parsed: Step5Data = step5Schema.parse(values)
+    updateData("step5", parsed)
     nextStep()
   }
 

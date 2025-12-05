@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect } from "react"
-import { useForm, type Resolver } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step0Schema, Step0Data } from "@/lib/schemas"
+import { step0Schema, Step0Data, Step0FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,8 +45,8 @@ const specialtyLicenses = [
 export function Step0() {
   const { isLoaded, user } = useUser()
   const { data, updateData, nextStep } = useWizardStore()
-  const form = useForm<Step0Data>({
-    resolver: zodResolver(step0Schema) as Resolver<Step0Data>,
+  const form = useForm<Step0FormValues>({
+    resolver: zodResolver(step0Schema),
     defaultValues: {
       firstName: data.step0?.firstName || "",
       lastName: data.step0?.lastName || "",
@@ -73,8 +73,9 @@ export function Step0() {
     }
   }, [isLoaded, user, form])
 
-  const onSubmit = (values: Step0Data) => {
-    updateData("step0", values)
+  const onSubmit = (values: Step0FormValues) => {
+    const parsed: Step0Data = step0Schema.parse(values)
+    updateData("step0", parsed)
     nextStep()
   }
 

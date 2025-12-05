@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step3Schema, Step3Data } from "@/lib/schemas"
+import { step3Schema, Step3Data, Step3FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,7 @@ export function Step3() {
   const { data, updateData, nextStep, prevStep } = useWizardStore()
   const hasEmployees = data.step0?.hasEmployees
 
-  const form = useForm<Step3Data>({
+  const form = useForm<Step3FormValues>({
     resolver: zodResolver(step3Schema),
     defaultValues: {
       hasGlInsurance: data.step3?.hasGlInsurance || false,
@@ -30,9 +30,6 @@ export function Step3() {
       wcExpirationDate: data.step3?.wcExpirationDate || "",
       
       hasWcWaiver: data.step3?.hasWcWaiver || false,
-      
-      stateWithholdingNumber: data.step3?.stateWithholdingNumber || "",
-      unemploymentRegNumber: data.step3?.unemploymentRegNumber || "",
     }
   })
 
@@ -40,8 +37,9 @@ export function Step3() {
   const hasWc = form.watch("hasWorkersComp")
   const hasWaiver = form.watch("hasWcWaiver")
 
-  const onSubmit = (values: Step3Data) => {
-    updateData("step3", values)
+  const onSubmit = (values: Step3FormValues) => {
+    const parsed: Step3Data = step3Schema.parse(values)
+    updateData("step3", parsed)
     nextStep()
   }
 

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { step2Schema, Step2Data } from "@/lib/schemas"
+import { step2Schema, Step2Data, Step2FormValues } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 
 export function Step2() {
   const { data, updateData, nextStep, prevStep } = useWizardStore()
-  const form = useForm<Step2Data>({
+  const form = useForm<Step2FormValues>({
     resolver: zodResolver(step2Schema),
     defaultValues: {
       hasEntityRegistered: data.step2?.hasEntityRegistered || false,
@@ -27,9 +27,6 @@ export function Step2() {
       hasEin: data.step2?.hasEin || false,
       federalEin: data.step2?.federalEin || "",
       hasBusinessBankAccount: data.step2?.hasBusinessBankAccount || false,
-      bankName: data.step2?.bankName || "",
-      accountLast4: data.step2?.accountLast4 || "",
-      routingNumber: data.step2?.routingNumber || "",
     }
   })
 
@@ -38,8 +35,9 @@ export function Step2() {
   const hasEin = form.watch("hasEin")
   const hasBankAccount = form.watch("hasBusinessBankAccount")
 
-  const onSubmit = (values: Step2Data) => {
-    updateData("step2", values)
+  const onSubmit = (values: Step2FormValues) => {
+    const parsed: Step2Data = step2Schema.parse(values)
+    updateData("step2", parsed)
     nextStep()
   }
 
