@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -16,6 +16,7 @@ type UploadFieldProps = {
 const BUCKET = "contractor-documents"
 
 export function UploadField({ label, step, fileType, applicationId, accept }: UploadFieldProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadedName, setUploadedName] = useState<string | null>(null)
@@ -66,11 +67,22 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
       <Label>{label}</Label>
       <div className="flex flex-col gap-2">
         <input
+          ref={fileInputRef}
           type="file"
           accept={accept}
           disabled={!applicationId || uploading}
+          className="hidden"
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={!applicationId || uploading}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploadedName ? "Replace document" : "Upload document"}
+        </Button>
         {uploadedName && (
           <div className="flex items-center gap-2 text-sm text-slate-700">
             <span className="font-medium">Uploaded:</span>
@@ -78,11 +90,14 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           </div>
         )}
         <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={uploading || !applicationId} onClick={() => handleDownload()}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={uploading || !applicationId || !uploadedPath}
+            onClick={() => handleDownload()}
+          >
             Download document
-          </Button>
-          <Button type="button" size="sm" disabled={uploading || !applicationId} onClick={() => (document.activeElement as HTMLInputElement | null)?.blur()}>
-            Replace document
           </Button>
         </div>
         {error && <div className="text-sm text-red-600">{error}</div>}

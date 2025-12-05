@@ -84,7 +84,7 @@ export function Step7() {
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle>Review & Attestation</CardTitle>
+        <CardTitle>Review</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -110,32 +110,6 @@ export function Step7() {
                 })}
              </div>
           </div>
-
-          <form id="step7-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6 border-t">
-             <div className="space-y-4">
-                <div className="flex items-start gap-2">
-                   <input 
-                     type="checkbox" 
-                     {...form.register("attested")} 
-                     className="mt-1 w-4 h-4 rounded border-gray-300"
-                   />
-                   <Label className="leading-tight">I certify that the information provided is true and complete to the best of my knowledge.</Label>
-                </div>
-                {form.formState.errors.attested && <p className="text-red-500 text-sm">{form.formState.errors.attested.message}</p>}
-                
-                <div className="grid grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                      <Label htmlFor="signature">Typed Signature</Label>
-                      <Input id="signature" {...form.register("signature")} placeholder="Type full name" />
-                      {form.formState.errors.signature && <p className="text-red-500 text-sm">{form.formState.errors.signature.message}</p>}
-                   </div>
-                   <div className="space-y-2">
-                      <Label htmlFor="signatureDate">Date</Label>
-                      <Input id="signatureDate" type="date" {...form.register("signatureDate")} readOnly />
-                   </div>
-                </div>
-             </div>
-          </form>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">
