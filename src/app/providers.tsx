@@ -39,7 +39,7 @@ export function Providers({ children }: ProvidersProps) {
         <div className="p-4 text-sm text-slate-600">Loading account...</div>
       </ClerkLoading>
       <ClerkLoaded>
-        <header className="flex justify-between items-center p-4 gap-4 h-16">
+        <header className="flex justify-between items-center p-4 gap-4 h-16 bg-white text-slate-900 border-b border-slate-200 shadow-sm">
           <div className="flex items-center gap-3">
             <a href="/" className="flex items-center gap-2">
               <img

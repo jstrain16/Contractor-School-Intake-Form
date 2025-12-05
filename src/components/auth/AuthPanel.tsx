@@ -28,7 +28,7 @@ export function AuthPanel() {
       if (data.session?.user) {
         setSessionUser({
           id: data.session.user.id,
-          email: data.session.user.email,
+          email: data.session.user.email ?? null,
         })
         await ensureProfileRow()
       }
@@ -39,7 +39,7 @@ export function AuthPanel() {
       if (currentSession?.user) {
         setSessionUser({
           id: currentSession.user.id,
-          email: currentSession.user.email,
+          email: currentSession.user.email ?? null,
         })
         await ensureProfileRow()
       } else {
@@ -60,7 +60,7 @@ export function AuthPanel() {
       .from("profiles")
       .upsert({
         id: user.id,
-        email: user.email,
+        email: user.email ?? null,
       })
   }
 
