@@ -20,6 +20,8 @@ export default function WizardPage() {
   const { currentStep, reset, setStep } = useWizardStore()
   const wizardData = useWizardStore((state) => state.data)
   const updateData = useWizardStore((state) => state.updateData)
+  const applicationId = useWizardStore((state) => state.applicationId)
+  const setApplicationId = useWizardStore((state) => state.setApplicationId)
 
   useEffect(() => {
     setMounted(true)
@@ -32,6 +34,7 @@ export default function WizardPage() {
       setLoadingServerData(true)
       try {
         const res = await fetchWizardData()
+        setApplicationId(res.applicationId || null)
         if (res.data) {
           // hydrate store
           updateData("step0", res.data.step0 || {})
@@ -57,15 +60,16 @@ export default function WizardPage() {
   useEffect(() => {
     const save = async () => {
       if (!isSignedIn) return
+      if (!applicationId) return
       try {
-        await saveWizardData(wizardData as Record<string, any>)
+        await saveWizardData(wizardData as Record<string, any>, applicationId)
       } catch (e) {
         console.error("Failed to save wizard data", e)
       }
     }
     // save on every data change (only changes on submit)
     save()
-  }, [wizardData, isSignedIn])
+  }, [wizardData, isSignedIn, applicationId])
 
   if (!mounted) return <div className="p-8 text-center">Loading...</div>
   if (loadingServerData) return <div className="p-8 text-center">Loading your saved data...</div>

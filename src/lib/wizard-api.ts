@@ -5,14 +5,14 @@ export async function fetchWizardData() {
     credentials: "include",
   })
   if (!res.ok) throw new Error("Failed to load wizard data")
-  return (await res.json()) as { data: Record<string, any> | null }
+  return (await res.json()) as { data: Record<string, any> | null; applicationId: string | null }
 }
 
-export async function saveWizardData(payload: Record<string, any>) {
+export async function saveWizardData(payload: Record<string, any>, applicationId: string | null) {
   const res = await fetch("/api/wizard", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: payload }),
+    body: JSON.stringify({ data: payload, applicationId }),
     credentials: "include",
   })
   if (!res.ok) throw new Error("Failed to save wizard data")

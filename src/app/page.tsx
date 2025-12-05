@@ -22,6 +22,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
   const [wizardData, setWizardData] = useState<Partial<WizardData> | null>(null)
   const resetStore = useWizardStore((s) => s.reset)
+  const setApplicationId = useWizardStore((s) => s.setApplicationId)
 
   useEffect(() => {
     const load = async () => {
@@ -34,6 +35,7 @@ export default function HomePage() {
       try {
         const res = await fetchWizardData()
         setWizardData((res.data || null) as Partial<WizardData> | null)
+        setApplicationId(res.applicationId || null)
       } catch (err) {
         console.error(err)
         setError("Could not load your application status.")
@@ -42,7 +44,7 @@ export default function HomePage() {
       }
     }
     load()
-  }, [isLoaded, isSignedIn])
+  }, [isLoaded, isSignedIn, setApplicationId])
 
   const statusList: StatusItem[] = useMemo(() => {
     const d = wizardData || {}
@@ -74,7 +76,9 @@ export default function HomePage() {
     try {
       resetStore()
       if (isSignedIn) {
-        await saveWizardData({})
+        const res = await fetchWizardData() // will create if missing
+        setWizardData((res.data || null) as Partial<WizardData> | null)
+        setApplicationId(res.applicationId || null)
       }
       router.push("/wizard")
     } catch (err) {
