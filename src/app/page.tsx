@@ -49,6 +49,14 @@ export default function HomePage() {
     load()
   }, [isLoaded, isSignedIn, setApplicationId])
 
+  // If this is a brand-new user with zero progress, send them straight to the application setup.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || loading) return
+    if (statusList.progress === 0) {
+      router.replace("/application")
+    }
+  }, [isLoaded, isSignedIn, loading, statusList.progress, router])
+
   const statusList = useMemo(() => {
     const d = wizardData || {}
     const licenseType = d.step0?.licenseType
