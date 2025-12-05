@@ -56,7 +56,7 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
       <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-slate-800">
         <span>{label}</span>
         <div className="flex items-center gap-2">
-          <Button variant={editing ? "secondary" : "outline"} size="sm" onClick={(e) => { e.preventDefault(); toggleEdit() }}>
+          <Button variant={editing ? "default" : "outline"} size="sm" onClick={(e) => { e.preventDefault(); toggleEdit() }}>
             {editing ? "Cancel" : "Edit"}
           </Button>
           {editing && (
