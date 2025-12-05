@@ -35,6 +35,8 @@ type AttachmentRow = {
 }
 
 type DisplayUser = { name: string; email: string }
+type AdminAttachment = AttachmentRow & { signedUrl: string | null }
+type AdminRow = { app: ApplicationRow; profile?: ProfileRow; progress: number; attachments: AdminAttachment[] }
 
 const WEIGHTS = {
   licenseSetup: 5,
@@ -67,7 +69,7 @@ function computeProgress(data: Partial<WizardData> | null): number {
   return total > 0 ? Math.round((completed / total) * 100) : 0
 }
 
-async function fetchAdminData() {
+async function fetchAdminData(): Promise<AdminRow[]> {
   const supabase = getSupabaseAdminClient()
 
   const { data: applications, error: appsError } = await supabase
@@ -210,7 +212,7 @@ export default async function AdminPage() {
         <div className="space-y-3">
           {rows.map(({ app, profile, progress, attachments }) => {
             const user = getDisplayUser(profile, app.data ?? null)
-            const d = app.data ?? {}
+            const d: Partial<WizardData> = (app.data ?? {}) as Partial<WizardData>
             return (
               <details
                 key={app.id}
@@ -255,7 +257,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step0 as Record<string, unknown>}
                     >
-                      {renderSection("License Setup & Basic Info", d.step0 as Record<string, unknown>)}
+                      {renderSection("License Setup & Basic Info", d.step0 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="Pre-Licensure / Education"
@@ -263,7 +265,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step1 as Record<string, unknown>}
                     >
-                      {renderSection("Pre-Licensure / Education", d.step1 as Record<string, unknown>)}
+                      {renderSection("Pre-Licensure / Education", d.step1 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="Business Entity, FEIN & Banking"
@@ -271,7 +273,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step2 as Record<string, unknown>}
                     >
-                      {renderSection("Business Entity, FEIN & Banking", d.step2 as Record<string, unknown>)}
+                      {renderSection("Business Entity, FEIN & Banking", d.step2 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="Insurance"
@@ -279,7 +281,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step3 as Record<string, unknown>}
                     >
-                      {renderSection("Insurance", d.step3 as Record<string, unknown>)}
+                      {renderSection("Insurance", d.step3 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="Experience & Qualifier"
@@ -287,7 +289,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step4 as Record<string, unknown>}
                     >
-                      {renderSection("Experience & Qualifier", d.step4 as Record<string, unknown>)}
+                      {renderSection("Experience & Qualifier", d.step4 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="Exams (Business & Law)"
@@ -295,7 +297,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step5 as Record<string, unknown>}
                     >
-                      {renderSection("Exams (Business & Law)", d.step5 as Record<string, unknown>)}
+                      {renderSection("Exams (Business & Law)", d.step5 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="DOPL Application"
@@ -303,7 +305,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step6 as Record<string, unknown>}
                     >
-                      {renderSection("DOPL Application", d.step6 as Record<string, unknown>)}
+                      {renderSection("DOPL Application", d.step6 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                     <AdminSectionBlock
                       label="Review / Attestation"
@@ -311,7 +313,7 @@ export default async function AdminPage() {
                       applicationId={app.id}
                       data={d.step7 as Record<string, unknown>}
                     >
-                      {renderSection("Review / Attestation", d.step7 as Record<string, unknown>)}
+                      {renderSection("Review / Attestation", d.step7 as Record<string, unknown> || {})}
                     </AdminSectionBlock>
                   </div>
 
