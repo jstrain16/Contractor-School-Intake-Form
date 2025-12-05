@@ -55,7 +55,11 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
   }, [applicationId, step, fileType])
 
   const handleFile = async (file?: File | null) => {
-    if (!file || !applicationId) return
+    if (!file) return
+    if (!applicationId) {
+      setError("Application not ready yet. Please wait a moment or refresh.")
+      return
+    }
     setUploading(true)
     setError(null)
     try {
@@ -110,7 +114,7 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
           type="button"
           variant="outline"
           size="sm"
-          disabled={uploading}
+          disabled={uploading || !applicationId}
           onClick={() => fileInputRef.current?.click()}
         >
           {uploadedName ? "Replace document" : "Upload document"}
@@ -134,6 +138,11 @@ export function UploadField({ label, step, fileType, applicationId, accept }: Up
         </div>
         {loadingExisting && <div className="text-xs text-slate-500">Loading attachment...</div>}
         {error && <div className="text-sm text-red-600">{error}</div>}
+        {!applicationId && (
+          <div className="text-xs text-amber-700">
+            Waiting for application to initialize. Save or refresh, then try again.
+          </div>
+        )}
       </div>
     </div>
   )
