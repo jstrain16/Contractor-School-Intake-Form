@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { step0Schema, Step0Data } from "@/lib/schemas"
 import { useWizardStore } from "@/store/wizard-store"
@@ -46,7 +46,7 @@ export function Step0() {
   const { isLoaded, user } = useUser()
   const { data, updateData, nextStep } = useWizardStore()
   const form = useForm<Step0Data>({
-    resolver: zodResolver(step0Schema),
+    resolver: zodResolver(step0Schema) as Resolver<Step0Data>,
     defaultValues: {
       firstName: data.step0?.firstName || "",
       lastName: data.step0?.lastName || "",
