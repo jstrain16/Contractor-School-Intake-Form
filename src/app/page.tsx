@@ -25,38 +25,6 @@ export default function HomePage() {
   const resetStore = useWizardStore((s) => s.reset)
   const setApplicationId = useWizardStore((s) => s.setApplicationId)
 
-  useEffect(() => {
-    if (!isLoaded) return
-    if (!isSignedIn) {
-      router.replace("/sign-in")
-    }
-  }, [isLoaded, isSignedIn, router])
-
-  useEffect(() => {
-    const load = async () => {
-      if (!isLoaded || !isSignedIn) return
-      try {
-        const res = await fetchWizardData()
-        setWizardData((res.data || null) as Partial<WizardData> | null)
-        setApplicationId(res.applicationId || null)
-      } catch (err) {
-        console.error(err)
-        setError("Could not load your application status.")
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [isLoaded, isSignedIn, setApplicationId])
-
-  // If this is a brand-new user with zero progress, send them straight to the application setup.
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || loading) return
-    if (statusList.progress === 0) {
-      router.replace("/application")
-    }
-  }, [isLoaded, isSignedIn, loading, statusList.progress, router])
-
   const statusList = useMemo(() => {
     const d = wizardData || {}
     const licenseType = d.step0?.licenseType
@@ -126,6 +94,38 @@ export default function HomePage() {
       nextUp: items.find((s) => !s.done)?.label ?? "Review & Submit",
     }
   }, [wizardData])
+
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!isSignedIn) {
+      router.replace("/sign-in")
+    }
+  }, [isLoaded, isSignedIn, router])
+
+  useEffect(() => {
+    const load = async () => {
+      if (!isLoaded || !isSignedIn) return
+      try {
+        const res = await fetchWizardData()
+        setWizardData((res.data || null) as Partial<WizardData> | null)
+        setApplicationId(res.applicationId || null)
+      } catch (err) {
+        console.error(err)
+        setError("Could not load your application status.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [isLoaded, isSignedIn, setApplicationId])
+
+  // If this is a brand-new user with zero progress, send them straight to the application setup.
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || loading) return
+    if (statusList.progress === 0) {
+      router.replace("/application")
+    }
+  }, [isLoaded, isSignedIn, loading, statusList.progress, router])
 
   const progressPct = statusList.progress
   const nextStepLabel = statusList.nextUp
