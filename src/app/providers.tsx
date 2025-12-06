@@ -53,6 +53,34 @@ function AdminPortalButton() {
   )
 }
 
+function DashboardButton() {
+  const { user } = useUser()
+  const adminAllowlist = useMemo(() => {
+    const list = process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || ""
+    return list
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+  }, [])
+  const isAdmin = useMemo(() => {
+    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
+    const emails =
+      user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+    return metaAdmin || emails.some((em) => adminAllowlist.includes(em as string))
+  }, [adminAllowlist, user?.emailAddresses, user?.publicMetadata])
+
+  if (isAdmin) return null
+
+  return (
+    <Link
+      href="/"
+      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+    >
+      Dashboard
+    </Link>
+  )
+}
+
 export function Providers({ children }: ProvidersProps) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
@@ -86,7 +114,6 @@ export function Providers({ children }: ProvidersProps) {
                 height={32}
                 className="h-8 w-auto"
               />
-              <span className="text-sm font-semibold text-slate-800">Contractor Licensing Intake</span>
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -99,6 +126,7 @@ export function Providers({ children }: ProvidersProps) {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              <DashboardButton />
               <AdminPortalButton />
               <UserButton />
             </SignedIn>

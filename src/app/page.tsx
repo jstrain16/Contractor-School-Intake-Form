@@ -11,6 +11,17 @@ import { useWizardStore } from "@/store/wizard-store"
 import { WizardData } from "@/lib/schemas"
 import { buildStatus } from "@/lib/progress"
 
+const SECTION_ROUTE: Record<string, string> = {
+  "Account Setup": "step0",
+  "Pre-Licensure / Education": "step1",
+  "Business Entity, FEIN & Banking": "step2",
+  "General Liability": "step3",
+  "Workers Compensation": "step3",
+  "Experience / Qualifier": "step4",
+  "Business & Law Exam": "step5",
+  "DOPL Application": "step6",
+}
+
 export default function HomePage() {
   const router = useRouter()
   const { isLoaded, isSignedIn, user } = useUser()
@@ -74,6 +85,15 @@ export default function HomePage() {
 
   const progressPct = statusList.progress
   const nextStepLabel = statusList.nextUp
+
+  const goToSection = (label: string) => {
+    const section = SECTION_ROUTE[label]
+    if (section) {
+      router.push(`/application?section=${section}`)
+    } else {
+      router.push("/application")
+    }
+  }
 
   const handleContinue = () => {
     router.push("/application")
@@ -177,7 +197,16 @@ export default function HomePage() {
                     {statusList.items.map((item) => (
                       <div
                         key={item.label}
-                        className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-all"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => goToSection(item.label)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault()
+                            goToSection(item.label)
+                          }
+                        }}
+                        className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-all cursor-pointer"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">

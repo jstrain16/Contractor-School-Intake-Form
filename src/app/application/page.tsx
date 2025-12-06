@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useUser } from "@clerk/nextjs"
 import { useWizardStore } from "@/store/wizard-store"
 import { Step0 } from "@/components/wizard/Step0"
 import { Step1 } from "@/components/wizard/Step1"
@@ -10,10 +12,12 @@ import { Step4 } from "@/components/wizard/Step4"
 import { Step5 } from "@/components/wizard/Step5"
 import { Step6 } from "@/components/wizard/Step6"
 import { Step7 } from "@/components/wizard/Step7"
-import { SignInButton, SignUpButton, SignedOut } from "@clerk/nextjs"
 import { fetchWizardData, saveWizardData } from "@/lib/wizard-api"
 
 export default function WizardPage() {
+  const { user } = useUser()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [mounted, setMounted] = useState(false)
   const [loadingServerData, setLoadingServerData] = useState(false)
   const { currentStep, setStep } = useWizardStore()
@@ -22,13 +26,54 @@ export default function WizardPage() {
   const applicationId = useWizardStore((state) => state.applicationId)
   const setApplicationId = useWizardStore((state) => state.setApplicationId)
 
+  const isAdmin = useMemo(() => {
+    const list = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
+    const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+    return metaAdmin || emails.some((em) => list.includes(em as string))
+  }, [user?.emailAddresses, user?.publicMetadata])
+
+  const sectionParam = searchParams.get("section")
+  const targetStep = useMemo(() => {
+    switch (sectionParam) {
+      case "step0":
+        return 0
+      case "step1":
+        return 1
+      case "step2":
+        return 2
+      case "step3":
+        return 3
+      case "step4":
+        return 4
+      case "step5":
+        return 5
+      case "step6":
+        return 6
+      case "step7":
+        return 7
+      default:
+        return 0
+    }
+  }, [sectionParam])
+
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  useEffect(() => {
+    if (isAdmin) {
+      router.replace("/admin")
+    }
+  }, [isAdmin, router])
+
   // Load saved data (now allowed signed-out with fallback)
   useEffect(() => {
     const load = async () => {
+      if (isAdmin) return
       setLoadingServerData(true)
       try {
         const res = await fetchWizardData()
@@ -43,7 +88,7 @@ export default function WizardPage() {
           updateData("step5", res.data.step5 || {})
           updateData("step6", res.data.step6 || {})
           updateData("step7", res.data.step7 || {})
-          setStep(0)
+          setStep(targetStep)
         }
       } catch (e) {
         console.error("Failed to load wizard data", e)
@@ -52,7 +97,14 @@ export default function WizardPage() {
       }
     }
     load()
-  }, [updateData, setStep, setApplicationId])
+  }, [isAdmin, setApplicationId, setStep, targetStep, updateData])
+
+  // respond to section param changes after load
+  useEffect(() => {
+    if (!isAdmin) {
+      setStep(targetStep)
+    }
+  }, [isAdmin, setStep, targetStep])
 
   // Auto-save on data changes (requires applicationId)
   useEffect(() => {
@@ -90,14 +142,13 @@ export default function WizardPage() {
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-slate-900">Contractor Licensing Intake</h1>
           <div className="flex items-center gap-3">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-sm text-blue-600 underline">Clerk Sign In</button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="text-sm text-blue-600 underline">Clerk Sign Up</button>
-              </SignUpButton>
-            </SignedOut>
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+            >
+              Back to Dashboard
+            </button>
           </div>
         </div>
 
