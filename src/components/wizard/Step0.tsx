@@ -107,18 +107,41 @@ export function Step0() {
             {form.watch("hasEmployees") && (
               <div className="pl-6 space-y-2">
                 <Label htmlFor="employeeCount">If yes, how many employees?</Label>
-                <select
-                  id="employeeCount"
-                  {...form.register("employeeCount", { valueAsNumber: true })}
-                  className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-                >
-                  <option value="">Select a range</option>
-                  <option value={1}>1-4</option>
-                  <option value={5}>5-9</option>
-                  <option value={10}>10-24</option>
-                  <option value={25}>25-49</option>
-                  <option value={50}>50+</option>
-                </select>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border border-slate-300 rounded-md">
+                    <button
+                      type="button"
+                      className="h-10 w-10 flex items-center justify-center text-lg text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        const current = form.watch("employeeCount") || 1
+                        const next = Math.max(1, current - 1)
+                        form.setValue("employeeCount", next)
+                      }}
+                    >
+                      –
+                    </button>
+                    <input
+                      id="employeeCount"
+                      type="number"
+                      min={1}
+                      max={15}
+                      {...form.register("employeeCount", { valueAsNumber: true })}
+                      className="h-10 w-16 text-center border-x border-slate-300 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      className="h-10 w-10 flex items-center justify-center text-lg text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        const current = form.watch("employeeCount") || 1
+                        const next = Math.min(15, current + 1)
+                        form.setValue("employeeCount", next)
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className="text-sm text-slate-600">1-15 (15+ allowed)</span>
+                </div>
               </div>
             )}
           </div>
