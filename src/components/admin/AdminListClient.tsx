@@ -201,6 +201,8 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
         const user = getDisplayUser(profile, app.data ?? null)
         const d: Partial<WizardData> = (app.data ?? {}) as Partial<WizardData>
         const emailForReminder = profile?.email ?? d.step0?.email ?? null
+        const insuranceRequested =
+          Boolean(d.step3?.insuranceContactRequested) || Boolean(d.step3?.contactInsurancePartner)
 
         return (
           <details
@@ -221,6 +223,11 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                {insuranceRequested && (
+                  <span className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 border border-orange-200">
+                    IIS Contact Requested
+                  </span>
+                )}
                 <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                   <div
                     className={`h-full ${progress >= 80 ? "bg-green-500" : "bg-gradient-to-r from-orange-500 to-orange-600"}`}
