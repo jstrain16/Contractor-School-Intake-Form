@@ -41,7 +41,6 @@ export function ChatWidget() {
   const [sdkError, setSdkError] = useState<string | null>(null)
   const sessionPromise = useRef<Promise<string> | null>(null)
   const [showNudge, setShowNudge] = useState(false)
-  const [initialPrompt, setInitialPrompt] = useState<string | null>(null)
   const [shouldForceOpen, setShouldForceOpen] = useState(false)
 
   useEffect(() => {
@@ -98,8 +97,8 @@ export function ChatWidget() {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    window.__chatWidgetSetPrompt = (prompt: string) => {
-      setInitialPrompt(prompt)
+    window.__chatWidgetSetPrompt = () => {
+      /* ChatKit React does not support initial prompt prop; noop for now */
     }
     window.__chatWidgetOpen = () => {
       setShouldForceOpen(true)
@@ -168,9 +167,7 @@ export function ChatWidget() {
           {!error && sdkError && <div className="p-4 text-sm text-red-600">{sdkError}</div>}
           {!error && !sdkError && !sdkReady && <div className="p-4 text-sm text-slate-600">Loading chat...</div>}
           {!error && !sdkError && sdkReady && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
-          {!error && !sdkError && sdkReady && !loading && (
-            <ChatKit control={control} className="h-full w-full" initialPrompt={initialPrompt || undefined} />
-          )}
+          {!error && !sdkError && sdkReady && !loading && <ChatKit control={control} className="h-full w-full" />}
         </div>
       )}
       <button
