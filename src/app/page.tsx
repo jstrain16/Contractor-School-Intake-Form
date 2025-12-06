@@ -125,7 +125,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-lg">
               <Image
-                src="https://beacontractor.com/wp-content/uploads/2021/08/logo.svg"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLayBSGWDD_KFHlQMxccHG7u712NfE6Vg9tA&s"
                 alt="Contractor School"
                 width={32}
                 height={32}
