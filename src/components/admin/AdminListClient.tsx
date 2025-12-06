@@ -123,6 +123,8 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("updated_desc")
   const [items, setItems] = useState(rows.filter((r) => !r.app.archived))
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<"archive" | "restore" | null>(null)
 
   useEffect(() => {
     setItems(rows.filter((r) => !r.app.archived))
@@ -217,8 +219,6 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
           : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
 
         async function archiveApp(nextArchived: boolean) {
-          const ok = window.confirm(nextArchived ? "Archive this application?" : "Restore this application?")
-          if (!ok) return
           const res = await fetch("/api/admin/application/archive", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -265,12 +265,35 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                     type="button"
                     onClick={(e) => {
                       e.preventDefault()
+                    const action = isArchived ? "restore" : "archive"
+                    if (confirmId === app.id && confirmAction === action) {
                       archiveApp(!isArchived)
+                      setConfirmId(null)
+                      setConfirmAction(null)
+                    } else {
+                      setConfirmId(app.id)
+                      setConfirmAction(action)
+                    }
                     }}
-                    className={`rounded-md px-2 py-1 text-xs font-semibold transition ${archiveColor}`}
+                  className={`rounded-md px-2 py-1 text-xs font-semibold transition ${archiveColor} ${
+                    confirmId === app.id ? "ring-2 ring-amber-300" : ""
+                  }`}
                   >
-                    {archiveLabel}
+                  {confirmId === app.id && confirmAction === (isArchived ? "restore" : "archive") ? "Confirm" : archiveLabel}
                   </button>
+                {confirmId === app.id && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setConfirmId(null)
+                      setConfirmAction(null)
+                    }}
+                    className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                )}
                 </div>
                 <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                   <div

@@ -28,10 +28,10 @@ function displayName(app: App) {
 
 export default function ArchivedApplications({ items }: { items: App[] }) {
   const [list, setList] = useState(items)
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<"delete" | "restore" | null>(null)
 
   async function unarchiveApp(id: string) {
-    const ok = window.confirm("Restore this application from archive?")
-    if (!ok) return
     const res = await fetch("/api/admin/application/archive", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,8 +45,6 @@ export default function ArchivedApplications({ items }: { items: App[] }) {
   }
 
   async function deleteApp(id: string) {
-    const ok = window.confirm("Delete this application permanently?")
-    if (!ok) return
     const res = await fetch("/api/admin/application/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -79,17 +77,51 @@ export default function ArchivedApplications({ items }: { items: App[] }) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => unarchiveApp(row.app.id)}
-                className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100"
+                onClick={() => {
+                  if (confirmId === row.app.id && confirmAction === "restore") {
+                    unarchiveApp(row.app.id)
+                    setConfirmId(null)
+                    setConfirmAction(null)
+                  } else {
+                    setConfirmId(row.app.id)
+                    setConfirmAction("restore")
+                  }
+                }}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 ${
+                  confirmId === row.app.id && confirmAction === "restore" ? "ring-2 ring-amber-300" : ""
+                }`}
               >
-                Unarchive
+                {confirmId === row.app.id && confirmAction === "restore" ? "Confirm" : "Unarchive"}
               </button>
+              {confirmId === row.app.id && confirmAction === "restore" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmId(null)
+                    setConfirmAction(null)
+                  }}
+                  className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => deleteApp(row.app.id)}
-                className="rounded-md px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700"
+                onClick={() => {
+                  if (confirmId === row.app.id && confirmAction === "delete") {
+                    deleteApp(row.app.id)
+                    setConfirmId(null)
+                    setConfirmAction(null)
+                  } else {
+                    setConfirmId(row.app.id)
+                    setConfirmAction("delete")
+                  }
+                }}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold text-white ${
+                  confirmId === row.app.id && confirmAction === "delete" ? "bg-red-700" : "bg-red-600 hover:bg-red-700"
+                }`}
               >
-                Delete
+                {confirmId === row.app.id && confirmAction === "delete" ? "Confirm" : "Delete"}
               </button>
             </div>
           </div>
