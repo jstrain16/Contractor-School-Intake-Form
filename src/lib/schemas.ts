@@ -110,6 +110,7 @@ export const step5Schema = z.object({
   examLocation: z.string().optional(),
   examPassedDate: z.string().optional(),
   examId: z.string().optional(),
+  planToTakeExam: z.boolean().optional(),
   
   // Files
   examScoreFile: z.any().optional(),

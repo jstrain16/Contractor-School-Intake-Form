@@ -47,36 +47,36 @@ export function Step7() {
     { 
       label: "Pre-Licensure Education", 
       valid: data.step1?.preLicensureCompleted || (data.step1?.exemptions && data.step1.exemptions.length > 0),
-      step: 1
+      step: 2
     },
     { 
       label: "Business Entity & EIN", 
       valid: !!data.step2?.legalBusinessName && !!data.step2?.federalEin,
-      step: 2
+      step: 3
     },
     { 
       label: "General Liability Insurance", 
       valid: !!data.step3?.hasGlInsurance,
-      step: 3
+      step: 4
     },
     { 
       label: "Workers Comp", 
       valid: hasEmployees ? !!data.step3?.hasWorkersComp : !!data.step3?.hasWcWaiver,
-      step: 3
+      step: 4
     },
     ...(hasGeneralSelection ? [{
       label: "Experience / Qualifier",
       valid: !!data.step4?.hasExperience,
-      step: 4
+      step: 5
     }, {
       label: "Business & Law Exam",
       valid: data.step5?.examStatus === "passed",
-      step: 5
+      step: 6
     }] : []),
     {
       label: "DOPL Application",
       valid: !!data.step6?.doplAppCompleted,
-      step: 6
+      step: 7
     }
   ]
 

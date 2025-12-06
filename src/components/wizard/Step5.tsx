@@ -30,10 +30,12 @@ export function Step5() {
       examLocation: data.step5?.examLocation || "",
       examPassedDate: data.step5?.examPassedDate || "",
       examId: data.step5?.examId || "",
+      planToTakeExam: data.step5?.planToTakeExam ?? isGeneral,
     }
   })
 
   const examStatus = form.watch("examStatus") ?? "not_scheduled"
+  const planToTakeExam = form.watch("planToTakeExam") ?? isGeneral
 
   const onSubmit = (values: Step5FormValues) => {
     const parsed: Step5Data = step5Schema.parse(values)
@@ -52,9 +54,42 @@ export function Step5() {
           {!isGeneral && (
             <div className="p-4 bg-slate-50 rounded-md border text-sm text-slate-700">
               Business & Law exam is typically not required for specialty-only licenses. If you still plan to take it, you can record the details below.
+              <div className="mt-3 space-y-2">
+                <Label className="text-sm">Do you still plan on taking the Business & Law exam?</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="yes"
+                      checked={planToTakeExam === true}
+                      onChange={() => form.setValue("planToTakeExam", true)}
+                      className="w-4 h-4"
+                    />
+                    <span>Yes</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value="no"
+                      checked={planToTakeExam === false}
+                      onChange={() => {
+                        form.setValue("planToTakeExam", false)
+                        form.setValue("examStatus", "not_scheduled")
+                        form.setValue("examDate", "")
+                        form.setValue("examLocation", "")
+                        form.setValue("examPassedDate", "")
+                        form.setValue("examId", "")
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span>No</span>
+                  </label>
+                </div>
+              </div>
             </div>
           )}
           
+          {planToTakeExam && (
           <div className="space-y-3">
             <Label className="text-base">Have you scheduled the Prov Business & Law Exam?</Label>
             <div className="flex flex-col gap-2">
@@ -87,8 +122,9 @@ export function Step5() {
               </label>
             </div>
           </div>
+          )}
 
-          {examStatus === "not_scheduled" && (
+          {planToTakeExam && examStatus === "not_scheduled" && (
              <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm">
                You need to pass the Utah Business and Law Exam.{" "}
                <a
@@ -103,7 +139,7 @@ export function Step5() {
              </div>
           )}
 
-          {examStatus === "scheduled" && (
+          {planToTakeExam && examStatus === "scheduled" && (
              <div className="space-y-4 pl-4 border-l-2 border-slate-200">
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
@@ -118,7 +154,7 @@ export function Step5() {
              </div>
           )}
 
-          {examStatus === "passed" && (
+          {planToTakeExam && examStatus === "passed" && (
              <div className="space-y-4 pl-4 border-l-2 border-slate-200">
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">

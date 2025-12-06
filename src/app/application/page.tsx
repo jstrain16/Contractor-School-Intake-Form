@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import { useWizardStore } from "@/store/wizard-store"
 import { Step0 } from "@/components/wizard/Step0"
+import { Step0License } from "@/components/wizard/Step0License"
 import { Step1 } from "@/components/wizard/Step1"
 import { Step2 } from "@/components/wizard/Step2"
 import { Step3 } from "@/components/wizard/Step3"
@@ -124,7 +125,8 @@ export default function WizardPage() {
   if (loadingServerData) return <div className="p-8 text-center">Loading your saved data...</div>
 
   const steps = [
-    { component: Step0, label: "Setup" },
+    { component: Step0, label: "Account" },
+    { component: Step0License, label: "Licenses" },
     { component: Step1, label: "Education" },
     { component: Step2, label: "Business" },
     { component: Step3, label: "Insurance" },
