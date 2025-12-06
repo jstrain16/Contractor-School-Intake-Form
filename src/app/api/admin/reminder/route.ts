@@ -155,16 +155,22 @@ ${missingList}
 ${dataBlob}
 `
 
-    const model = opts?.assistantId || opts?.workflowId || "gpt-4o-mini"
+    const model = opts?.workflowId || "gpt-4o-mini"
+    const assistantId = opts?.assistantId
     console.info("reminder draft model", {
       model,
-      assistantId: opts?.assistantId,
+      assistantId,
       workflowId: opts?.workflowId,
     })
 
+    // If assistantId is provided, include a brief system hint; do not treat it as a model ID.
+    const assistantHint = assistantId
+      ? `\n\nYou are the Contractor School Assistant (ID: ${assistantId}). Use the style and tone appropriate for that assistant.`
+      : ""
+
     const res = await openai.responses.create({
       model,
-      input: prompt,
+      input: prompt + assistantHint,
       max_output_tokens: 260,
       temperature: 0.4,
     })
