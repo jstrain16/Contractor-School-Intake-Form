@@ -6,17 +6,6 @@ export async function requireAdminEmail() {
   const emails =
     user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
 
-  const allowlist = (
-    process.env.ADMIN_EMAIL_ALLOWLIST ||
-    process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST ||
-    ""
-  )
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-
-  const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
-
   let tableAdmin = false
   if (emails.length > 0) {
     try {
@@ -31,8 +20,7 @@ export async function requireAdminEmail() {
     }
   }
 
-  const isAllowed =
-    metaAdmin || tableAdmin || emails.some((em) => allowlist.includes(em as string))
+  const isAllowed = tableAdmin
 
   return { user, email: emails[0], isAllowed }
 }

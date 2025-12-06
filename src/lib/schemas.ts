@@ -71,6 +71,7 @@ export const step3Schema = z.object({
   glExpirationDate: z.string().optional(),
   glLimits: z.string().optional(),
   contactInsurancePartner: z.boolean().optional(),
+  insuranceContactRequested: z.boolean().default(false),
   
   hasWorkersComp: z.boolean().default(false),
   wcCarrier: z.string().optional(),

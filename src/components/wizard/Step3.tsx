@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { step3Schema, Step3Data, Step3FormValues } from "@/lib/schemas"
@@ -23,6 +24,8 @@ export function Step3() {
       glEffectiveDate: data.step3?.glEffectiveDate || "",
       glExpirationDate: data.step3?.glExpirationDate || "",
       glLimits: data.step3?.glLimits || "",
+      contactInsurancePartner: data.step3?.contactInsurancePartner || false,
+      insuranceContactRequested: data.step3?.insuranceContactRequested || false,
       
       hasWorkersComp: data.step3?.hasWorkersComp || false,
       wcCarrier: data.step3?.wcCarrier || "",
@@ -37,6 +40,46 @@ export function Step3() {
   const hasGl = form.watch("hasGlInsurance")
   const hasWc = form.watch("hasWorkersComp")
   const hasWaiver = form.watch("hasWcWaiver")
+  const wantsInsuranceContact = form.watch("contactInsurancePartner")
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState<boolean>(data.step3?.insuranceContactRequested || false)
+
+  useEffect(() => {
+    const alreadyRequested = sent || data.step3?.insuranceContactRequested
+    if (wantsInsuranceContact && !alreadyRequested && !sending) {
+      void sendInsuranceWebhook()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantsInsuranceContact])
+
+  const sendInsuranceWebhook = async () => {
+    try {
+      setSending(true)
+      const payload = {
+        applicationId,
+        step0: data.step0,
+        step3: { ...form.getValues(), contactInsurancePartner: true },
+        step4: data.step4,
+      }
+      const res = await fetch("/api/webhook/insurance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(detail || "Webhook failed")
+      }
+      updateData("step3", { contactInsurancePartner: true, insuranceContactRequested: true })
+      setSent(true)
+    } catch (err) {
+      console.error("Insurance webhook error", err)
+      alert("Could not send your request to Integrated Insurance Solutions. Please try again.")
+      form.setValue("contactInsurancePartner", false)
+    } finally {
+      setSending(false)
+    }
+  }
 
   const onSubmit = (values: Step3FormValues) => {
     const parsed: Step3Data = step3Schema.parse(values)
@@ -87,6 +130,9 @@ export function Step3() {
                   />
                   <span>Yes, please have Integrated Insurance Solutions reach out.</span>
                 </label>
+                {sent && (
+                  <p className="text-xs text-green-700">Request sent. We will reach out soon.</p>
+                )}
               </div>
             )}
           </div>

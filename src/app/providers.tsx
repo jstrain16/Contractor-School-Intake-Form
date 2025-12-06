@@ -55,6 +55,7 @@ function AdminPortalButton() {
 
 function DashboardButton() {
   const { user } = useUser()
+  // Client-side cannot check admin_users table; keep button visible only for allowlist/meta-admin to avoid confusion.
   const adminAllowlist = useMemo(() => {
     const list = process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || ""
     return list

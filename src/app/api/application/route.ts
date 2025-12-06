@@ -35,6 +35,8 @@ const EMPTY_DATA: Partial<WizardData> = {
     hasGlInsurance: false,
     hasWorkersComp: false,
     hasWcWaiver: false,
+    contactInsurancePartner: false,
+    insuranceContactRequested: false,
   },
   step4: {
     qualifierDob: "",
