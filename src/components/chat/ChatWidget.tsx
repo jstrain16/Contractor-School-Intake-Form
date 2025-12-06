@@ -35,6 +35,7 @@ export function ChatWidget() {
   const [open, setOpen] = useState(false)
   const [deviceId, setDeviceId] = useState("unknown-device")
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
@@ -44,6 +45,7 @@ export function ChatWidget() {
     api: {
       async getClientSecret(existing) {
         if (existing) return existing
+        setLoading(true)
         const res = await fetch("/api/chatkit/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -52,9 +54,11 @@ export function ChatWidget() {
         if (!res.ok) {
           const text = await res.text().catch(() => "Failed to create ChatKit session")
           setError(text || "Failed to create ChatKit session")
+          setLoading(false)
           throw new Error(text)
         }
         const { client_secret } = await res.json()
+        setLoading(false)
         return client_secret
       },
     },
@@ -67,11 +71,9 @@ export function ChatWidget() {
     <>
       {open && (
         <div className="fixed bottom-24 right-4 z-40 w-80 h-[520px] rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white">
-          {error ? (
-            <div className="p-4 text-sm text-red-600">Chat unavailable: {error}</div>
-          ) : (
-            <ChatKit control={control} className="h-full w-full" />
-          )}
+          {error && <div className="p-4 text-sm text-red-600">Chat unavailable: {error}</div>}
+          {!error && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
+          {!error && !loading && <ChatKit control={control} className="h-full w-full" />}
         </div>
       )}
       <button

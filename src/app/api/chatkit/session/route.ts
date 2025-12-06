@@ -1,3 +1,5 @@
+export const runtime = "nodejs"
+
 import { NextResponse } from "next/server"
 
 const DEFAULT_WORKFLOW_ID = "wf_693338edd2fc8190bb82b578bbc66e0b04919c0babb30dee"
@@ -28,9 +30,12 @@ export async function POST(req: Request) {
     })
 
     if (!res.ok) {
-      const text = await res.text()
+      const text = await res.text().catch(() => "")
       console.error("ChatKit session create failed", res.status, text)
-      return NextResponse.json({ error: "ChatKit session failed", detail: text }, { status: 502 })
+      return NextResponse.json(
+        { error: "ChatKit session failed", detail: text || res.statusText, status: res.status },
+        { status: 502 }
+      )
     }
 
     const { client_secret } = await res.json()
