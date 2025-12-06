@@ -92,7 +92,9 @@ async function fetchAdminData(): Promise<AdminRow[]> {
   )
   const signedMap = new Map(signedUrls.map((u) => [u.id, u.signedUrl]))
 
-  return appRows.map((app) => {
+  const filteredApps = appRows.filter((a) => !a.archived)
+
+  return filteredApps.map((app) => {
     const attachmentsForApp = attachmentRows.filter((a) => a.application_id === app.id).map((a) => ({
       ...a,
       signedUrl: signedMap.get(a.id) ?? null,

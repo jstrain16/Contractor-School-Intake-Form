@@ -122,10 +122,10 @@ const SORT_OPTIONS = [
 export function AdminListClient({ rows }: { rows: AdminRow[] }) {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("updated_desc")
-  const [items, setItems] = useState(rows)
+  const [items, setItems] = useState(rows.filter((r) => !r.app.archived))
 
   useEffect(() => {
-    setItems(rows)
+    setItems(rows.filter((r) => !r.app.archived))
   }, [rows])
 
   const filtered = useMemo(() => {
@@ -231,21 +231,6 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
           setItems((prev) => prev.map((row) => (row.app.id === app.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row)))
         }
 
-        async function deleteApp() {
-          const ok = window.confirm("Delete this application? This cannot be undone.")
-          if (!ok) return
-          const res = await fetch("/api/admin/application/delete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ applicationId: app.id }),
-          })
-          if (!res.ok) {
-            alert("Failed to delete application")
-            return
-          }
-          setItems((prev) => prev.filter((row) => row.app.id !== app.id))
-        }
-
         return (
           <details
             key={app.id}
@@ -285,16 +270,6 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                     className={`rounded-md px-2 py-1 text-xs font-semibold transition ${archiveColor}`}
                   >
                     {archiveLabel}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      deleteApp()
-                    }}
-                    className="rounded-md px-2 py-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700"
-                  >
-                    Delete
                   </button>
                 </div>
                 <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
