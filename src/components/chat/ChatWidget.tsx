@@ -40,9 +40,29 @@ export function ChatWidget() {
   const [sdkReady, setSdkReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
   const sessionPromise = useRef<Promise<string> | null>(null)
+  const [showNudge, setShowNudge] = useState(false)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const dismissed = window.localStorage.getItem("chat-nudge-dismissed")
+    if (dismissed === "true") return
+    const stored = window.localStorage.getItem("wizard-storage")
+    if (!stored) {
+      setShowNudge(true)
+      return
+    }
+    try {
+      const parsed = JSON.parse(stored)
+      const step7 = parsed?.state?.data?.step7
+      const attested = step7?.attested && step7?.signature
+      setShowNudge(!attested)
+    } catch {
+      setShowNudge(true)
+    }
   }, [])
 
   useEffect(() => {
@@ -115,6 +135,13 @@ export function ChatWidget() {
   const isAdminRoute = pathname?.startsWith("/admin")
   if (isAdminRoute || isAdmin) return null
 
+  const dismissNudge = () => {
+    setShowNudge(false)
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("chat-nudge-dismissed", "true")
+    }
+  }
+
   return (
     <>
       {open && (
@@ -129,14 +156,37 @@ export function ChatWidget() {
       <button
         type="button"
         aria-label="Open chat"
-        onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-50 flex items-center justify-center h-14 w-14 rounded-full shadow-lg border border-slate-200 bg-white hover:shadow-xl transition"
+        onClick={() => {
+          setOpen((v) => !v)
+          dismissNudge()
+        }}
+        className={`fixed bottom-6 right-6 z-50 flex items-center justify-center h-14 w-14 rounded-full shadow-lg border border-slate-200 bg-white hover:shadow-xl transition ${
+          showNudge ? "animate-bounce" : ""
+        }`}
       >
         <span className="sr-only">Chat</span>
         <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center">
           <MessageCircle className="h-6 w-6" />
         </div>
       </button>
+      {showNudge && !open && (
+        <div className="fixed bottom-24 right-4 z-50 max-w-xs rounded-lg border border-slate-200 bg-white shadow-xl p-3 text-sm text-slate-800">
+          <div className="flex items-start gap-2">
+            <div className="mt-0.5 h-2 w-2 rounded-full bg-orange-500" />
+            <div className="flex-1">
+              Ask me anything about the licensing process.
+            </div>
+            <button
+              type="button"
+              aria-label="Dismiss chat hint"
+              onClick={dismissNudge}
+              className="text-slate-500 hover:text-slate-700"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </>
   )
 }
