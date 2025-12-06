@@ -13,7 +13,7 @@ import { buildStatus } from "@/lib/progress"
 
 export default function HomePage() {
   const router = useRouter()
-  const { isLoaded, isSignedIn } = useUser()
+  const { isLoaded, isSignedIn, user } = useUser()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,17 +22,34 @@ export default function HomePage() {
   const setApplicationId = useWizardStore((s) => s.setApplicationId)
 
   const statusList = useMemo(() => buildStatus(wizardData), [wizardData])
+  const isAdmin = useMemo(() => {
+    const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
+    const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+    return metaAdmin || emails.some((em) => allowlist.includes(em as string))
+  }, [user?.emailAddresses, user?.publicMetadata])
 
   useEffect(() => {
     if (!isLoaded) return
     if (!isSignedIn) {
       router.replace("/sign-in")
+      return
     }
-  }, [isLoaded, isSignedIn, router])
+    if (isAdmin) {
+      router.replace("/admin")
+    }
+  }, [isAdmin, isLoaded, isSignedIn, router])
 
   useEffect(() => {
     const load = async () => {
       if (!isLoaded || !isSignedIn) return
+      if (isAdmin) {
+        setLoading(false)
+        return
+      }
       try {
         const res = await fetchWizardData()
         setWizardData((res.data || null) as Partial<WizardData> | null)
@@ -45,15 +62,15 @@ export default function HomePage() {
       }
     }
     load()
-  }, [isLoaded, isSignedIn, setApplicationId])
+  }, [isAdmin, isLoaded, isSignedIn, setApplicationId])
 
   // If this is a brand-new user with zero progress, send them straight to the application setup.
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || loading) return
+    if (!isLoaded || !isSignedIn || loading || isAdmin) return
     if (statusList.progress === 0) {
       router.replace("/application")
     }
-  }, [isLoaded, isSignedIn, loading, statusList.progress, router])
+  }, [isAdmin, isLoaded, isSignedIn, loading, statusList.progress, router])
 
   const progressPct = statusList.progress
   const nextStepLabel = statusList.nextUp
@@ -105,18 +122,29 @@ export default function HomePage() {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <Button
-                onClick={handleContinue}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-500/30 hover:shadow-md"
-              >
-                Go to Application
-              </Button>
+              {!isAdmin && (
+                <Button
+                  onClick={handleContinue}
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-500/30 hover:shadow-md"
+                >
+                  Go to Application
+                </Button>
+              )}
+              {isAdmin && (
+                <Button
+                  onClick={() => router.push("/admin")}
+                  className="bg-gradient-to-r from-orange-500 to-slate-800 text-white shadow-sm shadow-orange-500/30 hover:shadow-md"
+                >
+                  Go to Admin Portal
+                </Button>
+              )}
             </SignedIn>
           </div>
         </div>
 
         <SignedIn>
           {/* Overall progress */}
+          {!isAdmin && (
           <Card className="border-none shadow-lg bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center justify-between">
@@ -195,28 +223,31 @@ export default function HomePage() {
               </Button>
             </CardFooter>
           </Card>
+          )}
 
           {/* Quick stats */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="border border-slate-200 shadow-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Progress</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="text-3xl font-bold text-slate-900">{progressPct}%</div>
-                <p className="text-sm text-slate-600">Weighted completion across all sections.</p>
-              </CardContent>
-            </Card>
-            <Card className="border border-slate-200 shadow-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Next Action</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="text-lg font-semibold text-slate-900">{nextStepLabel}</div>
-                <p className="text-sm text-slate-600">Complete the next section to move forward.</p>
-              </CardContent>
-            </Card>
-          </div>
+          {!isAdmin && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="border border-slate-200 shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Progress</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="text-3xl font-bold text-slate-900">{progressPct}%</div>
+                  <p className="text-sm text-slate-600">Weighted completion across all sections.</p>
+                </CardContent>
+              </Card>
+              <Card className="border border-slate-200 shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Next Action</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="text-lg font-semibold text-slate-900">{nextStepLabel}</div>
+                  <p className="text-sm text-slate-600">Complete the next section to move forward.</p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </SignedIn>
 
         <SignedOut>
