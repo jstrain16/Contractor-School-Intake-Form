@@ -73,8 +73,30 @@ export function AttachmentList({ attachments }: { attachments: AdminAttachment[]
       </div>
 
       {current && current.signedUrl && (
-        <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <AttachmentPreview url={current.signedUrl} name={displayName(current)} onClose={() => setPreviewId(null)} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-4xl rounded-lg border border-slate-200 bg-white p-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-semibold text-slate-900 text-sm">{displayName(current)}</div>
+              <div className="flex gap-2">
+                <a
+                  href={current.signedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-600 text-sm underline"
+                >
+                  Download
+                </a>
+                <button
+                  type="button"
+                  className="text-slate-600 text-sm"
+                  onClick={() => setPreviewId(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <AttachmentPreview url={current.signedUrl} name={displayName(current)} onClose={() => setPreviewId(null)} />
+          </div>
         </div>
       )}
     </details>
