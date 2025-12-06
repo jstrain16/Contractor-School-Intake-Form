@@ -253,9 +253,6 @@ export default function HomePage() {
               >
                 Continue Application
               </Button>
-              <Button variant="outline" disabled={saving} onClick={handleNewApplication}>
-                {saving ? "Starting..." : "Start New Application"}
-              </Button>
             </CardFooter>
           </Card>
           )}
