@@ -37,7 +37,6 @@ export function Step7() {
   const isGeneral = data.step0?.licenseType === "general"
   const hasEmployees = data.step0?.hasEmployees
   const hasGeneralSelection = (data.step0?.generalLicenses?.length ?? 0) > 0 || isGeneral
-  const allComplete = requirements.every((r) => r.valid)
 
   const requirements = [
     { 
@@ -80,6 +79,8 @@ export function Step7() {
       step: 6
     }
   ]
+
+  const allComplete = requirements.every((r) => r.valid)
 
   return (
     <Card className="w-full max-w-3xl mx-auto">
