@@ -1,12 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
 
 type Props = {
   url: string | null
   name: string
-  onClose: () => void
 }
 
 function isPdf(name: string) {
@@ -17,7 +15,7 @@ function isImage(name: string) {
   return /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(name)
 }
 
-export function AttachmentPreview({ url, name, onClose }: Props) {
+export function AttachmentPreview({ url, name }: Props) {
   const [errored, setErrored] = useState(false)
 
   useEffect(() => {
@@ -27,12 +25,9 @@ export function AttachmentPreview({ url, name, onClose }: Props) {
 
   if (!url) {
     return (
-      <div className="space-y-3">
-        <div className="text-sm text-rose-600">Preview unavailable (no signed URL).</div>
+      <div className="space-y-2 text-sm">
+        <div className="text-rose-600">Preview unavailable (no signed URL).</div>
         <div className="text-xs text-slate-500">Try downloading instead.</div>
-        <Button variant="outline" size="sm" onClick={onClose}>
-          Close
-        </Button>
       </div>
     )
   }
@@ -42,13 +37,6 @@ export function AttachmentPreview({ url, name, onClose }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <div className="font-semibold text-slate-900 text-sm">{name}</div>
-        <Button variant="outline" size="sm" onClick={onClose}>
-          Close
-        </Button>
-      </div>
-
       {errored && (
         <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           Preview failed. Please download instead.
@@ -82,17 +70,6 @@ export function AttachmentPreview({ url, name, onClose }: Props) {
           Preview not supported for this file type. Please download.
         </div>
       )}
-
-      <div className="flex gap-2">
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-blue-600 text-sm underline"
-        >
-          Download
-        </a>
-      </div>
     </div>
   )
 }
