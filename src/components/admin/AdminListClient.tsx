@@ -221,7 +221,7 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
           ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
           : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
 
-        async function archiveApp(nextArchived: boolean) {
+        const archiveApp = async (nextArchived: boolean) => {
           const res = await fetch("/api/admin/application/archive", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
