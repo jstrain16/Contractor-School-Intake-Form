@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 import { ReminderActions } from "@/components/admin/ReminderActions"
@@ -15,6 +15,7 @@ type ApplicationRow = {
   created_at: string | null
   primary_trade: string | null
   license_type: string | null
+  archived?: boolean | null
 }
 
 type ProfileRow = {
@@ -121,10 +122,15 @@ const SORT_OPTIONS = [
 export function AdminListClient({ rows }: { rows: AdminRow[] }) {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("updated_desc")
+  const [items, setItems] = useState(rows)
+
+  useEffect(() => {
+    setItems(rows)
+  }, [rows])
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
-    return rows.filter(({ app, profile }) => {
+    return items.filter(({ app, profile }) => {
       if (!q) return true
       const nameParts = [
         profile?.first_name ?? "",
@@ -137,7 +143,7 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
         .toLowerCase()
       return nameParts.includes(q)
     })
-  }, [query, rows])
+  }, [items, query])
 
   const sorted = useMemo(() => {
     const copy = [...filtered]
@@ -203,6 +209,42 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
         const emailForReminder = profile?.email ?? d.step0?.email ?? null
         const insuranceRequested =
           Boolean(d.step3?.insuranceContactRequested) || Boolean(d.step3?.contactInsurancePartner)
+        const isArchived = Boolean(app.archived)
+
+        const archiveLabel = isArchived ? "Restore" : "Archive"
+        const archiveColor = isArchived
+          ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
+
+        async function archiveApp(nextArchived: boolean) {
+          const ok = window.confirm(nextArchived ? "Archive this application?" : "Restore this application?")
+          if (!ok) return
+          const res = await fetch("/api/admin/application/archive", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ applicationId: app.id, archived: nextArchived }),
+          })
+          if (!res.ok) {
+            alert("Failed to update archive state")
+            return
+          }
+          setItems((prev) => prev.map((row) => (row.app.id === app.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row)))
+        }
+
+        async function deleteApp() {
+          const ok = window.confirm("Delete this application? This cannot be undone.")
+          if (!ok) return
+          const res = await fetch("/api/admin/application/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ applicationId: app.id }),
+          })
+          if (!res.ok) {
+            alert("Failed to delete application")
+            return
+          }
+          setItems((prev) => prev.filter((row) => row.app.id !== app.id))
+        }
 
         return (
           <details
@@ -226,6 +268,11 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                 {insuranceRequested && (
                   <span className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 border border-orange-200">
                     IIS Contact Requested
+                  </span>
+                )}
+                {isArchived && (
+                  <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 border border-slate-200">
+                    Archived
                   </span>
                 )}
                 <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
@@ -286,6 +333,23 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
               <ReminderActions applicationId={app.id} data={d} email={emailForReminder} />
 
               <AttachmentList attachments={attachments} />
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => archiveApp(!isArchived)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${archiveColor}`}
+                >
+                  {archiveLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteApp}
+                  className="rounded-md px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </details>
         )
