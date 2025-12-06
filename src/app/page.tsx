@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, useUser } from "@clerk/nextjs"
 import { Hammer } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
@@ -124,8 +123,8 @@ export default function HomePage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-lg">
-              <Image
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLayBSGWDD_KFHlQMxccHG7u712NfE6Vg9tA&s"
+              <img
+                src="https://scontent-sjc6-1.xx.fbcdn.net/v/t39.30808-6/240653505_4534481226643987_6757608731291097570_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=71fqDPfxY3AQ7kNvwF8F95e&_nc_oc=Adm6AbqrXOOtqd_xGdxI4Sji67jFSAsH2LIdcBlTJndPQDz2wy_1-8QOZ39eoRX3t9c&_nc_zt=23&_nc_ht=scontent-sjc6-1.xx&_nc_gid=ujjrgUQw8j-8wLIWNMk0mQ&oh=00_Afk2X0D-Ta4BJZI1UpXGma34UBw4o4U0xXOkACJ6OuMghw&oe=6939A8BF"
                 alt="Contractor School"
                 width={32}
                 height={32}
