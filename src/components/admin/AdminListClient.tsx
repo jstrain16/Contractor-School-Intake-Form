@@ -275,6 +275,28 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                     Archived
                   </span>
                 )}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      archiveApp(!isArchived)
+                    }}
+                    className={`rounded-md px-2 py-1 text-xs font-semibold transition ${archiveColor}`}
+                  >
+                    {archiveLabel}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      deleteApp()
+                    }}
+                    className="rounded-md px-2 py-1 text-xs font-semibold text-white bg-red-600 hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
                 <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                   <div
                     className={`h-full ${progress >= 80 ? "bg-green-500" : "bg-gradient-to-r from-orange-500 to-orange-600"}`}
@@ -333,23 +355,6 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
               <ReminderActions applicationId={app.id} data={d} email={emailForReminder} />
 
               <AttachmentList attachments={attachments} />
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => archiveApp(!isArchived)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${archiveColor}`}
-                >
-                  {archiveLabel}
-                </button>
-                <button
-                  type="button"
-                  onClick={deleteApp}
-                  className="rounded-md px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
             </div>
           </details>
         )
