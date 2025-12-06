@@ -133,18 +133,16 @@ async function generateDraft(
   fullData: Partial<WizardData> | null,
   opts?: { workflowId?: string; assistantId?: string }
 ) {
-  try {
-    const openai = getOpenAIClient()
-    const firstName = data?.step0?.firstName
-    const greeting = firstName ? `Hi ${firstName},` : "Hello,"
-    const missingList = missing.map((m) => `- ${m.label}: ${m.hint}`).join("\n")
+  const firstName = data?.step0?.firstName
+  const greeting = firstName ? `Hi ${firstName},` : "Hello,"
+  const missingList = missing.map((m) => `- ${m.label}: ${m.hint}`).join("\n")
 
-    const dataBlob =
-      fullData && Object.keys(fullData).length > 0
-        ? `\nFull application data (JSON):\n${JSON.stringify(fullData)}`
-        : ""
+  const dataBlob =
+    fullData && Object.keys(fullData).length > 0
+      ? `\nFull application data (JSON):\n${JSON.stringify(fullData)}`
+      : ""
 
-    const prompt = `
+  const prompt = `
 Write a concise reminder email (plain text) to an applicant about their contractor license application.
 Tone: encouraging, clear, friendly. Keep it under 150 words. Include:
 - Use this greeting exactly: ${greeting}
@@ -156,33 +154,69 @@ ${dataBlob}
 Do not use placeholders like [Name]; use the provided greeting string.
 `
 
+  // If an assistantId is provided, use the Assistants threads/runs API.
+  if (opts?.assistantId) {
+    try {
+      const openai = getOpenAIClient()
+      const thread = await openai.beta.threads.create()
+      await openai.beta.threads.messages.create(thread.id, {
+        role: "user",
+        content: prompt,
+      })
+      const run = await openai.beta.threads.runs.create(thread.id, {
+        assistant_id: opts.assistantId,
+      })
+
+      // Poll until complete (simple loop; could be optimized/backoff)
+      let runStatus = run
+      for (let i = 0; i < 10; i++) {
+        if (runStatus.status === "completed") break
+        await new Promise((r) => setTimeout(r, 800))
+        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id)
+      }
+
+      if (runStatus.status !== "completed") {
+        console.error("assistant run did not complete", runStatus.status)
+      } else {
+        const messages = await openai.beta.threads.messages.list(thread.id, { limit: 5 })
+        const latest = messages.data.find((m) => m.role === "assistant")
+        const textPart = latest?.content?.find((c) => c.type === "text")
+        const output = (textPart && "text" in textPart && typeof textPart.text?.value === "string"
+          ? textPart.text.value
+          : ""
+        ).trim()
+        if (output) {
+          console.info("assistant draft used", { assistantId: opts.assistantId })
+          return output
+        }
+      }
+    } catch (e) {
+      console.error("assistant run error", e)
+    }
+  }
+
+  // Fallback to model (workflow if provided else gpt-4o-mini)
+  try {
+    const openai = getOpenAIClient()
     const model = opts?.workflowId || "gpt-4o-mini"
-    const assistantId = opts?.assistantId
     console.info("reminder draft model", {
       model,
-      assistantId,
+      assistantId: opts?.assistantId,
       workflowId: opts?.workflowId,
     })
-
-    // If assistantId is provided, include a brief system hint; do not treat it as a model ID.
-    const assistantHint = assistantId
-      ? `\n\nYou are the Contractor School Assistant (ID: ${assistantId}). Use the style and tone appropriate for that assistant.`
-      : ""
-
     const res = await openai.responses.create({
       model,
-      input: prompt + assistantHint,
+      input: prompt,
       max_output_tokens: 260,
       temperature: 0.4,
     })
-
     const message = res.output_text?.trim()
     if (message) return message
-    return fallbackDraft(missing, data?.step0?.firstName, progress)
   } catch (e) {
     console.error("openai generate draft error", e)
-    return fallbackDraft(missing, data?.step0?.firstName, progress)
   }
+
+  return fallbackDraft(missing, data?.step0?.firstName, progress)
 }
 
 function fallbackDraft(
