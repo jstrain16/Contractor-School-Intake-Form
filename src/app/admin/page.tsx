@@ -94,17 +94,6 @@ async function fetchAdminData(): Promise<AdminRow[]> {
   })
 }
 
-function formatKey(key: string) {
-  const step0 = data?.step0
-  const nameParts = [
-    profile?.first_name ?? step0?.firstName ?? "",
-    profile?.last_name ?? step0?.lastName ?? "",
-  ].filter(Boolean)
-  const name = nameParts.join(" ") || profile?.email || step0?.email || "Unknown user"
-  const email = profile?.email ?? step0?.email ?? "No email on file"
-  return { name, email }
-}
-
 function SearchSortBar({ currentQuery, currentSort }: { currentQuery?: string; currentSort?: string }) {
   const sort = currentSort || "updated_desc"
   return (
