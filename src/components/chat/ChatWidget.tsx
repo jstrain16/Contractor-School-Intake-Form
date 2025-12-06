@@ -36,9 +36,25 @@ export function ChatWidget() {
   const [deviceId, setDeviceId] = useState("unknown-device")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [sdkReady, setSdkReady] = useState(false)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if ((window as any).ChatKit) {
+      setSdkReady(true)
+      return
+    }
+    const timer = setInterval(() => {
+      if ((window as any).ChatKit) {
+        setSdkReady(true)
+        clearInterval(timer)
+      }
+    }, 200)
+    return () => clearInterval(timer)
   }, [])
 
   const { control } = useChatKit({
@@ -72,8 +88,9 @@ export function ChatWidget() {
       {open && (
         <div className="fixed bottom-24 right-4 z-40 w-80 h-[520px] rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white">
           {error && <div className="p-4 text-sm text-red-600">Chat unavailable: {error}</div>}
-          {!error && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
-          {!error && !loading && <ChatKit control={control} className="h-full w-full" />}
+          {!error && !sdkReady && <div className="p-4 text-sm text-slate-600">Loading chat...</div>}
+          {!error && sdkReady && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
+          {!error && sdkReady && !loading && <ChatKit control={control} className="h-full w-full" />}
         </div>
       )}
       <button
