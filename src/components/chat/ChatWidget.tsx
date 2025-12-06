@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import { ChatKit, useChatKit } from "@openai/chatkit-react"
 import { MessageCircle } from "lucide-react"
+import { useRef } from "react"
 
 function getOrCreateDeviceId() {
   if (typeof window === "undefined") return "unknown-device"
@@ -38,6 +39,7 @@ export function ChatWidget() {
   const [loading, setLoading] = useState(false)
   const [sdkReady, setSdkReady] = useState(false)
   const [sdkError, setSdkError] = useState<string | null>(null)
+  const sessionPromise = useRef<Promise<string> | null>(null)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
@@ -76,21 +78,36 @@ export function ChatWidget() {
     api: {
       async getClientSecret(existing) {
         if (existing) return existing
+        if (sessionPromise.current) return sessionPromise.current
+
         setLoading(true)
-        const res = await fetch("/api/chatkit/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ deviceId }),
-        })
-        if (!res.ok) {
-          const text = await res.text().catch(() => "Failed to create ChatKit session")
-          setError(text || "Failed to create ChatKit session")
+        sessionPromise.current = (async () => {
+          const res = await fetch("/api/chatkit/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ deviceId }),
+          })
+          if (!res.ok) {
+            const text = await res.text().catch(() => "Failed to create ChatKit session")
+            setError(text || "Failed to create ChatKit session")
+            setLoading(false)
+            sessionPromise.current = null
+            throw new Error(text)
+          }
+          const json = await res.json()
+          const client_secret = json?.client_secret
+          if (!client_secret) {
+            const msg = "No client_secret returned from chat session"
+            setError(msg)
+            setLoading(false)
+            sessionPromise.current = null
+            throw new Error(msg)
+          }
           setLoading(false)
-          throw new Error(text)
-        }
-        const { client_secret } = await res.json()
-        setLoading(false)
-        return client_secret
+          return client_secret as string
+        })()
+
+        return sessionPromise.current
       },
     },
   })
