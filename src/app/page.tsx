@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { SignedIn, SignedOut, SignInButton, SignUpButton, useUser } from "@clerk/nextjs"
 import { Hammer } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
@@ -122,8 +123,14 @@ export default function HomePage() {
         {/* Hero */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 via-amber-500 to-slate-800 shadow-lg">
-              <span className="text-white text-lg font-semibold">CS</span>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-lg border border-slate-200">
+              <Image
+                src="https://beacontractor.com/wp-content/uploads/2021/08/logo.svg"
+                alt="Contractor School"
+                width={48}
+                height={48}
+                className="h-10 w-10 object-contain"
+              />
             </div>
           <div>
               <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Contractor School</h1>
