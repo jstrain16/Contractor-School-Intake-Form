@@ -57,17 +57,16 @@ export default async function AdminSettingsPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">Archived applications</h2>
-              <p className="text-sm text-slate-600">Delete archived applications permanently.</p>
-            </div>
-          </div>
+        <details className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <summary className="cursor-pointer text-lg font-semibold text-slate-900 flex items-center justify-between">
+            <span>Archived applications</span>
+            <span className="text-sm font-normal text-slate-600">(click to expand)</span>
+          </summary>
+          <p className="text-sm text-slate-600 mt-2">Restore or delete archived applications.</p>
           <div className="mt-3">
             <ArchivedApplications items={archived} />
           </div>
-        </div>
+        </details>
       </div>
     </div>
   )

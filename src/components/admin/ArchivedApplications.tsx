@@ -29,6 +29,21 @@ function displayName(app: App) {
 export default function ArchivedApplications({ items }: { items: App[] }) {
   const [list, setList] = useState(items)
 
+  async function unarchiveApp(id: string) {
+    const ok = window.confirm("Restore this application from archive?")
+    if (!ok) return
+    const res = await fetch("/api/admin/application/archive", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ applicationId: id, archived: false }),
+    })
+    if (!res.ok) {
+      alert("Failed to restore application")
+      return
+    }
+    setList((prev) => prev.filter((a) => a.app.id !== id))
+  }
+
   async function deleteApp(id: string) {
     const ok = window.confirm("Delete this application permanently?")
     if (!ok) return
@@ -62,6 +77,13 @@ export default function ArchivedApplications({ items }: { items: App[] }) {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => unarchiveApp(row.app.id)}
+                className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100"
+              >
+                Unarchive
+              </button>
               <button
                 type="button"
                 onClick={() => deleteApp(row.app.id)}
