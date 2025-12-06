@@ -68,7 +68,16 @@ export function Step1() {
 
           {!completed && (
             <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm">
-              You need to complete the course. <a href="https://utahhba.com" target="_blank" rel="noreferrer" className="underline font-medium">Click here to schedule the 25 Hour Pre-license Course</a>.
+              You need to complete the course.{" "}
+              <a
+                href="https://members.agc-utah.org/events"
+                target="_blank"
+                rel="noreferrer"
+                className="underline font-medium"
+              >
+                Click here to schedule the 25 Hour Pre-license Course at the AGC Utah
+              </a>
+              .
             </div>
           )}
 

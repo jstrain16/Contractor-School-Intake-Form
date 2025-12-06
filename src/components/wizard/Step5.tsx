@@ -12,6 +12,7 @@ import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step5() {
   const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
+  const isGeneral = (data.step0?.generalLicenses?.length ?? 0) > 0 || data.step0?.licenseType === "general"
   // Only General Contractors need this exam usually, but prompt says "General Contractors must pass...". 
   // It doesn't explicitly say Specialty don't need it, but implies it. 
   // "For General Contractors there are extra requirements... Prov Business & Law exam."
@@ -38,6 +39,25 @@ export function Step5() {
     const parsed: Step5Data = step5Schema.parse(values)
     updateData("step5", parsed)
     nextStep()
+  }
+
+  if (!isGeneral) {
+    return (
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Exams & Testing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4 bg-slate-50 rounded-md border text-sm text-slate-700">
+            Business & Law exam not required for specialty-only licenses. You can continue.
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline" onClick={prevStep}>Previous</Button>
+          <Button onClick={() => nextStep()}>Next Step</Button>
+        </CardFooter>
+      </Card>
+    )
   }
 
   return (
@@ -83,7 +103,16 @@ export function Step5() {
 
           {examStatus === "not_scheduled" && (
              <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm">
-                You need to pass the Utah Business and Law Exam. <a href="#" className="underline font-medium">Click here to schedule with Prov</a>.
+               You need to pass the Utah Business and Law Exam.{" "}
+               <a
+                 href="https://commerce.utah.gov/dopl/licensing-exams/schedule-an-exam-2/"
+                 className="underline font-medium"
+                 target="_blank"
+                 rel="noreferrer"
+               >
+                 Click here to schedule with Prov
+               </a>
+               .
              </div>
           )}
 

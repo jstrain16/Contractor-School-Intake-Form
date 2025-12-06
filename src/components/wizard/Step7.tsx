@@ -16,7 +16,7 @@ export function Step7() {
   const form = useForm<Step7FormValues>({
     resolver: zodResolver(step7Schema),
     defaultValues: {
-      attested: true, // Default to true for UI but user must confirm if we used a checkbox, but here we just show text
+      attested: true,
       signature: "",
       signatureDate: new Date().toISOString().split('T')[0],
     }
@@ -25,8 +25,6 @@ export function Step7() {
   const onSubmit = (values: Step7FormValues) => {
     const parsed: Step7Data = step7Schema.parse(values)
     updateData("step7", parsed)
-    alert("Application Packet Generated! (Mock)")
-    console.log("Final Data:", { ...data, step7: parsed })
   }
 
   // Helper to check status
@@ -38,6 +36,8 @@ export function Step7() {
 
   const isGeneral = data.step0?.licenseType === "general"
   const hasEmployees = data.step0?.hasEmployees
+  const hasGeneralSelection = (data.step0?.generalLicenses?.length ?? 0) > 0 || isGeneral
+  const allComplete = requirements.every((r) => r.valid)
 
   const requirements = [
     { 
@@ -65,7 +65,7 @@ export function Step7() {
       valid: hasEmployees ? !!data.step3?.hasWorkersComp : !!data.step3?.hasWcWaiver,
       step: 3
     },
-    ...(isGeneral ? [{
+    ...(hasGeneralSelection ? [{
       label: "Experience / Qualifier",
       valid: !!data.step4?.hasExperience,
       step: 4
@@ -110,6 +110,42 @@ export function Step7() {
                 })}
              </div>
           </div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="signature">Type your full name to attest</Label>
+              <Input id="signature" {...form.register("signature")} />
+              {form.formState.errors.signature && (
+                <p className="text-sm text-red-600">{form.formState.errors.signature.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="signatureDate">Date</Label>
+              <Input id="signatureDate" type="date" {...form.register("signatureDate")} />
+            </div>
+            <Button type="submit" className="bg-green-600 hover:bg-green-700">
+              Save Attestation
+            </Button>
+          </form>
+
+          {allComplete && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md space-y-2">
+              <div className="flex items-center gap-2 text-green-700 font-semibold">
+                <CheckCircle2 className="h-5 w-5" /> Your application is complete.
+              </div>
+              <p className="text-sm text-green-800">
+                You can review your entries or download your uploaded documents from the sections above.
+              </p>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => setStep(0)}>
+                  Review from start
+                </Button>
+                <Button type="button" onClick={() => window.print()}>
+                  Print / Save as PDF
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">

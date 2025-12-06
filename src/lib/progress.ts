@@ -30,14 +30,19 @@ export type MissingStep = {
 
 export function buildStatus(data: Partial<WizardData> | null | undefined): StatusSummary {
   const d = data || {}
-  const licenseType = d.step0?.licenseType
-  const isGeneral = licenseType === "general"
-  const isSpecialty = licenseType === "specialty"
+  const hasGeneral =
+    (d.step0?.generalLicenses && d.step0.generalLicenses.length > 0) || d.step0?.licenseType === "general"
+  const hasSpecialty =
+    (d.step0?.specialtyLicenses && d.step0.specialtyLicenses.length > 0) || d.step0?.licenseType === "specialty"
 
   const items: StatusItem[] = [
     {
       label: "Account Setup",
-      done: !!d.step0?.firstName && !!d.step0?.licenseType && !!d.step0?.email,
+      done:
+        !!d.step0?.firstName &&
+        !!d.step0?.email &&
+        ((d.step0?.generalLicenses?.length ?? 0) + (d.step0?.specialtyLicenses?.length ?? 0) > 0 ||
+          !!d.step0?.licenseType),
       weight: PROGRESS_WEIGHTS.licenseSetup,
     },
     {
@@ -62,13 +67,13 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
     },
     {
       label: "Experience / Qualifier",
-      done: isGeneral ? !!d.step4?.hasExperience : isSpecialty ? true : false,
+      done: hasGeneral ? !!d.step4?.hasExperience : true,
       weight: PROGRESS_WEIGHTS.experience,
     },
     {
       label: "Business & Law Exam",
-      done: isGeneral ? d.step5?.examStatus === "passed" : isSpecialty ? true : false,
-      weight: PROGRESS_WEIGHTS.exams,
+      done: hasGeneral ? d.step5?.examStatus === "passed" : true,
+      weight: hasGeneral ? PROGRESS_WEIGHTS.exams : 0,
     },
     {
       label: "DOPL Application",

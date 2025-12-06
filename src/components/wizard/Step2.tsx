@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step2() {
   const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
@@ -172,6 +171,22 @@ export function Step2() {
                 />
               </div>
             )}
+            {!hasEntity && (
+              <div className="p-3 bg-slate-50 rounded-md border text-sm space-y-1">
+                <p className="font-medium text-slate-800">Need an entity?</p>
+                <p className="text-slate-700">
+                  Follow the state guide to create your business entity before continuing.
+                </p>
+                <a
+                  href="https://corporations.utah.gov/business-entities/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-600 underline font-semibold"
+                >
+                  View entity creation instructions
+                </a>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4 pt-4 border-t">
@@ -187,15 +202,8 @@ export function Step2() {
             {hasEin ? (
               <div className="space-y-2 pl-4 border-l-2 border-slate-200">
                 <Label htmlFor="federalEin">Federal EIN (FEIN)</Label>
-                <Input id="federalEin" {...form.register("federalEin")} />
-                <div className="text-xs text-slate-500">Recommended: Upload IRS EIN confirmation letter</div>
-                <UploadField
-                  label="IRS EIN confirmation letter"
-                  step={2}
-                  fileType="ein_letter"
-                  applicationId={applicationId}
-                  accept=".pdf,.jpg,.png"
-                />
+                <Input id="federalEin" type="text" inputMode="numeric" {...form.register("federalEin")} />
+                <div className="text-xs text-slate-500">Enter the FEIN from your IRS confirmation.</div>
               </div>
             ) : (
               <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-md">
@@ -217,13 +225,9 @@ export function Step2() {
              
              {hasBankAccount ? (
                <div className="space-y-2 pl-4 border-l-2 border-slate-200">
-                 <UploadField
-                   label="Upload Voided Check (required)"
-                   step={2}
-                   fileType="voided_check"
-                   applicationId={applicationId}
-                   accept=".pdf,.jpg,.png"
-                 />
+                 <Label>Upload Voided Check (optional)</Label>
+                 <p className="text-xs text-slate-500">Upload if available to speed verification.</p>
+                 <input type="file" disabled className="text-xs text-slate-500" />
                </div>
              ) : (
                <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-md">
