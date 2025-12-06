@@ -172,7 +172,7 @@ Do not use placeholders like [Name]; use the provided greeting string.
       for (let i = 0; i < 10; i++) {
         if (runStatus.status === "completed") break
         await new Promise((r) => setTimeout(r, 800))
-        runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id)
+        runStatus = await openai.beta.threads.runs.retrieve(thread.id, { run_id: runStatus.id } as any)
       }
 
       if (runStatus.status !== "completed") {
