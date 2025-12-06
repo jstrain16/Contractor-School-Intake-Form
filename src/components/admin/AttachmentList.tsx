@@ -95,7 +95,7 @@ export function AttachmentList({ attachments }: { attachments: AdminAttachment[]
                 </button>
               </div>
             </div>
-            <AttachmentPreview url={current.signedUrl} name={displayName(current)} onClose={() => setPreviewId(null)} />
+            <AttachmentPreview url={current.signedUrl} name={displayName(current)} />
           </div>
         </div>
       )}
