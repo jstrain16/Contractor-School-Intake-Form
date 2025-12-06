@@ -52,14 +52,26 @@ async function fetchAdminData(): Promise<AdminRow[]> {
   const appRows = (applications || []) as ApplicationRow[]
 
   const userIds = appRows.map((a) => a.user_id)
+  let profileRows: ProfileRow[] = []
   const { data: profiles, error: profileError } = await supabase
     .from("user_profiles")
     .select("user_id,email,first_name,last_name,phone")
     .in("user_id", userIds)
 
-  if (profileError) throw profileError
+  if (profileError) {
+    // If the user_profiles table does not exist in this environment, continue without profile data.
+    if ((profileError as any)?.code === "PGRST205" || /user_profiles/i.test(profileError.message || "")) {
+      console.warn("user_profiles table not found; continuing without profile data")
+      profileRows = []
+    } else {
+      throw profileError
+    }
+  } else {
+    profileRows = (profiles || []) as ProfileRow[]
+  }
+
   const profileMap = new Map<string, ProfileRow>()
-  ;(profiles || []).forEach((p) => profileMap.set(p.user_id, p as ProfileRow))
+  profileRows.forEach((p) => profileMap.set(p.user_id, p as ProfileRow))
 
   const appIds = appRows.map((a) => a.id)
   const { data: attachments, error: attError } = await supabase
