@@ -231,7 +231,11 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
             alert("Failed to update archive state")
             return
           }
-          setItems((prev) => prev.map((row) => (row.app.id === app.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row)))
+          setItems((prev) =>
+            nextArchived
+              ? prev.filter((row) => row.app.id !== app.id)
+              : prev.map((row) => (row.app.id === app.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row))
+          )
           setConfirming(null)
         }
 
