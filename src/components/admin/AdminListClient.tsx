@@ -123,8 +123,11 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
   const [query, setQuery] = useState("")
   const [sort, setSort] = useState("updated_desc")
   const [items, setItems] = useState(rows.filter((r) => !r.app.archived))
-  const [confirmId, setConfirmId] = useState<string | null>(null)
-  const [confirmAction, setConfirmAction] = useState<"archive" | "restore" | null>(null)
+  const [confirming, setConfirming] = useState<{
+    id: string
+    action: "archive" | "restore"
+    name: string
+  } | null>(null)
 
   useEffect(() => {
     setItems(rows.filter((r) => !r.app.archived))
@@ -229,6 +232,7 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
             return
           }
           setItems((prev) => prev.map((row) => (row.app.id === app.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row)))
+          setConfirming(null)
         }
 
         return (
@@ -265,35 +269,16 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                     type="button"
                     onClick={(e) => {
                       e.preventDefault()
-                    const action = isArchived ? "restore" : "archive"
-                    if (confirmId === app.id && confirmAction === action) {
-                      archiveApp(!isArchived)
-                      setConfirmId(null)
-                      setConfirmAction(null)
-                    } else {
-                      setConfirmId(app.id)
-                      setConfirmAction(action)
-                    }
+                      setConfirming({
+                        id: app.id,
+                        action: isArchived ? "restore" : "archive",
+                        name: user.name,
+                      })
                     }}
-                  className={`rounded-md px-2 py-1 text-xs font-semibold transition ${archiveColor} ${
-                    confirmId === app.id ? "ring-2 ring-amber-300" : ""
-                  }`}
+                    className={`rounded-md px-2 py-1 text-xs font-semibold transition ${archiveColor}`}
                   >
-                  {confirmId === app.id && confirmAction === (isArchived ? "restore" : "archive") ? "Confirm" : archiveLabel}
+                    {archiveLabel}
                   </button>
-                {confirmId === app.id && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setConfirmId(null)
-                      setConfirmAction(null)
-                    }}
-                    className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                )}
                 </div>
                 <div className="hidden md:flex h-2 w-28 rounded-full bg-slate-100 overflow-hidden shadow-inner">
                   <div
@@ -357,6 +342,38 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
           </details>
         )
       })}
+      {confirming && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-xl bg-white shadow-2xl border border-slate-200 p-6 space-y-4">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold text-slate-900">
+                {confirming.action === "archive" ? "Archive application?" : "Restore application?"}
+              </div>
+              <div className="text-sm text-slate-600">
+                {confirming.name}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirming(null)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => archiveApp(confirming.action === "archive")}
+                className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
+                  confirming.action === "archive" ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

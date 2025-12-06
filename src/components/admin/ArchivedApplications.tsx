@@ -28,8 +28,11 @@ function displayName(app: App) {
 
 export default function ArchivedApplications({ items }: { items: App[] }) {
   const [list, setList] = useState(items)
-  const [confirmId, setConfirmId] = useState<string | null>(null)
-  const [confirmAction, setConfirmAction] = useState<"delete" | "restore" | null>(null)
+  const [confirming, setConfirming] = useState<{
+    id: string
+    action: "delete" | "restore"
+    name: string
+  } | null>(null)
 
   async function unarchiveApp(id: string) {
     const res = await fetch("/api/admin/application/archive", {
@@ -42,6 +45,7 @@ export default function ArchivedApplications({ items }: { items: App[] }) {
       return
     }
     setList((prev) => prev.filter((a) => a.app.id !== id))
+    setConfirming(null)
   }
 
   async function deleteApp(id: string) {
@@ -55,6 +59,7 @@ export default function ArchivedApplications({ items }: { items: App[] }) {
       return
     }
     setList((prev) => prev.filter((a) => a.app.id !== id))
+    setConfirming(null)
   }
 
   if (list.length === 0) {
@@ -78,55 +83,61 @@ export default function ArchivedApplications({ items }: { items: App[] }) {
               <button
                 type="button"
                 onClick={() => {
-                  if (confirmId === row.app.id && confirmAction === "restore") {
-                    unarchiveApp(row.app.id)
-                    setConfirmId(null)
-                    setConfirmAction(null)
-                  } else {
-                    setConfirmId(row.app.id)
-                    setConfirmAction("restore")
-                  }
+                  setConfirming({ id: row.app.id, action: "restore", name: user.name })
                 }}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 ${
-                  confirmId === row.app.id && confirmAction === "restore" ? "ring-2 ring-amber-300" : ""
-                }`}
+                className="rounded-md px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100"
               >
-                {confirmId === row.app.id && confirmAction === "restore" ? "Confirm" : "Unarchive"}
+                Unarchive
               </button>
-              {confirmId === row.app.id && confirmAction === "restore" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConfirmId(null)
-                    setConfirmAction(null)
-                  }}
-                  className="rounded-md px-2 py-1 text-xs font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => {
-                  if (confirmId === row.app.id && confirmAction === "delete") {
-                    deleteApp(row.app.id)
-                    setConfirmId(null)
-                    setConfirmAction(null)
-                  } else {
-                    setConfirmId(row.app.id)
-                    setConfirmAction("delete")
-                  }
+                  setConfirming({ id: row.app.id, action: "delete", name: user.name })
                 }}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold text-white ${
-                  confirmId === row.app.id && confirmAction === "delete" ? "bg-red-700" : "bg-red-600 hover:bg-red-700"
-                }`}
+                className="rounded-md px-3 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700"
               >
-                {confirmId === row.app.id && confirmAction === "delete" ? "Confirm" : "Delete"}
+                Delete
               </button>
             </div>
           </div>
         )
       })}
+      {confirming && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-xl bg-white shadow-2xl border border-slate-200 p-6 space-y-4">
+            <div className="space-y-1">
+              <div className="text-sm font-semibold text-slate-900">
+                {confirming.action === "delete" ? "Delete application?" : "Restore application?"}
+              </div>
+              <div className="text-sm text-slate-600">{confirming.name}</div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirming(null)}
+                className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirming.action === "delete") {
+                    deleteApp(confirming.id)
+                  } else {
+                    unarchiveApp(confirming.id)
+                  }
+                }}
+                className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
+                  confirming.action === "delete" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
