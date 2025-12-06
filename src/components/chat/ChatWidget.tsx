@@ -37,6 +37,7 @@ export function ChatWidget() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [sdkReady, setSdkReady] = useState(false)
+  const [sdkError, setSdkError] = useState<string | null>(null)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
@@ -44,12 +45,26 @@ export function ChatWidget() {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    if ((window as any).ChatKit) {
+    const hasGlobal = () => Boolean((window as any).ChatKit)
+    if (hasGlobal()) {
       setSdkReady(true)
       return
     }
+
+    // Fallback: dynamically load script if not yet loaded
+    const existing = document.querySelector('script[data-chatkit="true"]') as HTMLScriptElement | null
+    if (!existing) {
+      const script = document.createElement("script")
+      script.src = "https://cdn.platform.openai.com/deployments/chatkit/chatkit.js"
+      script.async = true
+      script.dataset.chatkit = "true"
+      script.onload = () => setSdkReady(true)
+      script.onerror = () => setSdkError("Chat SDK failed to load")
+      document.body.appendChild(script)
+    }
+
     const timer = setInterval(() => {
-      if ((window as any).ChatKit) {
+      if (hasGlobal()) {
         setSdkReady(true)
         clearInterval(timer)
       }
@@ -88,9 +103,10 @@ export function ChatWidget() {
       {open && (
         <div className="fixed bottom-24 right-4 z-40 w-80 h-[520px] rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white">
           {error && <div className="p-4 text-sm text-red-600">Chat unavailable: {error}</div>}
-          {!error && !sdkReady && <div className="p-4 text-sm text-slate-600">Loading chat...</div>}
-          {!error && sdkReady && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
-          {!error && sdkReady && !loading && <ChatKit control={control} className="h-full w-full" />}
+          {!error && sdkError && <div className="p-4 text-sm text-red-600">{sdkError}</div>}
+          {!error && !sdkError && !sdkReady && <div className="p-4 text-sm text-slate-600">Loading chat...</div>}
+          {!error && !sdkError && sdkReady && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
+          {!error && !sdkError && sdkReady && !loading && <ChatKit control={control} className="h-full w-full" />}
         </div>
       )}
       <button
