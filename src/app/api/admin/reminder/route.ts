@@ -136,7 +136,7 @@ async function generateDraft(
   try {
     const openai = getOpenAIClient()
     const firstName = data?.step0?.firstName
-    const namePart = firstName ? `Hi ${firstName},` : "Hello,"
+    const greeting = firstName ? `Hi ${firstName},` : "Hello,"
     const missingList = missing.map((m) => `- ${m.label}: ${m.hint}`).join("\n")
 
     const dataBlob =
@@ -147,12 +147,13 @@ async function generateDraft(
     const prompt = `
 Write a concise reminder email (plain text) to an applicant about their contractor license application.
 Tone: encouraging, clear, friendly. Keep it under 150 words. Include:
-- A greeting (${namePart})
+- Use this greeting exactly: ${greeting}
 - Current progress: ${progress}% complete
 - Bulleted missing steps:
 ${missingList}
 - A short call to action to return and finish in the portal.
 ${dataBlob}
+Do not use placeholders like [Name]; use the provided greeting string.
 `
 
     const model = opts?.workflowId || "gpt-4o-mini"
