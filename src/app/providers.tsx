@@ -16,6 +16,7 @@ import Image from "next/image"
 import type { ReactNode } from "react"
 import { useMemo } from "react"
 import { Shield } from "lucide-react"
+import ChatWidget from "@/components/chat/ChatWidget"
 
 type ProvidersProps = {
   children: ReactNode
@@ -134,6 +135,7 @@ export function Providers({ children }: ProvidersProps) {
           </div>
         </header>
         {children}
+        <ChatWidget />
       </ClerkLoaded>
     </ClerkProvider>
   )
