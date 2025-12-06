@@ -41,25 +41,6 @@ export function Step5() {
     nextStep()
   }
 
-  if (!isGeneral) {
-    return (
-      <Card className="w-full max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Exams & Testing</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-slate-50 rounded-md border text-sm text-slate-700">
-            Business & Law exam not required for specialty-only licenses. You can continue.
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={prevStep}>Previous</Button>
-          <Button onClick={() => nextStep()}>Next Step</Button>
-        </CardFooter>
-      </Card>
-    )
-  }
-
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -67,6 +48,12 @@ export function Step5() {
       </CardHeader>
       <CardContent>
         <form id="step5-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          
+          {!isGeneral && (
+            <div className="p-4 bg-slate-50 rounded-md border text-sm text-slate-700">
+              Business & Law exam is typically not required for specialty-only licenses. If you still plan to take it, you can record the details below.
+            </div>
+          )}
           
           <div className="space-y-3">
             <Label className="text-base">Have you scheduled the Prov Business & Law Exam?</Label>
