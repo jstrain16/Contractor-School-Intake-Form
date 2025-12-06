@@ -221,24 +221,6 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
           ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
           : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
 
-        const archiveApp = async (nextArchived: boolean) => {
-          const res = await fetch("/api/admin/application/archive", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ applicationId: app.id, archived: nextArchived }),
-          })
-          if (!res.ok) {
-            alert("Failed to update archive state")
-            return
-          }
-          setItems((prev) =>
-            nextArchived
-              ? prev.filter((row) => row.app.id !== app.id)
-              : prev.map((row) => (row.app.id === app.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row))
-          )
-          setConfirming(null)
-        }
-
         return (
           <details
             key={app.id}
@@ -367,7 +349,27 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
               </button>
               <button
                 type="button"
-                onClick={() => archiveApp(confirming.action === "archive")}
+                onClick={async () => {
+                  if (!confirming) return
+                  const nextArchived = confirming.action === "archive"
+                  const res = await fetch("/api/admin/application/archive", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ applicationId: confirming.id, archived: nextArchived }),
+                  })
+                  if (!res.ok) {
+                    alert("Failed to update archive state")
+                    return
+                  }
+                  setItems((prev) =>
+                    nextArchived
+                      ? prev.filter((row) => row.app.id !== confirming.id)
+                      : prev.map((row) =>
+                          row.app.id === confirming.id ? { ...row, app: { ...row.app, archived: nextArchived } } : row
+                        )
+                  )
+                  setConfirming(null)
+                }}
                 className={`rounded-md px-3 py-2 text-sm font-semibold text-white ${
                   confirming.action === "archive" ? "bg-amber-600 hover:bg-amber-700" : "bg-green-600 hover:bg-green-700"
                 }`}
