@@ -8,6 +8,7 @@ import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 import { buildStatus } from "@/lib/progress"
 import { ReminderActions } from "@/components/admin/ReminderActions"
 import { AttachmentList } from "@/components/admin/AttachmentList"
+import Link from "next/link"
 
 type ApplicationRow = {
   id: string
@@ -157,13 +158,95 @@ function getDisplayUser(profile?: ProfileRow, data?: WizardData | null): Display
   return { name, email }
 }
 
-export default async function AdminPage() {
+function SearchSortBar({ currentQuery, currentSort }: { currentQuery?: string; currentSort?: string }) {
+  const sort = currentSort || "updated_desc"
+  return (
+    <form className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          name="q"
+          defaultValue={currentQuery}
+          placeholder="Search by name or email"
+          className="w-64 rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500"
+        >
+          Search
+        </button>
+      </div>
+      <div className="flex items-center gap-2 text-sm text-slate-700">
+        <label className="text-slate-600" htmlFor="sort">
+          Sort:
+        </label>
+        <select
+          id="sort"
+          name="sort"
+          defaultValue={sort}
+          className="rounded-md border border-slate-200 px-2 py-1 text-sm focus:border-orange-500 focus:outline-none"
+        >
+          <option value="updated_desc">Updated (newest)</option>
+          <option value="updated_asc">Updated (oldest)</option>
+          <option value="created_desc">Created (newest)</option>
+          <option value="created_asc">Created (oldest)</option>
+          <option value="name_asc">Name (A→Z)</option>
+          <option value="name_desc">Name (Z→A)</option>
+          <option value="progress_desc">Progress (high→low)</option>
+          <option value="progress_asc">Progress (low→high)</option>
+        </select>
+      </div>
+    </form>
+  )
+}
+
+export default async function AdminPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
   const { isAllowed } = await requireAdminEmail()
   if (!isAllowed) {
     redirect("/sign-in")
   }
 
   const rows = await fetchAdminData()
+  const qRaw = typeof searchParams?.q === "string" ? searchParams?.q : ""
+  const sortRaw = typeof searchParams?.sort === "string" ? searchParams?.sort : ""
+  const q = qRaw.toLowerCase().trim()
+
+  const filtered = rows.filter(({ app, profile }) => {
+    if (!q) return true
+    const nameParts = [
+      profile?.first_name ?? "",
+      profile?.last_name ?? "",
+      app.data?.step0?.firstName ?? "",
+      app.data?.step0?.lastName ?? "",
+      profile?.email ?? app.data?.step0?.email ?? "",
+    ]
+      .join(" ")
+      .toLowerCase()
+    return nameParts.includes(q)
+  })
+
+  const sorted = [...filtered].sort((a, b) => {
+    const sort = sortRaw || "updated_desc"
+    const nameA =
+      (a.profile?.first_name ?? a.app.data?.step0?.firstName ?? "") +
+      " " +
+      (a.profile?.last_name ?? a.app.data?.step0?.lastName ?? "")
+    const nameB =
+      (b.profile?.first_name ?? b.app.data?.step0?.firstName ?? "") +
+      " " +
+      (b.profile?.last_name ?? b.app.data?.step0?.lastName ?? "")
+    if (sort === "name_asc") return nameA.localeCompare(nameB)
+    if (sort === "name_desc") return nameB.localeCompare(nameA)
+    if (sort === "progress_asc") return a.progress - b.progress
+    if (sort === "progress_desc") return b.progress - a.progress
+    if (sort === "created_asc")
+      return (new Date(a.app.created_at || 0).getTime() || 0) - (new Date(b.app.created_at || 0).getTime() || 0)
+    if (sort === "created_desc")
+      return (new Date(b.app.created_at || 0).getTime() || 0) - (new Date(a.app.created_at || 0).getTime() || 0)
+    // default updated_desc
+    return (new Date(b.app.updated_at || 0).getTime() || 0) - (new Date(a.app.updated_at || 0).getTime() || 0)
+  })
 
   const progressBorder = (pct: number) => {
     if (pct >= 80) return "border-l-green-500"
@@ -179,10 +262,20 @@ export default async function AdminPage() {
             <h1 className="text-2xl font-bold text-slate-900">Admin Portal</h1>
             <p className="text-slate-600 text-sm">Review applicant progress, answers, and attachments.</p>
           </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/settings"
+              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+            >
+              Admin Settings
+            </Link>
+          </div>
         </div>
 
+        <SearchSortBar currentQuery={qRaw} currentSort={sortRaw} />
+
         <div className="space-y-3">
-          {rows.map(({ app, profile, progress, attachments }) => {
+          {sorted.map(({ app, profile, progress, attachments }) => {
             const user = getDisplayUser(profile, app.data ?? null)
             const d: Partial<WizardData> = (app.data ?? {}) as Partial<WizardData>
             const emailForReminder = profile?.email ?? d.step0?.email ?? null
