@@ -116,6 +116,7 @@ export async function POST(req: Request) {
       applicationId,
       to: applicantEmail,
       subject,
+      modelUsed: openaiAssistantId || openaiWorkflowId || "gpt-4o-mini",
     })
 
     return NextResponse.json({ sent: true, draft: textBody, subject, missingSteps })
@@ -155,6 +156,11 @@ ${dataBlob}
 `
 
     const model = opts?.assistantId || opts?.workflowId || "gpt-4o-mini"
+    console.info("reminder draft model", {
+      model,
+      assistantId: opts?.assistantId,
+      workflowId: opts?.workflowId,
+    })
 
     const res = await openai.responses.create({
       model,
