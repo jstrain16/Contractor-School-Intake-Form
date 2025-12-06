@@ -27,7 +27,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} style={{ colorScheme: "light" }}>
-        <Script src="https://cdn.platform.openai.com/deployments/chatkit/chatkit.js" strategy="afterInteractive" async />
         <Providers>{children}</Providers>
       </body>
     </html>
