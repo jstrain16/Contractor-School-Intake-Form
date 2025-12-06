@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { usePathname } from "next/navigation"
+import { useUser } from "@clerk/nextjs"
 import { ChatKit, useChatKit } from "@openai/chatkit-react"
+import { MessageCircle } from "lucide-react"
 
 function getOrCreateDeviceId() {
   if (typeof window === "undefined") return "unknown-device"
@@ -13,9 +16,25 @@ function getOrCreateDeviceId() {
   return id
 }
 
+function useIsAdmin() {
+  const { user } = useUser()
+  return useMemo(() => {
+    const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
+    const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+    return metaAdmin || emails.some((em) => allowlist.includes(em as string))
+  }, [user?.emailAddresses, user?.publicMetadata])
+}
+
 export function ChatWidget() {
+  const pathname = usePathname()
+  const isAdmin = useIsAdmin()
   const [open, setOpen] = useState(false)
   const [deviceId, setDeviceId] = useState("unknown-device")
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
@@ -24,17 +43,16 @@ export function ChatWidget() {
   const { control } = useChatKit({
     api: {
       async getClientSecret(existing) {
-        if (existing) {
-          // Session refresh not implemented in this MVP
-          return existing
-        }
+        if (existing) return existing
         const res = await fetch("/api/chatkit/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ deviceId }),
         })
         if (!res.ok) {
-          throw new Error("Failed to create ChatKit session")
+          const text = await res.text().catch(() => "Failed to create ChatKit session")
+          setError(text || "Failed to create ChatKit session")
+          throw new Error(text)
         }
         const { client_secret } = await res.json()
         return client_secret
@@ -42,16 +60,18 @@ export function ChatWidget() {
     },
   })
 
-  const logoUrl = useMemo(
-    () => "https://beacontractor.com/wp-content/uploads/2021/08/logo.svg",
-    []
-  )
+  const isAdminRoute = pathname?.startsWith("/admin")
+  if (isAdminRoute || isAdmin) return null
 
   return (
     <>
       {open && (
         <div className="fixed bottom-24 right-4 z-40 w-80 h-[520px] rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white">
-          <ChatKit control={control} className="h-full w-full" />
+          {error ? (
+            <div className="p-4 text-sm text-red-600">Chat unavailable: {error}</div>
+          ) : (
+            <ChatKit control={control} className="h-full w-full" />
+          )}
         </div>
       )}
       <button
@@ -61,8 +81,8 @@ export function ChatWidget() {
         className="fixed bottom-6 right-6 z-50 flex items-center justify-center h-14 w-14 rounded-full shadow-lg border border-slate-200 bg-white hover:shadow-xl transition"
       >
         <span className="sr-only">Chat</span>
-        <div className="relative h-10 w-10 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center">
-          <img src={logoUrl} alt="Chat" className="h-8 w-8 object-contain" />
+        <div className="relative h-10 w-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center">
+          <MessageCircle className="h-6 w-6" />
         </div>
       </button>
     </>
