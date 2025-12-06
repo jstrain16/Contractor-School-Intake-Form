@@ -42,6 +42,7 @@ export function ChatWidget() {
   const sessionPromise = useRef<Promise<string> | null>(null)
   const [showNudge, setShowNudge] = useState(false)
   const [shouldForceOpen, setShouldForceOpen] = useState(false)
+  const [suggestedPrompt, setSuggestedPrompt] = useState<string | null>(null)
 
   useEffect(() => {
     setDeviceId(getOrCreateDeviceId())
@@ -97,8 +98,8 @@ export function ChatWidget() {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    window.__chatWidgetSetPrompt = () => {
-      /* ChatKit React does not support initial prompt prop; noop for now */
+    window.__chatWidgetSetPrompt = (prompt: string) => {
+      setSuggestedPrompt(prompt)
     }
     window.__chatWidgetOpen = () => {
       setShouldForceOpen(true)
@@ -168,6 +169,37 @@ export function ChatWidget() {
           {!error && !sdkError && !sdkReady && <div className="p-4 text-sm text-slate-600">Loading chat...</div>}
           {!error && !sdkError && sdkReady && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
           {!error && !sdkError && sdkReady && !loading && <ChatKit control={control} className="h-full w-full" />}
+          {!error && !sdkError && suggestedPrompt && (
+            <div className="absolute top-3 right-3 z-50 max-w-[260px] rounded-lg border border-slate-200 bg-white/95 backdrop-blur-sm shadow-lg p-3 text-xs text-slate-800 space-y-2">
+              <div className="font-semibold text-slate-900">Try asking:</div>
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-2 text-slate-700">{suggestedPrompt}</div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="flex-1 rounded-md bg-orange-500 text-white px-2 py-1 font-semibold hover:bg-orange-600"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(suggestedPrompt)
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                >
+                  Copy to chat
+                </button>
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-200 px-2 py-1 text-slate-600 hover:text-slate-800"
+                  onClick={() => setSuggestedPrompt(null)}
+                >
+                  Dismiss
+                </button>
+              </div>
+              <div className="text-[11px] text-slate-500">
+                Paste into the chat box and send.
+              </div>
+            </div>
+          )}
         </div>
       )}
       <button
