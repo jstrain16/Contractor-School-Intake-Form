@@ -1,307 +1,256 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-import { SignedIn, SignedOut, SignInButton, SignUpButton, useUser } from "@clerk/nextjs"
-import { Hammer } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import Link from "next/link"
+import { Activity, FileText, RouteIcon, ShieldCheck, GraduationCap, Banknote, Building2, FileCheck2, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { fetchWizardData } from "@/lib/wizard-api"
-import { useWizardStore } from "@/store/wizard-store"
-import { WizardData } from "@/lib/schemas"
-import { buildStatus } from "@/lib/progress"
+import { Card } from "@/components/ui/card"
 
-const SECTION_ROUTE: Record<string, string> = {
-  "Account Setup": "step0",
-  "Pre-Licensure / Education": "step1",
-  "Business Entity, FEIN & Banking": "step2",
-  "General Liability": "step3",
-  "Workers Compensation": "step3",
-  "Experience / Qualifier": "step4",
-  "Business & Law Exam": "step5",
-  "DOPL Application": "step6",
-}
+const navItems = [
+  { label: "Portal Features", href: "#features" },
+  { label: "Requirements", href: "#requirements" },
+  { label: "Support", href: "#support" },
+  { label: "FAQs", href: "#faqs" },
+]
+
+const features = [
+  {
+    icon: Activity,
+    title: "Real-Time Progress Tracking",
+    body: "Monitor your completion status across all 8 required steps without missing a deadline.",
+  },
+  {
+    icon: FileText,
+    title: "Document Management",
+    body: "Upload and store all required documents securely. Keep everything organized in one place.",
+  },
+  {
+    icon: RouteIcon,
+    title: "Guided Workflow",
+    body: "Step-by-step guidance through each requirement so you always know what’s next.",
+  },
+]
+
+const steps = [
+  { label: "Account Setup", status: "Complete", icon: ShieldCheck },
+  { label: "Business Entity / FEIN & Banking", status: "Complete", icon: Building2 },
+  { label: "Workers Compensation", status: "Pending", icon: ShieldCheck },
+  { label: "Business & Law Exam", status: "Complete", icon: FileCheck2 },
+  { label: "Pre-Licensure / Education", status: "Pending", icon: GraduationCap },
+  { label: "General Liability", status: "Pending", icon: ShieldCheck },
+  { label: "Experience / Qualifier", status: "Complete", icon: MessageSquare },
+  { label: "DOPL Application", status: "Pending", icon: FileText },
+]
 
 export default function HomePage() {
-  const router = useRouter()
-  const { isLoaded, isSignedIn, user } = useUser()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [wizardData, setWizardData] = useState<Partial<WizardData> | null>(null)
-  const resetStore = useWizardStore((s) => s.reset)
-  const setApplicationId = useWizardStore((s) => s.setApplicationId)
-
-  const statusList = useMemo(() => buildStatus(wizardData), [wizardData])
-  const isAdmin = useMemo(() => {
-    const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean)
-    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
-    const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
-    return metaAdmin || emails.some((em) => allowlist.includes(em as string))
-  }, [user?.emailAddresses, user?.publicMetadata])
-
-  useEffect(() => {
-    if (!isLoaded) return
-    if (!isSignedIn) {
-      router.replace("/sign-in")
-      return
-    }
-    if (isAdmin) {
-      router.replace("/admin")
-    }
-  }, [isAdmin, isLoaded, isSignedIn, router])
-
-  useEffect(() => {
-    const load = async () => {
-      if (!isLoaded || !isSignedIn) return
-      if (isAdmin) {
-        setLoading(false)
-        return
-      }
-      try {
-        const res = await fetchWizardData()
-        setWizardData((res.data || null) as Partial<WizardData> | null)
-        setApplicationId(res.applicationId || null)
-      } catch (err) {
-        console.error(err)
-        setError("Could not load your application status.")
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [isAdmin, isLoaded, isSignedIn, setApplicationId])
-
-  // If this is a brand-new user with zero progress, send them straight to the application setup.
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || loading || isAdmin) return
-    if (statusList.progress === 0) {
-      router.replace("/application")
-    }
-  }, [isAdmin, isLoaded, isSignedIn, loading, statusList.progress, router])
-
-  const progressPct = statusList.progress
-  const nextStepLabel = statusList.nextUp
-
-  const goToSection = (label: string) => {
-    const section = SECTION_ROUTE[label]
-    if (section) {
-      router.push(`/application?section=${section}`)
-    } else {
-      router.push("/application")
-    }
-  }
-
-  const handleContinue = () => {
-    router.push("/application")
-  }
-
-  const handleNewApplication = async () => {
-    setSaving(true)
-    setError(null)
-    try {
-      resetStore()
-      const res = await fetchWizardData() // will create if missing
-      setWizardData((res.data || null) as Partial<WizardData> | null)
-      setApplicationId(res.applicationId || null)
-      router.push("/application")
-    } catch (err) {
-      console.error(err)
-      setError("Could not start a new application right now.")
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-8">
-        {/* Hero */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white border border-slate-200 shadow-lg">
-              <img
-                src="https://scontent-sjc6-1.xx.fbcdn.net/v/t39.30808-6/240653505_4534481226643987_6757608731291097570_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=71fqDPfxY3AQ7kNvwF8F95e&_nc_oc=Adm6AbqrXOOtqd_xGdxI4Sji67jFSAsH2LIdcBlTJndPQDz2wy_1-8QOZ39eoRX3t9c&_nc_zt=23&_nc_ht=scontent-sjc6-1.xx&_nc_gid=ujjrgUQw8j-8wLIWNMk0mQ&oh=00_Afk2X0D-Ta4BJZI1UpXGma34UBw4o4U0xXOkACJ6OuMghw&oe=6939A8BF"
-                alt="Contractor School"
-                width={32}
-                height={32}
-                className="h-8 w-8 object-contain"
-              />
+    <div className="min-h-screen bg-white text-slate-900">
+      {/* Top strip */}
+      <div className="w-full bg-slate-50 border-b border-slate-200">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-sm text-slate-700">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold">✉️</span>
+              <span>info@bascontractor.com</span>
             </div>
-          <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Contractor School</h1>
-              <p className="mt-1 text-sm md:text-base text-slate-600">
-                Track your licensing intake, progress, and documents in one place.
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold">📞</span>
+              <span>801-467-1800</span>
             </div>
           </div>
-          <div className="flex gap-3">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="outline" size="sm">Sign In</Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button size="sm">Sign Up</Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              {!isAdmin && (
-                <Button
-                  onClick={handleContinue}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-500/30 hover:shadow-md"
+          <div className="text-sm font-semibold text-slate-800">Need Help? Chat with us</div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+              <span className="text-lg font-semibold">CS</span>
+            </div>
+            <div>
+              <div className="text-lg font-bold">CONTRACTORS SCHOOL</div>
+              <div className="text-xs text-slate-600">Licensing Portal</div>
+            </div>
+          </div>
+          <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-800 md:flex">
+            {navItems.map((item) => (
+              <Link key={item.label} href={item.href} className="hover:text-slate-500">
+                {item.label}
+              </Link>
+            ))}
+            <Link href="/sign-in" className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
+              Sign In
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="mx-auto max-w-6xl px-4 pb-24 pt-12">
+        <section className="grid gap-12 md:grid-cols-2 md:items-center">
+          <div className="space-y-6">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">Your Licensing Journey, Simplified</p>
+            <div className="space-y-1">
+              <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+                Track Your
+                <span className="block text-slate-900">Licensing Progress</span>
+                <span className="block text-slate-900">All in One Place</span>
+              </h1>
+            </div>
+            <p className="text-lg text-slate-700">
+              Access your personalized dashboard to manage your application, upload documents, and monitor progress for every required step.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+                <Link href="/sign-in">Access Your Dashboard</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-slate-300 text-slate-900 hover:bg-slate-50">
+                <Link href="/sign-in">Sign In</Link>
+              </Button>
+            </div>
+            <div className="flex gap-8 pt-4">
+              <div>
+                <div className="text-3xl font-bold">8</div>
+                <div className="text-sm text-slate-600">Required Steps</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold">100%</div>
+                <div className="text-sm text-slate-600">Digital Process</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold">24/7</div>
+                <div className="text-sm text-slate-600">Portal Access</div>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
+              <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                Dashboard preview
+              </div>
+            </div>
+            <div className="absolute -left-6 -bottom-6 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white">
+                <Activity className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-slate-900">Your Progress</div>
+                <div className="text-xs text-slate-600">52% Complete</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section id="features" className="mt-24 space-y-10 text-center">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">Portal Features</p>
+            <h2 className="text-3xl font-bold text-slate-900">Everything you need in your licensing dashboard</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {features.map((feature) => (
+              <Card key={feature.title} className="border border-slate-200 p-6 text-left shadow-sm">
+                <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-900">
+                  <feature.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900">{feature.title}</h3>
+                <p className="mt-2 text-sm text-slate-600">{feature.body}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Requirements / Steps */}
+        <section id="requirements" className="mt-24 space-y-10 text-center">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">8 Steps to Your License</p>
+            <h2 className="text-3xl font-bold text-slate-900">Track your progress through each requirement</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {steps.map((step) => (
+              <Card key={step.label} className="flex items-center justify-between border border-slate-200 px-4 py-4 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-900">
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-base font-semibold text-slate-900">{step.label}</div>
+                  </div>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    step.status === "Complete"
+                      ? "bg-green-50 text-green-700"
+                      : "bg-amber-50 text-amber-700"
+                  }`}
                 >
-                  Go to Application
-                </Button>
-              )}
-              {isAdmin && (
-                <Button
-                  onClick={() => router.push("/admin")}
-                  className="bg-gradient-to-r from-orange-500 to-slate-800 text-white shadow-sm shadow-orange-500/30 hover:shadow-md"
-                >
-                  Go to Admin Portal
-                </Button>
-              )}
-            </SignedIn>
+                  {step.status}
+                </span>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section id="support" className="mt-24">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-12 text-center shadow-sm md:px-16">
+            <h3 className="text-3xl font-bold text-slate-900">Ready to Get Started?</h3>
+            <p className="mt-3 text-lg text-slate-700">
+              Access your personalized dashboard and complete your licensing steps with guided support.
+            </p>
+            <div className="mt-8 flex justify-center">
+              <Button asChild size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+                <Link href="/sign-in">Sign In to Portal</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer id="faqs" className="border-t border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-12">
+          <div className="grid gap-10 md:grid-cols-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">CS</div>
+                <div>
+                  <div className="text-sm font-bold text-slate-900">CONTRACTORS SCHOOL</div>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600">Building Utah&apos;s future, one contractor at a time.</p>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-900">Services</h4>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li>Contractor Licensing</li>
+                <li>Continuing Education</li>
+                <li>Business Formation</li>
+              </ul>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-900">Company</h4>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li>About Us</li>
+                <li>Contact</li>
+                <li>FAQs</li>
+              </ul>
+            </div>
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-slate-900">Contact</h4>
+              <ul className="space-y-2 text-sm text-slate-600">
+                <li>801-467-1800</li>
+                <li>info@bascontractor.com</li>
+                <li>Servicio en Español disponible</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-8 text-center text-sm text-slate-500">
+            © 2026 Contractors School. All rights reserved.
           </div>
         </div>
-
-        <SignedIn>
-          {/* Overall progress */}
-          {!isAdmin && (
-          <Card className="border-none shadow-lg bg-white">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 shadow-lg">
-                      <Hammer className="h-5 w-5 text-white" strokeWidth={2.25} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Overall Progress</p>
-                      <p className="text-lg font-bold text-slate-900">{progressPct}% complete</p>
-                    </div>
-                  </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                  Next up: <span className="font-semibold text-slate-800">{nextStepLabel}</span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {loading ? (
-                <div className="text-sm text-slate-600">Loading your status...</div>
-              ) : (
-                <>
-                  <div className="relative h-4 overflow-hidden rounded-full bg-slate-100 shadow-inner">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg transition-all duration-700"
-                      style={{ width: `${progressPct}%` }}
-                    />
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {statusList.items.map((item) => (
-                      <div
-                        key={item.label}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => goToSection(item.label)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault()
-                            goToSection(item.label)
-                          }
-                        }}
-                        className="rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`h-2.5 w-2.5 rounded-full ${
-                                item.done ? "bg-green-500" : "bg-gradient-to-r from-orange-500 to-orange-600"
-                              }`}
-                            />
-                            <span className="text-sm font-semibold text-slate-900">{item.label}</span>
-                          </div>
-                          <span
-                            className={`text-xs font-semibold ${
-                              item.done ? "text-green-700 bg-green-50" : "text-amber-700 bg-amber-50"
-                            } px-2 py-0.5 rounded-full`}
-                          >
-                          {item.done ? "Complete" : "Pending"}
-                        </span>
-                        </div>
-                        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                          <div
-                            className={`h-full rounded-full ${
-                              item.done ? "bg-green-500" : "bg-gradient-to-r from-orange-500 to-orange-600"
-                            }`}
-                            style={{ width: item.done ? "100%" : "0%" }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {error && <div className="text-sm text-red-600">{error}</div>}
-                </>
-              )}
-            </CardContent>
-            <CardFooter className="flex gap-3">
-              <Button
-                onClick={handleContinue}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm shadow-orange-500/30 hover:shadow-md"
-              >
-                Continue Application
-              </Button>
-            </CardFooter>
-          </Card>
-          )}
-
-          {/* Quick stats */}
-          {!isAdmin && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card className="border border-slate-200 shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Progress</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-3xl font-bold text-slate-900">{progressPct}%</div>
-                  <p className="text-sm text-slate-600">Weighted completion across all sections.</p>
-                </CardContent>
-              </Card>
-              <Card className="border border-slate-200 shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Next Action</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-lg font-semibold text-slate-900">{nextStepLabel}</div>
-                  <p className="text-sm text-slate-600">Complete the next section to move forward.</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </SignedIn>
-
-        <SignedOut>
-          <Card>
-            <CardHeader>
-              <CardTitle>Welcome</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-slate-700">Sign in to start or resume your application.</p>
-              {error && <div className="text-sm text-red-600">{error}</div>}
-            </CardContent>
-            <CardFooter className="flex gap-3">
-              <SignInButton mode="modal">
-                <Button>Sign In</Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button variant="outline">Create Account</Button>
-              </SignUpButton>
-            </CardFooter>
-          </Card>
-        </SignedOut>
-      </div>
+      </footer>
     </div>
   )
 }
