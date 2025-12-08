@@ -10,6 +10,9 @@ const {
   SALESFORCE_CLIENT_ID,
   SALESFORCE_CLIENT_SECRET,
   SALESFORCE_REFRESH_TOKEN,
+  SALESFORCE_USERNAME,
+  SALESFORCE_PASSWORD,
+  SALESFORCE_TOKEN,
   SALESFORCE_LOGIN_URL = "https://login.salesforce.com",
 } = process.env
 
@@ -18,31 +21,60 @@ if (!SALESFORCE_CLIENT_ID || !SALESFORCE_CLIENT_SECRET) {
 }
 
 async function getAccessToken(): Promise<SalesforceAuthResponse> {
-  if (!SALESFORCE_CLIENT_ID || !SALESFORCE_CLIENT_SECRET || !SALESFORCE_REFRESH_TOKEN) {
-    throw new Error("Salesforce credentials are not fully configured (need client id/secret/refresh token)")
+  if (!SALESFORCE_CLIENT_ID || !SALESFORCE_CLIENT_SECRET) {
+    throw new Error("Salesforce credentials are not fully configured (need client id/secret)")
   }
 
-  const body = qs.stringify({
-    grant_type: "refresh_token",
-    client_id: SALESFORCE_CLIENT_ID,
-    client_secret: SALESFORCE_CLIENT_SECRET,
-    refresh_token: SALESFORCE_REFRESH_TOKEN,
-  })
+  // Prefer refresh token if provided
+  if (SALESFORCE_REFRESH_TOKEN) {
+    const body = qs.stringify({
+      grant_type: "refresh_token",
+      client_id: SALESFORCE_CLIENT_ID,
+      client_secret: SALESFORCE_CLIENT_SECRET,
+      refresh_token: SALESFORCE_REFRESH_TOKEN,
+    })
 
-  const res = await fetch(`${SALESFORCE_LOGIN_URL}/services/oauth2/token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body,
-  })
+    const res = await fetch(`${SALESFORCE_LOGIN_URL}/services/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    })
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Salesforce auth failed: ${res.status} ${text}`)
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Salesforce auth failed: ${res.status} ${text}`)
+    }
+
+    return res.json() as Promise<SalesforceAuthResponse>
   }
 
-  return res.json() as Promise<SalesforceAuthResponse>
+  // Fallback to username/password + security token if refresh token is not set
+  if (SALESFORCE_USERNAME && SALESFORCE_PASSWORD && SALESFORCE_TOKEN) {
+    const body = qs.stringify({
+      grant_type: "password",
+      client_id: SALESFORCE_CLIENT_ID,
+      client_secret: SALESFORCE_CLIENT_SECRET,
+      username: SALESFORCE_USERNAME,
+      password: `${SALESFORCE_PASSWORD}${SALESFORCE_TOKEN}`,
+    })
+
+    const res = await fetch(`${SALESFORCE_LOGIN_URL}/services/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    })
+
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`Salesforce auth failed: ${res.status} ${text}`)
+    }
+
+    return res.json() as Promise<SalesforceAuthResponse>
+  }
+
+  throw new Error(
+    "Salesforce credentials are not fully configured (need client id/secret plus refresh token, or username/password/token)"
+  )
 }
 
 export async function findContactByEmail(email: string): Promise<boolean> {
