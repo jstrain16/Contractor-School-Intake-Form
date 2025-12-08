@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Activity, FileText, RouteIcon, ShieldCheck, GraduationCap, Banknote, Building2, FileCheck2, MessageSquare } from "lucide-react"
+import { Activity, FileText, RouteIcon, ShieldCheck, GraduationCap, Building2, FileCheck2, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
@@ -45,31 +45,31 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* Top strip */}
-      <div className="w-full bg-slate-50 border-b border-slate-200">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-sm text-slate-700">
+      <div className="w-full border-b border-[#0c5dcc]/20 bg-[#0b64d0] text-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-sm">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold">✉️</span>
-              <span>info@bascontractor.com</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">✉️</span>
+              <span className="font-semibold">info@bascontractor.com</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold">📞</span>
-              <span>801-467-1800</span>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">📞</span>
+              <span className="font-semibold">801-467-1800</span>
             </div>
           </div>
-          <div className="text-sm font-semibold text-slate-800">Need Help? Chat with us</div>
+          <div className="text-sm font-semibold">Need Help? Chat with us</div>
         </div>
       </div>
 
       {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur">
+      <header className="border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-orange-400/60 bg-orange-500 text-white shadow-sm">
               <span className="text-lg font-semibold">CS</span>
             </div>
             <div>
-              <div className="text-lg font-bold">CONTRACTORS SCHOOL</div>
+              <div className="text-lg font-bold text-slate-900">CONTRACTORS SCHOOL</div>
               <div className="text-xs text-slate-600">Licensing Portal</div>
             </div>
           </div>
@@ -79,7 +79,7 @@ export default function HomePage() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/sign-in" className="rounded-full bg-slate-900 px-4 py-2 text-white hover:bg-slate-800">
+            <Link href="/sign-in" className="rounded-full bg-orange-500 px-4 py-2 text-white shadow-sm shadow-orange-400/40 hover:bg-orange-600">
               Sign In
             </Link>
           </nav>
@@ -88,54 +88,58 @@ export default function HomePage() {
 
       {/* Hero */}
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-12">
-        <section className="grid gap-12 md:grid-cols-2 md:items-center">
+        <section className="grid gap-12 rounded-3xl border border-[#dbe9ff] bg-gradient-to-b from-[#f3f7ff] via-[#e6f1ff] to-[#f8fbff] p-6 md:grid-cols-2 md:items-center md:p-10">
           <div className="space-y-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">Your Licensing Journey, Simplified</p>
-            <div className="space-y-1">
-              <h1 className="text-4xl font-bold leading-tight md:text-5xl">
+            <p className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0c5dcc] shadow-sm">
+              Your Licensing Journey, Simplified
+            </p>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold leading-tight text-slate-900 md:text-5xl">
                 Track Your
                 <span className="block text-slate-900">Licensing Progress</span>
                 <span className="block text-slate-900">All in One Place</span>
               </h1>
             </div>
             <p className="text-lg text-slate-700">
-              Access your personalized dashboard to manage your application, upload documents, and monitor progress for every required step.
+              Access your personalized dashboard to manage your licensing intake, monitor progress, and complete all requirements seamlessly.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/application">
-                <Button size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+                <Button size="lg" className="bg-orange-500 text-white shadow-sm shadow-orange-400/40 hover:bg-orange-600">
                   Access Your Dashboard
                 </Button>
               </Link>
               <Link href="/application">
-                <Button size="lg" variant="outline" className="border-slate-300 text-slate-900 hover:bg-slate-50">
+                <Button size="lg" variant="outline" className="border-[#0c5dcc] text-[#0c5dcc] hover:bg-[#0c5dcc]/10">
                   Sign In
                 </Button>
               </Link>
             </div>
             <div className="flex gap-8 pt-4">
               <div>
-                <div className="text-3xl font-bold">8</div>
+                <div className="text-3xl font-bold text-slate-900">8</div>
                 <div className="text-sm text-slate-600">Required Steps</div>
               </div>
               <div>
-                <div className="text-3xl font-bold">100%</div>
+                <div className="text-3xl font-bold text-slate-900">100%</div>
                 <div className="text-sm text-slate-600">Digital Process</div>
               </div>
               <div>
-                <div className="text-3xl font-bold">24/7</div>
+                <div className="text-3xl font-bold text-slate-900">24/7</div>
                 <div className="text-sm text-slate-600">Portal Access</div>
               </div>
             </div>
           </div>
           <div className="relative">
-            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 shadow-xl">
-              <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                Dashboard preview
-              </div>
+            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[#dbe9ff] bg-white shadow-xl">
+              <img
+                src="https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1600&q=80"
+                alt="Dashboard preview"
+                className="h-full w-full object-cover"
+              />
             </div>
-            <div className="absolute -left-6 -bottom-6 flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white">
+            <div className="absolute -left-6 -bottom-6 flex items-center gap-3 rounded-xl border border-[#dbe9ff] bg-white px-4 py-3 shadow-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0c5dcc] text-white">
                 <Activity className="h-5 w-5" />
               </div>
               <div>
@@ -154,8 +158,8 @@ export default function HomePage() {
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {features.map((feature) => (
-              <Card key={feature.title} className="border border-slate-200 p-6 text-left shadow-sm">
-                <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-900">
+              <Card key={feature.title} className="border border-[#dbe9ff] p-6 text-left shadow-sm">
+                <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-[#e9f2ff] text-[#0c5dcc]">
                   <feature.icon className="h-6 w-6" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900">{feature.title}</h3>
@@ -173,9 +177,9 @@ export default function HomePage() {
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {steps.map((step) => (
-              <Card key={step.label} className="flex items-center justify-between border border-slate-200 px-4 py-4 shadow-sm">
+              <Card key={step.label} className="flex items-center justify-between border border-[#dbe9ff] px-4 py-4 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-900">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#e9f2ff] text-[#0c5dcc]">
                     <step.icon className="h-5 w-5" />
                   </div>
                   <div className="text-left">
@@ -186,7 +190,7 @@ export default function HomePage() {
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     step.status === "Complete"
                       ? "bg-green-50 text-green-700"
-                      : "bg-amber-50 text-amber-700"
+                      : "bg-orange-50 text-orange-700"
                   }`}
                 >
                   {step.status}
@@ -198,14 +202,14 @@ export default function HomePage() {
 
         {/* CTA */}
         <section id="support" className="mt-24">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-12 text-center shadow-sm md:px-16">
-            <h3 className="text-3xl font-bold text-slate-900">Ready to Get Started?</h3>
-            <p className="mt-3 text-lg text-slate-700">
-              Access your personalized dashboard and complete your licensing steps with guided support.
+          <div className="rounded-2xl border border-[#1b46d8] bg-gradient-to-r from-[#1b46d8] via-[#234ee4] to-[#0a62e0] px-6 py-12 text-center text-white shadow-lg md:px-16">
+            <h3 className="text-3xl font-bold">Ready to Get Started?</h3>
+            <p className="mt-3 text-lg text-white/90">
+              Access your personalized dashboard and complete your licensing requirements at your own pace.
             </p>
             <div className="mt-8 flex justify-center">
               <Link href="/application">
-                <Button size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+                <Button size="lg" className="bg-white text-[#0c5dcc] hover:bg-slate-100">
                   Sign In to Portal
                 </Button>
               </Link>
@@ -215,44 +219,45 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer id="faqs" className="border-t border-slate-200 bg-white">
+      <footer id="faqs" className="border-t border-slate-200 bg-[#0f1521] text-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="grid gap-10 md:grid-cols-4">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white">CS</div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white">CS</div>
                 <div>
-                  <div className="text-sm font-bold text-slate-900">CONTRACTORS SCHOOL</div>
+                  <div className="text-sm font-bold">CONTRACTORS SCHOOL</div>
+                  <div className="text-xs text-white/70">Licensing Portal</div>
                 </div>
               </div>
-              <p className="text-sm text-slate-600">Building Utah&apos;s future, one contractor at a time.</p>
+              <p className="text-sm text-white/80">Building Utah&apos;s future, one contractor at a time.</p>
             </div>
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-slate-900">Services</h4>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <h4 className="text-sm font-semibold">Services</h4>
+              <ul className="space-y-2 text-sm text-white/80">
                 <li>Contractor Licensing</li>
                 <li>Continuing Education</li>
                 <li>Business Formation</li>
               </ul>
             </div>
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-slate-900">Company</h4>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <h4 className="text-sm font-semibold">Company</h4>
+              <ul className="space-y-2 text-sm text-white/80">
                 <li>About Us</li>
                 <li>Contact</li>
                 <li>FAQs</li>
               </ul>
             </div>
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-slate-900">Contact</h4>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <h4 className="text-sm font-semibold">Contact</h4>
+              <ul className="space-y-2 text-sm text-white/80">
                 <li>801-467-1800</li>
                 <li>info@bascontractor.com</li>
                 <li>Servicio en Español disponible</li>
               </ul>
             </div>
           </div>
-          <div className="mt-8 text-center text-sm text-slate-500">
+          <div className="mt-8 text-center text-sm text-white/60">
             © 2026 Contractors School. All rights reserved.
           </div>
         </div>
