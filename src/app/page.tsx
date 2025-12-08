@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { SignInButton } from "@clerk/nextjs"
 import { Activity, FileText, RouteIcon, ShieldCheck, GraduationCap, Banknote, Building2, FileCheck2, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -102,16 +103,16 @@ export default function HomePage() {
               Access your personalized dashboard to manage your application, upload documents, and monitor progress for every required step.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/sign-in">
+              <SignInButton redirectUrl="/application">
                 <Button size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
                   Access Your Dashboard
                 </Button>
-              </Link>
-              <Link href="/sign-in">
+              </SignInButton>
+              <SignInButton redirectUrl="/application">
                 <Button size="lg" variant="outline" className="border-slate-300 text-slate-900 hover:bg-slate-50">
                   Sign In
                 </Button>
-              </Link>
+              </SignInButton>
             </div>
             <div className="flex gap-8 pt-4">
               <div>
@@ -204,11 +205,11 @@ export default function HomePage() {
               Access your personalized dashboard and complete your licensing steps with guided support.
             </p>
             <div className="mt-8 flex justify-center">
-              <Link href="/sign-in">
+              <SignInButton redirectUrl="/application">
                 <Button size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
                   Sign In to Portal
                 </Button>
-              </Link>
+              </SignInButton>
             </div>
           </div>
         </section>
