@@ -10,7 +10,8 @@ export async function GET() {
       return NextResponse.json({ matched: false, reason: "unauthorized" }, { status: 401 })
     }
 
-    const user = await clerkClient.users.getUser(userId)
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
     const firstName = user.firstName || ""
     const lastName = user.lastName || ""
 
