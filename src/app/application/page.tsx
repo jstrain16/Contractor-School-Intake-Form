@@ -140,25 +140,6 @@ export default function WizardPage() {
 
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-slate-900">
-      {/* Top header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm">
-            <span className="text-lg font-semibold">CS</span>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-900">CONTRACTORS SCHOOL</p>
-            <p className="text-xs text-slate-500">Licensing Specialists</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-semibold text-slate-700">Dashboard</span>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold">
-            {user?.firstName?.[0]?.toUpperCase() || "U"}
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-6 space-y-6">
         <button
           type="button"

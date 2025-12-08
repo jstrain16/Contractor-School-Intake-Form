@@ -12,7 +12,6 @@ import {
   useUser,
 } from "@clerk/nextjs"
 import Link from "next/link"
-import Image from "next/image"
 import type { ReactNode } from "react"
 import { useMemo } from "react"
 import { Shield } from "lucide-react"
@@ -54,35 +53,6 @@ function AdminPortalButton() {
   )
 }
 
-function DashboardButton() {
-  const { user } = useUser()
-  // Client-side cannot check admin_users table; keep button visible only for allowlist/meta-admin to avoid confusion.
-  const adminAllowlist = useMemo(() => {
-    const list = process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || ""
-    return list
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean)
-  }, [])
-  const isAdmin = useMemo(() => {
-    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
-    const emails =
-      user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
-    return metaAdmin || emails.some((em) => adminAllowlist.includes(em as string))
-  }, [adminAllowlist, user?.emailAddresses, user?.publicMetadata])
-
-  if (isAdmin) return null
-
-  return (
-    <Link
-      href="/"
-      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
-    >
-      Dashboard
-    </Link>
-  )
-}
-
 export function Providers({ children }: ProvidersProps) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
@@ -106,31 +76,44 @@ export function Providers({ children }: ProvidersProps) {
         <div className="p-4 text-sm text-slate-600">Loading account...</div>
       </ClerkLoading>
       <ClerkLoaded>
-        <header className="flex justify-between items-center p-4 gap-4 h-16 bg-white text-slate-900 border-b border-slate-200 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="https://beacontractor.com/wp-content/uploads/2021/08/logo.svg"
-                alt="Beacon Contractor"
-                width={120}
-                height={32}
-                className="h-8 w-auto"
-              />
-            </Link>
-          </div>
+        <header className="flex justify-between items-center px-5 py-3 h-16 bg-white text-slate-900 border-b border-slate-200">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm">
+              <span className="text-lg font-semibold">CS</span>
+            </div>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-slate-900">CONTRACTORS SCHOOL</p>
+              <p className="text-xs text-slate-500">Licensing Specialists</p>
+            </div>
+          </Link>
           <div className="flex items-center gap-3">
             <SignedOut>
-              <SignInButton />
+              <SignInButton>
+                <button className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
+                  Sign In
+                </button>
+              </SignInButton>
               <SignUpButton>
-                <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                <button className="rounded-full bg-orange-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-600">
                   Sign Up
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <DashboardButton />
+              <Link
+                href="/dashboard"
+                className="text-sm font-semibold text-slate-800 hover:text-slate-900"
+              >
+                Dashboard
+              </Link>
               <AdminPortalButton />
-              <UserButton />
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "border border-slate-200 shadow-sm",
+                  },
+                }}
+              />
             </SignedIn>
           </div>
         </header>

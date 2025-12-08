@@ -61,28 +61,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      <header className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          <span className="text-sm font-semibold text-slate-700">Contractor School</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="text-sm font-semibold text-slate-700 hover:text-slate-900"
-          >
-            Dashboard
-          </button>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold">
-            {user?.firstName?.[0]?.toUpperCase() || "U"}
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 pb-16 space-y-8">
+      <main className="mx-auto max-w-6xl px-4 pb-16 pt-6 space-y-8">
         {/* Intro / CTA */}
         <Card className="border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
