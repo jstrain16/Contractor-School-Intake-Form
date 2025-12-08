@@ -122,7 +122,42 @@ export async function POST(req: Request) {
     }
 
     const updates = {
-      data,
+      data: {
+        ...data,
+        step1: {
+          ...(data.step1 || {}),
+          dateCompleted: cleanDate(data.step1?.dateCompleted),
+        },
+        step2: {
+          ...(data.step2 || {}),
+          dateRegistered: cleanDate(data.step2?.dateRegistered),
+        },
+        step3: {
+          ...(data.step3 || {}),
+          glEffectiveDate: cleanDate(data.step3?.glEffectiveDate),
+          glExpirationDate: cleanDate(data.step3?.glExpirationDate),
+          wcEffectiveDate: cleanDate(data.step3?.wcEffectiveDate),
+          wcExpirationDate: cleanDate(data.step3?.wcExpirationDate),
+        },
+        step4: {
+          ...(data.step4 || {}),
+          qualifierDob: cleanDate(data.step4?.qualifierDob),
+          experienceEntries: (data.step4?.experienceEntries || []).map((entry) => ({
+            ...entry,
+            startDate: cleanDate(entry.startDate) || "",
+            endDate: cleanDate(entry.endDate) || "",
+          })),
+        },
+        step5: {
+          ...(data.step5 || {}),
+          examDate: cleanDate(data.step5?.examDate),
+          examPassedDate: cleanDate(data.step5?.examPassedDate),
+        },
+        step7: {
+          ...(data.step7 || {}),
+          signatureDate: cleanDate(data.step7?.signatureDate),
+        },
+      },
       primary_trade: step4.primaryTrade ?? null,
       license_type: step0.licenseType ?? null,
       has_employees: step0.hasEmployees ?? null,
