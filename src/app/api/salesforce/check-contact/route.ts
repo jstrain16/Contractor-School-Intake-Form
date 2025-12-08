@@ -4,7 +4,8 @@ import { findContactByName } from "@/lib/salesforce"
 
 export async function GET() {
   try {
-    const { userId } = auth()
+    const session = await auth()
+    const userId = session?.userId
     if (!userId) {
       return NextResponse.json({ matched: false, reason: "unauthorized" }, { status: 401 })
     }
