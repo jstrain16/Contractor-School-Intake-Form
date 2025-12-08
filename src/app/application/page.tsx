@@ -146,7 +146,7 @@ export default function WizardPage() {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/dashboard")}
               className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
             >
               Back to Dashboard
