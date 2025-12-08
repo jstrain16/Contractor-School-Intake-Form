@@ -9,9 +9,7 @@ type SalesforceAuthResponse = {
 const {
   SALESFORCE_CLIENT_ID,
   SALESFORCE_CLIENT_SECRET,
-  SALESFORCE_USERNAME,
-  SALESFORCE_PASSWORD,
-  SALESFORCE_TOKEN,
+  SALESFORCE_REFRESH_TOKEN,
   SALESFORCE_LOGIN_URL = "https://login.salesforce.com",
 } = process.env
 
@@ -20,16 +18,15 @@ if (!SALESFORCE_CLIENT_ID || !SALESFORCE_CLIENT_SECRET) {
 }
 
 async function getAccessToken(): Promise<SalesforceAuthResponse> {
-  if (!SALESFORCE_CLIENT_ID || !SALESFORCE_CLIENT_SECRET || !SALESFORCE_USERNAME || !SALESFORCE_PASSWORD || !SALESFORCE_TOKEN) {
-    throw new Error("Salesforce credentials are not fully configured")
+  if (!SALESFORCE_CLIENT_ID || !SALESFORCE_CLIENT_SECRET || !SALESFORCE_REFRESH_TOKEN) {
+    throw new Error("Salesforce credentials are not fully configured (need client id/secret/refresh token)")
   }
 
   const body = qs.stringify({
-    grant_type: "password",
+    grant_type: "refresh_token",
     client_id: SALESFORCE_CLIENT_ID,
     client_secret: SALESFORCE_CLIENT_SECRET,
-    username: SALESFORCE_USERNAME,
-    password: `${SALESFORCE_PASSWORD}${SALESFORCE_TOKEN}`,
+    refresh_token: SALESFORCE_REFRESH_TOKEN,
   })
 
   const res = await fetch(`${SALESFORCE_LOGIN_URL}/services/oauth2/token`, {
