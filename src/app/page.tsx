@@ -102,12 +102,16 @@ export default function HomePage() {
               Access your personalized dashboard to manage your application, upload documents, and monitor progress for every required step.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
-                <Link href="/sign-in">Access Your Dashboard</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-slate-300 text-slate-900 hover:bg-slate-50">
-                <Link href="/sign-in">Sign In</Link>
-              </Button>
+              <Link href="/sign-in">
+                <Button size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+                  Access Your Dashboard
+                </Button>
+              </Link>
+              <Link href="/sign-in">
+                <Button size="lg" variant="outline" className="border-slate-300 text-slate-900 hover:bg-slate-50">
+                  Sign In
+                </Button>
+              </Link>
             </div>
             <div className="flex gap-8 pt-4">
               <div>
@@ -200,9 +204,11 @@ export default function HomePage() {
               Access your personalized dashboard and complete your licensing steps with guided support.
             </p>
             <div className="mt-8 flex justify-center">
-              <Button asChild size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
-                <Link href="/sign-in">Sign In to Portal</Link>
-              </Button>
+              <Link href="/sign-in">
+                <Button size="lg" className="bg-slate-900 text-white hover:bg-slate-800">
+                  Sign In to Portal
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
