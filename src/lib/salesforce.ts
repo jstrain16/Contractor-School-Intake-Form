@@ -6,13 +6,6 @@ type SalesforceAuthResponse = {
   token_type: string
 }
 
-type SalesforceContact = {
-  Id: string
-  FirstName?: string
-  LastName?: string
-  Email?: string
-}
-
 const {
   SALESFORCE_CLIENT_ID,
   SALESFORCE_CLIENT_SECRET,
@@ -55,9 +48,9 @@ async function getAccessToken(): Promise<SalesforceAuthResponse> {
   return res.json() as Promise<SalesforceAuthResponse>
 }
 
-export async function findContactByName(firstName: string, lastName: string): Promise<boolean> {
+export async function findContactByEmail(email: string): Promise<boolean> {
   const auth = await getAccessToken()
-  const soql = `SELECT Id, FirstName, LastName FROM Contact WHERE FirstName = '${firstName.replace(/'/g, "\\'")}' AND LastName = '${lastName.replace(/'/g, "\\'")}' LIMIT 1`
+  const soql = `SELECT Id FROM Contact WHERE Email = '${email.replace(/'/g, "\\'")}' LIMIT 1`
 
   const url = `${auth.instance_url}/services/data/v57.0/query?q=${encodeURIComponent(soql)}`
   const res = await fetch(url, {
@@ -72,7 +65,7 @@ export async function findContactByName(firstName: string, lastName: string): Pr
     throw new Error(`Salesforce query failed: ${res.status} ${text}`)
   }
 
-  const data: { records: SalesforceContact[] } = await res.json()
+  const data: { records: Array<{ Id: string }> } = await res.json()
   return Array.isArray(data.records) && data.records.length > 0
 }
 

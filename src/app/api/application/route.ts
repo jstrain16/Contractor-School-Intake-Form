@@ -115,12 +115,18 @@ export async function POST(req: Request) {
     const step0 = (data.step0 ?? {}) as Partial<Step0Data>
     const step4 = (data.step4 ?? {}) as Partial<Step4Data>
 
+    const cleanDate = (value?: string | null) => {
+      if (!value) return null
+      const trimmed = value.trim()
+      return trimmed.length === 0 ? null : trimmed
+    }
+
     const updates = {
       data,
       primary_trade: step4.primaryTrade ?? null,
       license_type: step0.licenseType ?? null,
       has_employees: step0.hasEmployees ?? null,
-      qualifier_dob: step4.qualifierDob ?? null,
+      qualifier_dob: cleanDate(step4.qualifierDob),
       updated_at: new Date().toISOString(),
     }
 
