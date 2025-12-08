@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { auth, clerkClient } from "@clerk/nextjs/server"
-import { findContactByName } from "@/lib/salesforce"
+import { findContactByEmail } from "@/lib/salesforce"
 
 export async function GET() {
   try {
@@ -12,14 +12,13 @@ export async function GET() {
 
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    const firstName = user.firstName || ""
-    const lastName = user.lastName || ""
+    const email = user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress || ""
 
-    if (!firstName || !lastName) {
-      return NextResponse.json({ matched: false, reason: "missing_name" })
+    if (!email) {
+      return NextResponse.json({ matched: false, reason: "missing_email" })
     }
 
-    const matched = await findContactByName(firstName, lastName)
+    const matched = await findContactByEmail(email)
     return NextResponse.json({ matched })
   } catch (error: any) {
     console.error("Salesforce check error:", error)
