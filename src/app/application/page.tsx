@@ -26,6 +26,7 @@ export default function WizardPage() {
   const updateData = useWizardStore((state) => state.updateData)
   const applicationId = useWizardStore((state) => state.applicationId)
   const setApplicationId = useWizardStore((state) => state.setApplicationId)
+  const [sfStatus, setSfStatus] = useState<"loading" | "match" | "nomatch" | "error">("loading")
 
   const isAdmin = useMemo(() => {
     const list = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
@@ -70,6 +71,21 @@ export default function WizardPage() {
       router.replace("/admin")
     }
   }, [isAdmin, router])
+
+  useEffect(() => {
+    const checkSf = async () => {
+      try {
+        const res = await fetch("/api/salesforce/check-contact")
+        if (!res.ok) throw new Error("sf check failed")
+        const data = await res.json()
+        setSfStatus(data.matched ? "match" : "nomatch")
+      } catch (err) {
+        console.error(err)
+        setSfStatus("error")
+      }
+    }
+    checkSf()
+  }, [])
 
   // Load saved data (now allowed signed-out with fallback)
   useEffect(() => {
@@ -153,6 +169,26 @@ export default function WizardPage() {
         <div className="space-y-1">
           <h1 className="text-lg font-semibold text-slate-900">Contractor Licensing Intake</h1>
           <p className="text-sm text-slate-600">Complete all sections to submit your application</p>
+        </div>
+
+        <div className="flex justify-end">
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm">
+            {sfStatus === "match" ? (
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1024px-Salesforce.com_logo.svg.png"
+                alt="Salesforce linked"
+                className="h-6 w-auto"
+              />
+            ) : (
+              <span className="text-lg font-semibold text-red-500">X</span>
+            )}
+            <span className="text-xs font-semibold text-slate-700">
+              {sfStatus === "loading" && "Checking..."}
+              {sfStatus === "match" && "Salesforce contact found"}
+              {sfStatus === "nomatch" && "No Salesforce contact"}
+              {sfStatus === "error" && "Check failed"}
+            </span>
+          </div>
         </div>
 
         {/* Step tracker */}
