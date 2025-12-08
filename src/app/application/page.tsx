@@ -161,29 +161,30 @@ export default function WizardPage() {
             {steps.map((s, i) => {
               const active = i === currentStep
               return (
-                <div key={s.label} className="flex flex-1 min-w-[90px] flex-col items-center gap-2">
+                <button
+                  key={s.label}
+                  type="button"
+                  onClick={() => setStep(i)}
+                  className="flex flex-1 min-w-[90px] flex-col items-center gap-2 focus:outline-none"
+                >
                   <div className="flex items-center gap-3 w-full">
                     <div
                       className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
-                        active
-                          ? "bg-orange-500 text-white"
-                          : "bg-slate-200 text-slate-600"
+                        active ? "bg-orange-500 text-white" : "bg-slate-200 text-slate-600"
                       }`}
                     >
                       {i + 1}
                     </div>
                     <div className="h-px flex-1 bg-slate-200" />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setStep(i)}
+                  <span
                     className={`text-xs font-semibold ${
                       active ? "text-orange-600" : "text-slate-500 hover:text-slate-700"
                     }`}
                   >
                     {s.label}
-                  </button>
-                </div>
+                  </span>
+                </button>
               )
             })}
           </div>
