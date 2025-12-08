@@ -191,12 +191,14 @@ export default function WizardPage() {
         </div>
 
         {/* Form container */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
+        <div className="bg-white p-2 sm:p-0">
+          <div className="mb-4">
             <h2 className="text-xl font-semibold text-slate-900">Account Info</h2>
             <p className="text-sm text-slate-600">Please provide your basic contact information</p>
           </div>
-          <CurrentComponent />
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <CurrentComponent />
+          </div>
         </div>
 
         <div className="text-center text-sm text-slate-600">
