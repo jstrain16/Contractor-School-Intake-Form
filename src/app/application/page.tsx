@@ -139,50 +139,95 @@ export default function WizardPage() {
   const CurrentComponent = steps[currentStep]?.component || Step0
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <h1 className="text-2xl font-bold text-slate-900">Contractor Licensing Intake</h1>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
-            >
-              Back to Dashboard
-            </button>
+    <div className="min-h-screen bg-[#f7f8fb] text-slate-900">
+      {/* Top header */}
+      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm">
+            <span className="text-lg font-semibold">CS</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-900">CONTRACTORS SCHOOL</p>
+            <p className="text-xs text-slate-500">Licensing Specialists</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-semibold text-slate-700">Dashboard</span>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-semibold">
+            {user?.firstName?.[0]?.toUpperCase() || "U"}
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-5xl px-4 pb-12 pt-6 space-y-6">
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard")}
+          className="flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
+        >
+          <span className="text-lg">←</span>
+          Back to Dashboard
+        </button>
+
+        <div className="space-y-1">
+          <h1 className="text-lg font-semibold text-slate-900">Contractor Licensing Intake</h1>
+          <p className="text-sm text-slate-600">Complete all sections to submit your application</p>
+        </div>
+
+        {/* Step tracker */}
+        <div className="rounded-2xl border border-slate-200 bg-white px-4 py-5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {steps.map((s, i) => {
+              const active = i === currentStep
+              return (
+                <div key={s.label} className="flex flex-1 min-w-[90px] flex-col items-center gap-2">
+                  <div className="flex items-center gap-3 w-full">
+                    <div
+                      className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+                        active
+                          ? "bg-orange-500 text-white"
+                          : "bg-slate-200 text-slate-600"
+                      }`}
+                    >
+                      {i + 1}
+                    </div>
+                    <div className="h-px flex-1 bg-slate-200" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStep(i)}
+                    className={`text-xs font-semibold ${
+                      active ? "text-orange-600" : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                </div>
+              )
+            })}
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-            <div 
-              className="bg-slate-900 h-full transition-all duration-300"
-              style={{ width: `${((currentStep) / (steps.length - 1)) * 100}%` }}
-            />
+        {/* Form container */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-slate-900">Account Info</h2>
+            <p className="text-sm text-slate-600">Please provide your basic contact information</p>
           </div>
-          <div className="flex justify-between text-xs text-slate-500 px-1">
-             {steps.map((s, i) => (
-               <button
-                 key={s.label}
-                 type="button"
-                 onClick={() => setStep(i)}
-                 className={`${i === currentStep ? "font-bold text-slate-900" : ""} hidden md:block hover:text-slate-900`}
-               >
-                 {s.label}
-               </button>
-             ))}
-             <div className="md:hidden font-bold text-slate-900">
-                Step {currentStep + 1} of {steps.length}: {steps[currentStep]?.label}
-             </div>
-          </div>
-        </div>
-
-        <div className="py-4">
           <CurrentComponent />
         </div>
-      </div>
+
+        <div className="text-center text-sm text-slate-600">
+          Need help?{" "}
+          <button
+            type="button"
+            onClick={() => router.push("/dashboard")}
+            className="font-semibold text-orange-600 hover:text-orange-700"
+          >
+            Contact Support
+          </button>
+        </div>
+      </main>
     </div>
   )
 }
