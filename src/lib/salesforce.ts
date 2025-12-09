@@ -103,3 +103,53 @@ export async function findContactByEmail(email: string): Promise<boolean> {
   return Array.isArray(data.records) && data.records.length > 0
 }
 
+// If an Account has Business_Email__c matching the given email, set Incontractorschoolapp__c = true
+export async function markAccountInContractorAppByBusinessEmail(
+  email: string
+): Promise<{ found: boolean; updated: boolean }> {
+  const auth = await getAccessToken()
+  const safeEmail = email.replace(/'/g, "\\'")
+  const soql = `SELECT Id, Incontractorschoolapp__c FROM Account WHERE Business_Email__c = '${safeEmail}' LIMIT 1`
+
+  const queryUrl = `${auth.instance_url}/services/data/v57.0/query?q=${encodeURIComponent(soql)}`
+  const queryRes = await fetch(queryUrl, {
+    headers: {
+      Authorization: `${auth.token_type} ${auth.access_token}`,
+      "Content-Type": "application/json",
+    },
+  })
+
+  if (!queryRes.ok) {
+    const text = await queryRes.text()
+    throw new Error(`Salesforce Account query failed: ${queryRes.status} ${text}`)
+  }
+
+  const data: { records: Array<{ Id: string; Incontractorschoolapp__c?: boolean }> } = await queryRes.json()
+  if (!Array.isArray(data.records) || data.records.length === 0) {
+    return { found: false, updated: false }
+  }
+
+  const account = data.records[0]
+  // Already checked, nothing to do
+  if (account.Incontractorschoolapp__c === true) {
+    return { found: true, updated: false }
+  }
+
+  const updateUrl = `${auth.instance_url}/services/data/v57.0/sobjects/Account/${account.Id}`
+  const updateRes = await fetch(updateUrl, {
+    method: "PATCH",
+    headers: {
+      Authorization: `${auth.token_type} ${auth.access_token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ Incontractorschoolapp__c: true }),
+  })
+
+  if (!updateRes.ok) {
+    const text = await updateRes.text()
+    throw new Error(`Salesforce Account update failed: ${updateRes.status} ${text}`)
+  }
+
+  return { found: true, updated: true }
+}
+
