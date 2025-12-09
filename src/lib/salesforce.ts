@@ -106,10 +106,10 @@ export async function findContactByEmail(email: string): Promise<boolean> {
 // If an Account has Business_Email__c matching the given email, set Incontractorschoolapp__c = true
 export async function markAccountInContractorAppByBusinessEmail(
   email: string
-): Promise<{ found: boolean; updated: boolean }> {
+): Promise<{ found: boolean; updated: boolean; name?: string }> {
   const auth = await getAccessToken()
   const safeEmail = email.replace(/'/g, "\\'")
-  const soql = `SELECT Id, Incontractorschoolapp__c FROM Account WHERE Business_Email__c = '${safeEmail}' LIMIT 1`
+  const soql = `SELECT Id, Name, Incontractorschoolapp__c FROM Account WHERE Business_Email__c = '${safeEmail}' LIMIT 1`
 
   const queryUrl = `${auth.instance_url}/services/data/v57.0/query?q=${encodeURIComponent(soql)}`
   const queryRes = await fetch(queryUrl, {
@@ -124,7 +124,8 @@ export async function markAccountInContractorAppByBusinessEmail(
     throw new Error(`Salesforce Account query failed: ${queryRes.status} ${text}`)
   }
 
-  const data: { records: Array<{ Id: string; Incontractorschoolapp__c?: boolean }> } = await queryRes.json()
+  const data: { records: Array<{ Id: string; Name?: string; Incontractorschoolapp__c?: boolean }> } =
+    await queryRes.json()
   if (!Array.isArray(data.records) || data.records.length === 0) {
     return { found: false, updated: false }
   }
@@ -132,7 +133,7 @@ export async function markAccountInContractorAppByBusinessEmail(
   const account = data.records[0]
   // Already checked, nothing to do
   if (account.Incontractorschoolapp__c === true) {
-    return { found: true, updated: false }
+    return { found: true, updated: false, name: account.Name }
   }
 
   const updateUrl = `${auth.instance_url}/services/data/v57.0/sobjects/Account/${account.Id}`
@@ -150,6 +151,6 @@ export async function markAccountInContractorAppByBusinessEmail(
     throw new Error(`Salesforce Account update failed: ${updateRes.status} ${text}`)
   }
 
-  return { found: true, updated: true }
+  return { found: true, updated: true, name: account.Name }
 }
 

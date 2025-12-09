@@ -27,6 +27,7 @@ export default function WizardPage() {
   const applicationId = useWizardStore((state) => state.applicationId)
   const setApplicationId = useWizardStore((state) => state.setApplicationId)
   const [sfStatus, setSfStatus] = useState<"loading" | "match" | "nomatch" | "error">("loading")
+  const [sfAccountName, setSfAccountName] = useState<string | null>(null)
 
   const isAdmin = useMemo(() => {
     const list = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
@@ -79,6 +80,11 @@ export default function WizardPage() {
         if (!res.ok) throw new Error("sf check failed")
         const data = await res.json()
         setSfStatus(data.matched ? "match" : "nomatch")
+        if (data.accountName) {
+          setSfAccountName(data.accountName as string)
+        } else {
+          setSfAccountName(null)
+        }
       } catch (err) {
         console.error(err)
         setSfStatus("error")
@@ -184,7 +190,8 @@ export default function WizardPage() {
             )}
             <span className="text-xs font-semibold text-slate-700">
               {sfStatus === "loading" && "Checking..."}
-              {sfStatus === "match" && "Salesforce contact found"}
+              {sfStatus === "match" &&
+                (sfAccountName ? `Salesforce: ${sfAccountName}` : "Salesforce contact found")}
               {sfStatus === "nomatch" && "No Salesforce contact"}
               {sfStatus === "error" && "Check failed"}
             </span>
