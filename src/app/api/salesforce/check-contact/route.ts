@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { auth, clerkClient } from "@clerk/nextjs/server"
-import { findContactByEmail, markAccountInContractorAppByBusinessEmail } from "@/lib/salesforce"
+import {
+  createContactAndOpportunityForUser,
+  findContactByEmail,
+  markAccountInContractorAppByBusinessEmail,
+} from "@/lib/salesforce"
 
 export async function GET() {
   try {
@@ -35,7 +39,32 @@ export async function GET() {
       console.error("Failed to mark Salesforce Account Incontractorschoolapp__c:", e)
     }
 
-    return NextResponse.json({ matched, accountUpdated, accountName })
+    // If no matching Contact, create a new Contact + Opportunity in Salesforce
+    let createdContact = false
+    let createdOpportunity = false
+    if (!matched) {
+      try {
+        const firstName = user?.firstName || null
+        const lastName = user?.lastName || null
+        const { contactId, opportunityId } = await createContactAndOpportunityForUser({
+          email,
+          firstName,
+          lastName,
+        })
+        createdContact = !!contactId
+        createdOpportunity = !!opportunityId
+      } catch (e) {
+        console.error("Failed to create Salesforce Contact/Opportunity:", e)
+      }
+    }
+
+    return NextResponse.json({
+      matched: matched || createdContact,
+      accountUpdated,
+      accountName,
+      createdContact,
+      createdOpportunity,
+    })
   } catch (error: any) {
     console.error("Salesforce check error:", error)
     return NextResponse.json({ matched: false, error: error.message || "Failed to check Salesforce" }, { status: 500 })

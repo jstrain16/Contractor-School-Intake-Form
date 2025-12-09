@@ -6,6 +6,12 @@ type SalesforceAuthResponse = {
   token_type: string
 }
 
+type SalesforceCreateResult = {
+  id: string
+  success: boolean
+  errors: string[]
+}
+
 const {
   SALESFORCE_CLIENT_ID,
   SALESFORCE_CLIENT_SECRET,
@@ -152,5 +158,71 @@ export async function markAccountInContractorAppByBusinessEmail(
   }
 
   return { found: true, updated: true, name: account.Name }
+}
+
+// If no matching Contact exists, create a Contact and an Opportunity for this user
+export async function createContactAndOpportunityForUser(params: {
+  email: string
+  firstName?: string | null
+  lastName?: string | null
+}): Promise<{ contactId: string; opportunityId: string }> {
+  const auth = await getAccessToken()
+
+  const headers = {
+    Authorization: `${auth.token_type} ${auth.access_token}`,
+    "Content-Type": "application/json",
+  }
+
+  const lastName = params.lastName && params.lastName.trim().length > 0 ? params.lastName : params.email
+
+  // 1) Create Contact
+  const contactRes = await fetch(`${auth.instance_url}/services/data/v57.0/sobjects/Contact`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      FirstName: params.firstName || undefined,
+      LastName: lastName,
+      Email: params.email,
+    }),
+  })
+
+  if (!contactRes.ok) {
+    const text = await contactRes.text()
+    throw new Error(`Salesforce create Contact failed: ${contactRes.status} ${text}`)
+  }
+
+  const contactData = (await contactRes.json()) as SalesforceCreateResult
+  if (!contactData.success || !contactData.id) {
+    throw new Error(`Salesforce create Contact did not succeed: ${JSON.stringify(contactData)}`)
+  }
+
+  // 2) Create Opportunity
+  const closeDate = new Date()
+  closeDate.setDate(closeDate.getDate() + 30)
+  const closeDateStr = closeDate.toISOString().slice(0, 10) // YYYY-MM-DD
+
+  const oppName = `Contractor School Application - ${params.email}`
+
+  const oppRes = await fetch(`${auth.instance_url}/services/data/v57.0/sobjects/Opportunity`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      Name: oppName,
+      StageName: "Prospecting",
+      CloseDate: closeDateStr,
+    }),
+  })
+
+  if (!oppRes.ok) {
+    const text = await oppRes.text()
+    throw new Error(`Salesforce create Opportunity failed: ${oppRes.status} ${text}`)
+  }
+
+  const oppData = (await oppRes.json()) as SalesforceCreateResult
+  if (!oppData.success || !oppData.id) {
+    throw new Error(`Salesforce create Opportunity did not succeed: ${JSON.stringify(oppData)}`)
+  }
+
+  return { contactId: contactData.id, opportunityId: oppData.id }
 }
 
