@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { useEffect, useMemo } from "react"
 
 export function Step2() {
   const { data, updateData, nextStep, prevStep } = useWizardStore()
-  const form = useForm<Step2FormValues>({
-    resolver: zodResolver(step2Schema),
-    defaultValues: {
+
+  const defaults = useMemo<Step2FormValues>(
+    () => ({
       hasEntityRegistered: data.step2?.hasEntityRegistered ?? false,
       legalBusinessName: data.step2?.legalBusinessName ?? "",
       entityType: data.step2?.entityType ?? undefined,
@@ -24,11 +25,22 @@ export function Step2() {
       businessEmail: data.step2?.businessEmail ?? "",
       physicalAddress: data.step2?.physicalAddress ?? { street: "", city: "", state: "", zip: "" },
       mailingAddressSame: data.step2?.mailingAddressSame ?? false,
+      mailingAddress: data.step2?.mailingAddress ?? { street: "", city: "", state: "", zip: "" },
       hasEin: data.step2?.hasEin ?? false,
       federalEin: data.step2?.federalEin ?? "",
       hasBusinessBankAccount: data.step2?.hasBusinessBankAccount ?? false,
-    }
+    }),
+    [data.step2]
+  )
+
+  const form = useForm<Step2FormValues>({
+    resolver: zodResolver(step2Schema),
+    defaultValues: defaults,
   })
+
+  useEffect(() => {
+    form.reset(defaults)
+  }, [defaults, form])
 
   const hasEntity = form.watch("hasEntityRegistered")
   const mailingAddressSame = form.watch("mailingAddressSame")

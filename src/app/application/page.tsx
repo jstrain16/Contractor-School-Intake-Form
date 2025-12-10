@@ -27,6 +27,7 @@ export default function WizardPage() {
   const updateData = useWizardStore((state) => state.updateData)
   const applicationId = useWizardStore((state) => state.applicationId)
   const setApplicationId = useWizardStore((state) => state.setApplicationId)
+  const resetStore = useWizardStore((state) => state.reset)
   const [sfStatus, setSfStatus] = useState<"loading" | "match" | "nomatch" | "error">("loading")
   const [sfAccountName, setSfAccountName] = useState<string | null>(null)
 
@@ -67,6 +68,13 @@ export default function WizardPage() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Reset wizard store when user changes to avoid cross-user prefill
+  useEffect(() => {
+    if (isLoaded && user?.id) {
+      resetStore()
+    }
+  }, [isLoaded, user?.id, resetStore])
 
   useEffect(() => {
     if (!mounted || !isLoaded || redirecting) return
