@@ -13,7 +13,7 @@ import {
 } from "@clerk/nextjs"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Shield } from "lucide-react"
 import ChatWidget from "@/components/chat/ChatWidget"
 
@@ -117,10 +117,23 @@ export function Providers({ children }: ProvidersProps) {
             </SignedIn>
           </div>
         </header>
+        <EnsureProfileOnce />
         {children}
         <ChatWidget />
       </ClerkLoaded>
     </ClerkProvider>
   )
+}
+
+function EnsureProfileOnce() {
+  const called = useRef(false)
+  useEffect(() => {
+    if (called.current) return
+    called.current = true
+    fetch("/api/profile/ensure", { method: "POST" }).catch((e) => {
+      console.warn("ensure profile failed", e)
+    })
+  }, [])
+  return null
 }
 

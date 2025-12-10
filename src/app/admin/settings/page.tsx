@@ -61,8 +61,14 @@ export default async function AdminSettingsPage({
 
   const userRows = (profileRows || []).map((u) => {
     const email = u.email?.toLowerCase() || ""
+    const profileRole = (u.role || "").toLowerCase()
     const adminRole = email ? adminEmailMap.get(email) : undefined
-    const role = adminRole === "super_admin" ? "Super Admin" : adminRole ? "Admin" : "Applicant"
+    const resolvedRole =
+      profileRole === "super_admin" || profileRole === "admin" || profileRole === "applicant"
+        ? profileRole
+        : adminRole
+    const role =
+      resolvedRole === "super_admin" ? "Super Admin" : resolvedRole === "admin" ? "Admin" : "Applicant"
 
     // compute last active from profile.updated_at or app updated_at
     const relatedApps = appRows.filter((a) => a.user_id === u.user_id)
@@ -70,7 +76,8 @@ export default async function AdminSettingsPage({
       .map((a) => (a.updated_at ? new Date(a.updated_at).getTime() : 0))
       .reduce((m, v) => Math.max(m, v), 0)
     const profileUpdatedTs = u.updated_at ? new Date(u.updated_at as string).getTime() : 0
-    const lastActiveTs = Math.max(latestAppTs, profileUpdatedTs)
+    const profileLastActiveTs = (u as any).last_active_at ? new Date((u as any).last_active_at).getTime() : 0
+    const lastActiveTs = Math.max(latestAppTs, profileUpdatedTs, profileLastActiveTs)
     const lastActiveDisplay = lastActiveTs ? formatDate(new Date(lastActiveTs).toISOString()) : "—"
 
     const createdTs = u.created_at ? new Date(u.created_at as string).getTime() : 0
