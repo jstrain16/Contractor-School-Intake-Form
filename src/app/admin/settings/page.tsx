@@ -9,6 +9,7 @@ import ArchivedApplications from "@/components/admin/ArchivedApplications"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
+import { AdminUserActions } from "@/components/admin/AdminUserActions"
 
 export default async function AdminSettingsPage() {
   const { isAllowed } = await requireAdminEmail()
@@ -230,9 +231,7 @@ export default async function AdminSettingsPage() {
                       <td className="px-4 py-3 text-slate-600">{lastActive}</td>
                       <td className="px-4 py-3 text-slate-600">{createdDate}</td>
                       <td className="px-4 py-3 text-right">
-                        <Button variant="ghost" className="text-slate-700 hover:bg-slate-100">
-                          ⋮
-                        </Button>
+                        <AdminUserActions userId={u.user_id} email={u.email} currentRole={role} />
                       </td>
                     </tr>
                   )

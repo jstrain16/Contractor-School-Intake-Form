@@ -1,0 +1,48 @@
+import { NextResponse } from "next/server"
+import { auth, currentUser } from "@clerk/nextjs/server"
+import { getSupabaseAdminClient } from "@/lib/supabase-admin"
+
+export async function POST() {
+  try {
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const user = await currentUser()
+    const email = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || user?.emailAddresses?.[0]?.emailAddress?.toLowerCase()
+    const firstName = user?.firstName || null
+    const lastName = user?.lastName || null
+    const phone = user?.phoneNumbers?.[0]?.phoneNumber || null
+    const lastActive = user?.lastActiveAt ? new Date(user.lastActiveAt).toISOString() : new Date().toISOString()
+
+    const supabase = getSupabaseAdminClient()
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .upsert(
+        {
+          user_id: userId,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          last_active_at: lastActive,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      )
+      .select()
+      .maybeSingle()
+
+    if (error) {
+      console.error("ensure profile upsert failed", error)
+      return NextResponse.json({ error: "Failed to upsert profile" }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true, profile: data })
+  } catch (err) {
+    console.error("/api/profile/ensure error", err)
+    return NextResponse.json({ error: "Server error" }, { status: 500 })
+  }
+}
+
