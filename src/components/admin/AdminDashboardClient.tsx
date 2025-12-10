@@ -154,6 +154,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
   const [admins, setAdmins] = useState<{ id: string; name: string; email: string | null; role?: string }[]>([])
   const [loadingAdmins, setLoadingAdmins] = useState(false)
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
+  const [adminMap, setAdminMap] = useState<Map<string, { name: string; email: string | null; role?: string }>>(new Map())
 
   const classifiedRows = useMemo(
     () =>
@@ -218,6 +219,25 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
       `Hi ${name}, you're almost done with your contractor license application! Just two more steps to complete: add workers comp (or a waiver if no employees) and complete the final review/attestation. Reply here if you need help.`
     )
   }, [selected])
+
+  // Prefetch admins for display
+  useEffect(() => {
+    const loadAdmins = async () => {
+      try {
+        const res = await fetch("/api/admin/users/list")
+        if (!res.ok) return
+        const data = await res.json()
+        const list = (data.admins || []) as { id: string; name: string; email: string | null; role?: string }[]
+        setAdmins(list)
+        const map = new Map<string, { name: string; email: string | null; role?: string }>()
+        list.forEach((a) => map.set(a.id, { name: a.name, email: a.email, role: a.role }))
+        setAdminMap(map)
+      } catch (e) {
+        console.error("load admins failed", e)
+      }
+    }
+    loadAdmins()
+  }, [])
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -388,9 +408,11 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               {filtered.map(({ app, profile, progress, status, attachments }) => {
                 const user = getName(profile, app.data)
                 const chip = statusChip(status)
+                const assignedId = (app as any).assigned_admin_id as string | null
                 const assignedEmail = (app as any).assigned_admin_email as string | null
-                const assigned = assignedEmail || "Unassigned"
-                const assignedInitials = assignedEmail ? assignedEmail.slice(0, 2).toUpperCase() : "NA"
+                const adminFromMap = assignedId ? adminMap.get(assignedId) : undefined
+                const assignedDisplay = adminFromMap?.name || assignedEmail || "Unassigned"
+                const assignedInitials = (adminFromMap?.name || assignedEmail || "NA").slice(0, 2).toUpperCase()
                 const updated =
                   app.updated_at ? new Date(app.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"
                 return (
