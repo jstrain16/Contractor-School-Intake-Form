@@ -4,6 +4,7 @@ import { SignIn } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
+import { fetchWizardData } from "@/lib/wizard-api"
 
 export default function SignInPage() {
   const { isSignedIn } = useUser()
@@ -30,8 +31,20 @@ export default function SignInPage() {
         const res = await fetch("/api/profile/ensure", { method: "POST" })
         const json = await res.json().catch(() => null)
         const role = (json?.profile?.role || "").toLowerCase()
-        const target = role === "super_admin" || role === "admin" ? "/admin" : "/dashboard"
-        router.replace(target)
+        if (role === "super_admin" || role === "admin") {
+          router.replace("/admin")
+          return
+        }
+
+        // applicant: decide dashboard vs first application step
+        try {
+          const wizard = await fetchWizardData()
+          const hasStarted = Boolean(wizard?.applicationId || wizard?.data)
+          const target = hasStarted ? "/dashboard" : "/application"
+          router.replace(target)
+        } catch {
+          router.replace("/dashboard")
+        }
       } catch (e) {
         console.error("post-sign-in redirect failed", e)
         router.replace("/dashboard")
