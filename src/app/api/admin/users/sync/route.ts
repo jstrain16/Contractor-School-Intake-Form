@@ -54,6 +54,7 @@ export async function POST() {
       last_name: u.lastName || null,
       phone: u.phone || null,
       role: u.email === SUPER_ADMIN_EMAIL ? "super_admin" : "applicant",
+      active: true,
       created_at: u.createdAt ? new Date(u.createdAt).toISOString() : undefined,
       last_active_at: u.lastActiveAt ? new Date(u.lastActiveAt).toISOString() : undefined,
       updated_at: new Date().toISOString(),

@@ -8,8 +8,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import ArchivedApplications from "@/components/admin/ArchivedApplications"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AdminUserActions } from "@/components/admin/AdminUserActions"
-import { AdminSyncUsersButton } from "@/components/admin/AdminSyncUsersButton"
+import { AdminUsersTable, type AdminUserRow } from "@/components/admin/AdminUsersTable"
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -110,6 +109,21 @@ export default async function AdminSettingsPage({
     return name.includes(q) || (u.email || "").toLowerCase().includes(q)
   })
 
+  const clientRows: AdminUserRow[] = filteredUsers.map((u) => ({
+    id: u.id,
+    user_id: u.user_id,
+    clerk_id: u.clerk_id,
+    email: u.email,
+    first_name: u.first_name,
+    last_name: u.last_name,
+    phone: u.phone,
+    role: (u.role || "applicant").toLowerCase(),
+    status: u.status || "Active",
+    lastActiveDisplay: u.lastActiveDisplay,
+    createdDisplay: u.createdDisplay,
+    active: u.active !== false,
+  }))
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -171,93 +185,7 @@ export default async function AdminSettingsPage({
         </div>
 
         <Card className="border-slate-200 px-4 py-4">
-          <div className="flex flex-col gap-3 border-b border-slate-200 pb-3 md:flex-row md:items-center md:justify-between">
-            <div className="text-lg font-semibold text-slate-900">All Users</div>
-            <form className="flex flex-1 items-center gap-3 md:flex-none">
-              <input
-                type="text"
-                name="q"
-                defaultValue={q}
-                placeholder="Search users..."
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none md:w-80"
-              />
-              <Button
-                type="submit"
-                className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
-              >
-                Search
-              </Button>
-              <a
-                href="#invite-admin"
-                className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-orange-600 hover:to-orange-700"
-              >
-                + Add User
-              </a>
-            </form>
-            <AdminSyncUsersButton />
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                <tr>
-                  <th className="px-4 py-3">User</th>
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Last Active</th>
-                  <th className="px-4 py-3">Created Date</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white text-sm text-slate-800">
-                {filteredUsers.map((u) => {
-                  const name = `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email || "Unknown user"
-                  const role = u.role || "Applicant"
-                  const status = u.status || "Active"
-                  const lastActive = u.lastActiveDisplay || "—"
-                  const createdDate = u.createdDisplay || "—"
-                  return (
-                    <tr key={u.user_id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3">
-                        <div className="space-y-1">
-                          <div className="font-semibold text-slate-900">{name}</div>
-                          <div className="text-xs text-slate-600">{u.email || "No email"}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                            role === "Admin"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          {role}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                          {status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">{lastActive}</td>
-                      <td className="px-4 py-3 text-slate-600">{createdDate}</td>
-                      <td className="px-4 py-3 text-right">
-                        <AdminUserActions userId={u.user_id} email={u.email} currentRole={role} />
-                      </td>
-                    </tr>
-                  )
-                })}
-                {userRows.length === 0 && (
-                  <tr>
-                    <td className="px-4 py-6 text-center text-slate-500" colSpan={6}>
-                      No users found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <AdminUsersTable rows={clientRows} />
         </Card>
 
         <Card className="border-slate-200 px-4 py-4" id="invite-admin">

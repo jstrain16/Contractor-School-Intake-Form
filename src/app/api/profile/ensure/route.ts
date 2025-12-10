@@ -42,6 +42,7 @@ export async function POST() {
           phone,
           role: resolvedRole,
           last_active_at: lastActive,
+          active: true,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "email" }
