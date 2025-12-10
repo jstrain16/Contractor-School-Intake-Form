@@ -8,7 +8,6 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminUsersTable, type AdminUserRow } from "@/components/admin/AdminUsersTable"
-import { AdminHeaderBar } from "@/components/admin/AdminHeaderBar"
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -127,8 +126,6 @@ export default async function AdminSettingsPage({
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <AdminHeaderBar title="Settings" subtitle="System Configuration" backHref="/admin" />
-
         <Card className="border-slate-200 px-4 py-2">
           <div className="flex flex-wrap items-center gap-2">
             <Button className="rounded-lg bg-orange-100 text-orange-800 hover:bg-orange-200" variant="ghost">

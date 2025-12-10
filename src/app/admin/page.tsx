@@ -7,7 +7,6 @@ import { WizardData } from "@/lib/schemas"
 import { buildStatus } from "@/lib/progress"
 import Link from "next/link"
 import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient"
-import { AdminHeaderBar } from "@/components/admin/AdminHeaderBar"
 
 type ApplicationRow = {
   id: string
@@ -164,7 +163,6 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        <AdminHeaderBar />
         <AdminDashboardClient rows={rows} />
       </div>
     </div>
