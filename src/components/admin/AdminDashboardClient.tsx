@@ -312,6 +312,14 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
             >
               My Queue <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs text-slate-700">0</span>
             </Button>
+            {selectedIds.size > 0 && (
+              <Button
+                className="rounded-full bg-orange-500 px-4 py-2 text-white shadow-sm hover:bg-orange-600"
+                onClick={openAssign}
+              >
+                Assign to admin
+              </Button>
+            )}
           </div>
           <div className="flex flex-1 items-center gap-3 md:flex-none">
             <div className="relative flex-1">
