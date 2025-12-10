@@ -377,7 +377,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
-          <div className="w-full max-w-5xl rounded-2xl bg-slate-50 shadow-2xl">
+          <div className="w-full max-w-5xl rounded-2xl bg-white shadow-2xl">
             {/* Header */}
             <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
               <div className="flex items-center gap-3">
