@@ -8,6 +8,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import ArchivedApplications from "@/components/admin/ArchivedApplications"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
 
 export default async function AdminSettingsPage() {
   const { isAllowed } = await requireAdminEmail()
@@ -24,15 +25,15 @@ export default async function AdminSettingsPage() {
 
   const appRows = applications || []
 
-  const userIds = appRows.map((a) => a.user_id)
-  let profileRows: { user_id: string; email: string | null; first_name: string | null; last_name: string | null; phone: string | null }[] = []
-  if (userIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from("user_profiles")
-      .select("user_id,email,first_name,last_name,phone")
-      .in("user_id", userIds)
-    profileRows = profiles || []
-  }
+  // Fetch admin allowlist to derive roles
+  const { data: adminUsers } = await supabase.from("admin_users").select("email, role")
+
+  // Fetch all user profiles (store all users here)
+  const { data: profiles } = await supabase
+    .from("user_profiles")
+    .select("user_id,email,first_name,last_name,phone,created_at,updated_at")
+
+  const profileRows = profiles || []
 
   const profileMap = new Map<string, (typeof profileRows)[number]>()
   profileRows.forEach((p) => profileMap.set(p.user_id, p))
@@ -42,15 +43,53 @@ export default async function AdminSettingsPage() {
     profile: profileMap.get(app.user_id),
   }))
 
-  const userRows = profileRows.length > 0 ? profileRows : []
+  const now = Date.now()
+  const adminEmailMap = new Map<string, string>( // email -> role
+    (adminUsers || []).map((a) => [a.email?.toLowerCase() ?? "", (a.role || "admin").toLowerCase()])
+  )
+
+  const userRows = (profileRows || []).map((u) => {
+    const email = u.email?.toLowerCase() || ""
+    const adminRole = email ? adminEmailMap.get(email) : undefined
+    const role = adminRole === "super_admin" ? "Super Admin" : adminRole ? "Admin" : "Applicant"
+
+    // compute last active from profile.updated_at or app updated_at
+    const relatedApps = appRows.filter((a) => a.user_id === u.user_id)
+    const latestAppTs = relatedApps
+      .map((a) => (a.updated_at ? new Date(a.updated_at).getTime() : 0))
+      .reduce((m, v) => Math.max(m, v), 0)
+    const profileUpdatedTs = u.updated_at ? new Date(u.updated_at as string).getTime() : 0
+    const lastActiveTs = Math.max(latestAppTs, profileUpdatedTs)
+    const lastActiveDisplay = lastActiveTs ? format(new Date(lastActiveTs), "MMM d, yyyy") : "—"
+
+    const createdTs = u.created_at ? new Date(u.created_at as string).getTime() : 0
+    const createdDisplay = createdTs ? format(new Date(createdTs), "MMM d, yyyy") : "—"
+
+    const inactiveThreshold = 1000 * 60 * 60 * 24 * 30 // 30 days
+    const status = lastActiveTs && now - lastActiveTs > inactiveThreshold ? "Inactive" : "Active"
+
+    return {
+      ...u,
+      role,
+      status,
+      lastActiveDisplay,
+      createdDisplay,
+    }
+  })
+
   const stats = {
-    superAdmins: 1,
-    admins: Math.max(userRows.length - 2, 0),
-    applicants: appRows.length,
-    activeUsers: userRows.length,
+    superAdmins: userRows.filter((u) => u.role === "Super Admin").length,
+    admins: userRows.filter((u) => u.role === "Admin").length,
+    applicants: userRows.filter((u) => u.role === "Applicant").length,
+    activeUsers: userRows.filter((u) => u.status === "Active").length,
   }
 
-  const searchParamsObj = new URLSearchParams()
+  const q = typeof searchParams?.q === "string" ? searchParams.q.toLowerCase().trim() : ""
+  const filteredUsers = userRows.filter((u) => {
+    if (!q) return true
+    const name = `${u.first_name ?? ""} ${u.last_name ?? ""}`.toLowerCase()
+    return name.includes(q) || (u.email || "").toLowerCase().includes(q)
+  })
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -115,17 +154,34 @@ export default async function AdminSettingsPage() {
         <Card className="border-slate-200 px-4 py-4">
           <div className="flex flex-col gap-3 border-b border-slate-200 pb-3 md:flex-row md:items-center md:justify-between">
             <div className="text-lg font-semibold text-slate-900">All Users</div>
-            <div className="flex flex-1 items-center gap-3 md:flex-none">
+            <form className="flex flex-1 items-center gap-3 md:flex-none">
               <input
                 type="text"
                 name="q"
+                defaultValue={q}
                 placeholder="Search users..."
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none md:w-80"
               />
-              <Button className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700">
+              <Button
+                type="submit"
+                className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+              >
+                Search
+              </Button>
+              <Button
+                type="button"
+                className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+                onClick={() => {
+                  // scroll to invite section
+                  if (typeof window !== "undefined") {
+                    const el = document.getElementById("invite-admin")
+                    if (el) el.scrollIntoView({ behavior: "smooth" })
+                  }
+                }}
+              >
                 + Add User
               </Button>
-            </div>
+            </form>
           </div>
 
           <div className="overflow-x-auto">
@@ -141,12 +197,12 @@ export default async function AdminSettingsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white text-sm text-slate-800">
-                {userRows.map((u) => {
+                {filteredUsers.map((u) => {
                   const name = `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() || u.email || "Unknown user"
-                  const role = u.email?.includes("@contractorsschool.com") ? "Admin" : "Applicant"
-                  const status = "Active"
-                  const lastActive = "—"
-                  const createdDate = "—"
+                  const role = u.role || "Applicant"
+                  const status = u.status || "Active"
+                  const lastActive = u.lastActiveDisplay || "—"
+                  const createdDate = u.createdDisplay || "—"
                   return (
                     <tr key={u.user_id} className="hover:bg-slate-50">
                       <td className="px-4 py-3">
