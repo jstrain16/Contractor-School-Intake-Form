@@ -47,7 +47,9 @@ export async function POST() {
     }
 
     const upserts = users.map((u) => ({
+      id: undefined, // let default generate
       user_id: u.id,
+      clerk_id: u.id,
       email: u.email,
       first_name: u.firstName || null,
       last_name: u.lastName || null,

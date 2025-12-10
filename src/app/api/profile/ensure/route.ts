@@ -15,6 +15,7 @@ export async function POST() {
     const lastName = user?.lastName || null
     const phone = user?.phoneNumbers?.[0]?.phoneNumber || null
     const lastActive = user?.lastActiveAt ? new Date(user.lastActiveAt).toISOString() : new Date().toISOString()
+    const clerkId = userId
 
     const supabase = getSupabaseAdminClient()
     const { data, error } = await supabase
@@ -22,10 +23,12 @@ export async function POST() {
       .upsert(
         {
           user_id: userId,
+          clerk_id: clerkId,
           email,
           first_name: firstName,
           last_name: lastName,
           phone,
+          role: "applicant",
           last_active_at: lastActive,
           updated_at: new Date().toISOString(),
         },
