@@ -8,6 +8,7 @@ import {
   Briefcase,
   CheckCircle2,
   Mail,
+  AlertCircle,
   Eye,
   Download,
   X,
@@ -143,6 +144,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
   const [activeTab, setActiveTab] = useState<"recent" | "my">("recent")
   const [selected, setSelected] = useState<AdminRow | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [emailDraft, setEmailDraft] = useState<string>("")
 
   const classifiedRows = useMemo(
     () =>
@@ -197,6 +199,14 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
   }, [])
+
+  useEffect(() => {
+    if (!selected) return
+    const { name } = getName(selected.profile, selected.app.data)
+    setEmailDraft(
+      `Hi ${name}, you're almost done with your contractor license application! Just two more steps to complete: add workers comp (or a waiver if no employees) and complete the final review/attestation. Reply here if you need help.`
+    )
+  }, [selected])
 
   return (
     <div className="space-y-6">
@@ -483,6 +493,56 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                   </Card>
                 )
               })}
+
+              {/* Reminder Email block */}
+              <Card className="mt-3 border border-slate-200 bg-white shadow-sm">
+                <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+                  <Mail className="h-4 w-4 text-slate-600" />
+                  <div className="text-sm font-semibold text-slate-900">Reminder Email</div>
+                </div>
+                <div className="space-y-3 p-4">
+                  <div className="flex items-start gap-2 text-sm text-slate-700">
+                    <AlertCircle className="mt-0.5 h-4 w-4 text-amber-500" />
+                    <div>
+                      <div className="font-semibold">Missing steps:</div>
+                      <ul className="mt-1 list-disc space-y-1 pl-4 text-slate-600">
+                        {!selected.app.data?.step3 && (
+                          <li>Insurance: Add workers comp or waiver if no employees</li>
+                        )}
+                        {!selected.app.data?.step7 && <li>Review / Attestation: Complete final review and sign</li>}
+                        {selected.app.data?.step3 && selected.app.data?.step7 && (
+                          <li>All required steps have submissions</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm font-semibold text-slate-900">Email draft</div>
+                    <textarea
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-orange-500 focus:outline-none"
+                      rows={3}
+                      value={emailDraft}
+                      onChange={(e) => setEmailDraft(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-sm font-semibold">
+                    <Button variant="outline" className="border-slate-200 text-slate-800">
+                      Generate AI Draft
+                    </Button>
+                    <Button className="bg-orange-500 text-white hover:bg-orange-600">Send Email</Button>
+                    <Button className="bg-slate-900 text-white hover:bg-slate-800">Send via AI Now</Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex flex-wrap gap-3 border-t border-slate-200 bg-white px-4 py-4">
+              <Button className="bg-green-600 text-white hover:bg-green-700">Approve Application</Button>
+              <Button variant="outline" className="border-slate-200 text-slate-800">
+                Contact
+              </Button>
+              <Button className="bg-amber-500 text-white hover:bg-amber-600">Request Revision</Button>
             </div>
           </div>
         </div>
