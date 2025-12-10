@@ -8,26 +8,25 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step2() {
-  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
+  const { data, updateData, nextStep, prevStep } = useWizardStore()
   const form = useForm<Step2FormValues>({
     resolver: zodResolver(step2Schema),
     defaultValues: {
-      hasEntityRegistered: data.step2?.hasEntityRegistered || false,
-      legalBusinessName: data.step2?.legalBusinessName || "",
-      entityType: data.step2?.entityType || "LLC",
-      stateOfIncorporation: data.step2?.stateOfIncorporation || "Utah",
-      utahEntityNumber: data.step2?.utahEntityNumber || "",
-      dateRegistered: data.step2?.dateRegistered || "",
-      businessPhone: data.step2?.businessPhone || "",
-      businessEmail: data.step2?.businessEmail || "",
-      physicalAddress: data.step2?.physicalAddress || { street: "", city: "", state: "UT", zip: "" },
-      mailingAddressSame: data.step2?.mailingAddressSame ?? true,
-      hasEin: data.step2?.hasEin || false,
-      federalEin: data.step2?.federalEin || "",
-      hasBusinessBankAccount: data.step2?.hasBusinessBankAccount || false,
+      hasEntityRegistered: data.step2?.hasEntityRegistered ?? false,
+      legalBusinessName: data.step2?.legalBusinessName ?? "",
+      entityType: data.step2?.entityType ?? "",
+      stateOfIncorporation: data.step2?.stateOfIncorporation ?? "",
+      utahEntityNumber: data.step2?.utahEntityNumber ?? "",
+      dateRegistered: data.step2?.dateRegistered ?? "",
+      businessPhone: data.step2?.businessPhone ?? "",
+      businessEmail: data.step2?.businessEmail ?? "",
+      physicalAddress: data.step2?.physicalAddress ?? { street: "", city: "", state: "", zip: "" },
+      mailingAddressSame: data.step2?.mailingAddressSame ?? false,
+      hasEin: data.step2?.hasEin ?? false,
+      federalEin: data.step2?.federalEin ?? "",
+      hasBusinessBankAccount: data.step2?.hasBusinessBankAccount ?? false,
     }
   })
 
@@ -163,29 +162,10 @@ export function Step2() {
                   </div>
                 )}
 
-                <UploadField
-                  label="Proof of Registration Upload"
-                  step={2}
-                  fileType="registration_proof"
-                  applicationId={applicationId}
-                  accept=".pdf,.jpg,.png"
-                />
-              </div>
-            )}
-            {!hasEntity && (
-              <div className="p-3 bg-slate-50 rounded-md border text-sm space-y-1">
-                <p className="font-medium text-slate-800">Need an entity?</p>
-                <p className="text-slate-700">
-                  Follow the state guide to create your business entity before continuing.
-                </p>
-                <a
-                  href="https://corporations.utah.gov/business-entities/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 underline font-semibold"
-                >
-                  View entity creation instructions
-                </a>
+                <div className="space-y-2">
+                  <Label>Proof of Registration Upload</Label>
+                  <Input type="file" />
+                </div>
               </div>
             )}
           </div>
@@ -203,8 +183,9 @@ export function Step2() {
             {hasEin ? (
               <div className="space-y-2 pl-4 border-l-2 border-slate-200">
                 <Label htmlFor="federalEin">Federal EIN (FEIN)</Label>
-                <Input id="federalEin" type="text" inputMode="numeric" {...form.register("federalEin")} />
-                <div className="text-xs text-slate-500">Enter the FEIN from your IRS confirmation.</div>
+                <Input id="federalEin" {...form.register("federalEin")} />
+                <div className="text-xs text-slate-500">Recommended: Upload IRS EIN confirmation letter</div>
+                <Input type="file" className="mt-1" />
               </div>
             ) : (
               <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-md">
@@ -226,9 +207,8 @@ export function Step2() {
              
              {hasBankAccount ? (
                <div className="space-y-2 pl-4 border-l-2 border-slate-200">
-                 <Label>Upload Voided Check (optional)</Label>
-                 <p className="text-xs text-slate-500">Upload if available to speed verification.</p>
-                 <input type="file" disabled className="text-xs text-slate-500" />
+                 <Label>Upload Voided Check (required)</Label>
+                 <Input type="file" />
                </div>
              ) : (
                <div className="p-3 bg-yellow-50 text-yellow-800 text-sm rounded-md">
@@ -241,12 +221,7 @@ export function Step2() {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={prevStep}>Previous</Button>
-        <Button
-          type="button"
-          onClick={() => form.handleSubmit(onSubmit, () => nextStep())()}
-        >
-          Next Step
-        </Button>
+        <Button type="submit" form="step2-form">Next Step</Button>
       </CardFooter>
     </Card>
   )
