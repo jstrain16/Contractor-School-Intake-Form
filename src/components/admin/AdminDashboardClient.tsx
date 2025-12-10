@@ -29,6 +29,7 @@ import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 import { ReminderActions } from "@/components/admin/ReminderActions"
 import { AttachmentList } from "@/components/admin/AttachmentList"
 import { buildStatus, getMissingSteps } from "@/lib/progress"
+import { useState as useReactState } from "react"
 
 type ApplicationRow = {
   id: string
@@ -39,6 +40,68 @@ type ApplicationRow = {
   primary_trade: string | null
   license_type: string | null
   archived?: boolean | null
+}
+
+function InlineSectionEditor({
+  applicationId,
+  sectionKey,
+  data,
+  onSaved,
+}: {
+  applicationId: string
+  sectionKey: keyof WizardData
+  data?: Record<string, unknown>
+  onSaved: (updated: Record<string, unknown>) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [formData, setFormData] = useState<Record<string, unknown>>(data || {})
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaved(false)
+    try {
+      const res = await fetch("/api/admin/application", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId, sectionKey, data: formData }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || "Failed to save")
+      }
+      setSaved(true)
+      onSaved(formData)
+      setEditing(false)
+      setTimeout(() => setSaved(false), 1500)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        size="sm"
+        variant={editing ? "default" : "outline"}
+        onClick={(e) => {
+          e.preventDefault()
+          if (editing) {
+            handleSave()
+          } else {
+            setFormData(data || {})
+            setEditing(true)
+          }
+        }}
+        disabled={saving}
+      >
+        {saving ? "Saving..." : editing ? "Save" : saved ? "Saved!" : "Edit"}
+      </Button>
+    </div>
+  )
 }
 
 type ProfileRow = {
@@ -126,7 +189,7 @@ function formatValue(value: unknown): React.ReactNode {
   return String(value)
 }
 
-function renderSection(label: string, data?: Record<string, unknown> | null) {
+function renderSectionContent(data?: Record<string, unknown> | null) {
   const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined)
   return (
     <div className="space-y-3 text-sm">
@@ -692,14 +755,38 @@ export function AdminDashboardClient({
                           <div className="text-xs text-slate-600">{section.desc}</div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-slate-500">
-                        <StatusIcon />
-                        {expandedSection === section.key ? (
-                          <ChevronUp className="h-4 w-4 text-slate-400" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-slate-400" />
-                        )}
-                      </div>
+                  <div className="flex items-center gap-3 text-slate-500">
+                    {expandedSection === section.key && (
+                      <InlineSectionEditor
+                        applicationId={selected.app.id}
+                        sectionKey={section.key as keyof WizardData}
+                        data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                        onSaved={async (updated) => {
+                          // replace data locally to reflect edits
+                          setSelected((prev) =>
+                            prev
+                              ? {
+                                  ...prev,
+                                  app: {
+                                    ...prev.app,
+                                    data: {
+                                      ...(prev.app.data || {}),
+                                      [section.key]: updated,
+                                    } as any,
+                                  },
+                                }
+                              : prev
+                          )
+                        }}
+                      />
+                    )}
+                    <StatusIcon />
+                    {expandedSection === section.key ? (
+                      <ChevronUp className="h-4 w-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                    )}
+                  </div>
                     </button>
                     {expandedSection === section.key && (
                   <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
@@ -709,8 +796,11 @@ export function AdminDashboardClient({
                       applicationId={selected.app.id}
                       data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
                       simple
+                      simple
                     >
-                      {renderSection(section.label, (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {})}
+                      {renderSectionContent(
+                        (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {}
+                      )}
                     </AdminSectionBlock>
                   </div>
                     )}
