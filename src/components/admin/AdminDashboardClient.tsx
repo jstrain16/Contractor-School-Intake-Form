@@ -143,7 +143,15 @@ function renderSection(label: string, data?: Record<string, unknown> | null) {
   )
 }
 
-export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
+export function AdminDashboardClient({
+  rows,
+  currentAdminId,
+  currentAdminEmail,
+}: {
+  rows: AdminRow[]
+  currentAdminId?: string | null
+  currentAdminEmail?: string | null
+}) {
   const [query, setQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"recent" | "my">("recent")
   const [selected, setSelected] = useState<AdminRow | null>(null)
@@ -179,10 +187,20 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
     return totals
   }, [classifiedRows])
 
+  const isAssignedToMe = (row: (typeof classifiedRows)[number]) => {
+    const assignedId = (row.app as any).assigned_admin_id as string | null
+    const assignedEmail = (row.app as any).assigned_admin_email as string | null
+    if (currentAdminId && assignedId && assignedId === currentAdminId) return true
+    if (currentAdminEmail && assignedEmail && assignedEmail.toLowerCase() === currentAdminEmail.toLowerCase()) return true
+    return false
+  }
+
+  const myQueueRows = useMemo(() => classifiedRows.filter(isAssignedToMe), [classifiedRows, currentAdminEmail, currentAdminId])
+
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
     const base = classifiedRows
-    const byTab = activeTab === "recent" ? base : base // no assignment concept yet
+    const byTab = activeTab === "recent" ? base : myQueueRows
     if (!q) return byTab
     return byTab.filter(({ app, profile }) => {
       const step0 = app.data?.step0
@@ -201,7 +219,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
         .toLowerCase()
       return haystack.includes(q)
     })
-  }, [activeTab, classifiedRows, query])
+  }, [activeTab, classifiedRows, myQueueRows, query])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -356,7 +374,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               className={`rounded-full px-4 ${activeTab === "my" ? "bg-slate-100 text-slate-800" : ""}`}
               onClick={() => setActiveTab("my")}
             >
-              My Queue <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs text-slate-700">0</span>
+              My Queue <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs text-slate-700">{myQueueRows.length}</span>
             </Button>
             {selectedIds.size > 0 && (
               <Button

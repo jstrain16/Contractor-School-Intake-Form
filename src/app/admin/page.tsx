@@ -155,7 +155,7 @@ function SearchSortBar({ currentQuery, currentSort }: { currentQuery?: string; c
 }
 
 export default async function AdminPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
-  const { isAllowed } = await requireAdminEmail()
+  const { isAllowed, user, email } = await requireAdminEmail()
   if (!isAllowed) {
     redirect("/sign-in")
   }
@@ -165,7 +165,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        <AdminDashboardClient rows={rows} />
+        <AdminDashboardClient rows={rows} currentAdminId={user?.id ?? null} currentAdminEmail={email ?? null} />
       </div>
     </div>
   )
