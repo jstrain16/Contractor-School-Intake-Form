@@ -12,6 +12,7 @@ import {
   useUser,
 } from "@clerk/nextjs"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Bell, Cog, Shield, Users, ArrowLeft } from "lucide-react"
@@ -66,22 +67,60 @@ function EnsureProfileOnce() {
 }
 
 function GlobalHeader() {
+  const pathname = usePathname()
+  const isAdmin = pathname?.startsWith("/admin")
+  const isAdminDashboard = pathname === "/admin"
+  const isAdminSettings = pathname?.startsWith("/admin/settings")
+  const isApplicantDashboard = pathname === "/dashboard" || pathname === "/"
+  const isApplicantFlow = pathname?.startsWith("/application")
+
+  const navConfig = useMemo(() => {
+    // default: icon only
+    let showBack = false
+    let backHref = "/"
+    let title: string | null = null
+    let subtitle: string | null = null
+
+    if (isAdminSettings) {
+      showBack = true
+      backHref = "/admin"
+      title = "Dashboard"
+      subtitle = "Admin Portal"
+    } else if (isApplicantFlow) {
+      showBack = true
+      backHref = "/dashboard"
+      title = "Back to dashboard"
+      subtitle = "Your application"
+    } else {
+      // main dashboards: hide back and text, keep icon
+      showBack = false
+      title = null
+      subtitle = null
+    }
+
+    return { showBack, backHref, title, subtitle }
+  }, [isAdminSettings, isApplicantFlow])
+
   return (
     <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 text-slate-900">
       <div className="flex items-center gap-3">
-        <Link
-          href="/dashboard"
-          className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
+        {navConfig.showBack && (
+          <Link
+            href={navConfig.backHref}
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        )}
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm">
           <Users className="h-5 w-5" />
         </div>
-        <div>
-          <div className="text-base font-semibold text-slate-900">Settings</div>
-          <div className="text-sm text-slate-500">System Configuration</div>
-        </div>
+        {navConfig.title && (
+          <div>
+            <div className="text-base font-semibold text-slate-900">{navConfig.title}</div>
+            {navConfig.subtitle && <div className="text-sm text-slate-500">{navConfig.subtitle}</div>}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
@@ -95,13 +134,15 @@ function GlobalHeader() {
           </button>
           <span className="absolute right-2 top-2 block h-2 w-2 rounded-full bg-orange-500" />
         </div>
-        <Link
-          href="/admin/settings"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
-          aria-label="Settings"
-        >
-          <Cog className="h-5 w-5" />
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/admin/settings"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
+            aria-label="Settings"
+          >
+            <Cog className="h-5 w-5" />
+          </Link>
+        )}
         <SignedOut>
           <div className="flex items-center gap-2">
             <SignInButton>
