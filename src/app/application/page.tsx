@@ -163,15 +163,6 @@ export default function WizardPage() {
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-slate-900">
       <main className="mx-auto max-w-5xl px-4 pb-12 pt-6 space-y-6">
-        <button
-          type="button"
-          onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-slate-900"
-        >
-          <span className="text-lg">←</span>
-          Back to Dashboard
-        </button>
-
         <div className="space-y-1">
           <h1 className="text-lg font-semibold text-slate-900">Contractor Licensing Intake</h1>
           <p className="text-sm text-slate-600">Complete all sections to submit your application</p>
