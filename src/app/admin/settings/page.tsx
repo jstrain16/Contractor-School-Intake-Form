@@ -10,7 +10,11 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminUserActions } from "@/components/admin/AdminUserActions"
 
-export default async function AdminSettingsPage() {
+export default async function AdminSettingsPage({
+  searchParams,
+}: {
+  searchParams?: Record<string, string | string[] | undefined>
+}) {
   const { isAllowed } = await requireAdminEmail()
   if (!isAllowed) {
     redirect("/sign-in")
