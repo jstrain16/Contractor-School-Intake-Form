@@ -53,8 +53,8 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
   }
 
   return (
-    <details className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <summary className="flex items-center justify-between cursor-pointer px-4 py-3">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600">
             <ClipboardCheck className="h-4 w-4" />
@@ -65,20 +65,20 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant={editing ? "default" : "outline"} size="sm" onClick={(e) => { e.preventDefault(); toggleEdit() }}>
+          <Button variant={editing ? "default" : "outline"} size="sm" onClick={toggleEdit}>
             {editing ? "Cancel" : "Edit"}
           </Button>
           {editing && (
-            <Button size="sm" onClick={(e) => { e.preventDefault(); handleSave() }} disabled={saving}>
+            <Button size="sm" onClick={handleSave} disabled={saving}>
               {saving ? "Saving..." : "Save"}
             </Button>
           )}
         </div>
-      </summary>
+      </div>
       <div className="border-t border-slate-200 bg-slate-50/60 px-4 py-3 text-sm">
         {editing ? <EditableFields data={formData} onChange={setFormData} error={error} /> : children}
       </div>
-    </details>
+    </div>
   )
 }
 
