@@ -51,7 +51,7 @@ export default function HomePage() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">✉️</span>
-              <span className="font-semibold">info@bascontractor.com</span>
+              <span className="font-semibold">info@beacontractor.com</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-xs font-semibold">📞</span>
