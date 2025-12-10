@@ -29,6 +29,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Admin not found" }, { status: 404 })
     }
 
+    // Update applications with assigned admin
+    const { data: appRows, error: appsErr } = await supabase
+      .from("contractor_applications")
+      .select("id,user_id")
+      .in("id", applicationIds)
+
+    if (appsErr) {
+      console.error("assign lookup error", appsErr)
+      return NextResponse.json({ error: "Failed to fetch applications" }, { status: 500 })
+    }
+
     const { error: updateErr } = await supabase
       .from("contractor_applications")
       .update({
@@ -43,7 +54,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Failed to assign" }, { status: 500 })
     }
 
-    return NextResponse.json({ ok: true, assigned_admin_email: adminProfile.email })
+    // Sync assigned admin on user profiles for all affected applicants
+    const userIds = Array.from(new Set((appRows || []).map((a) => a.user_id).filter(Boolean)))
+    if (userIds.length > 0) {
+      const profileUpdates = userIds.map((userId) => ({
+        user_id: userId,
+        assigned_admin_id: adminProfile.id,
+        assigned_admin_email: adminProfile.email,
+        updated_at: new Date().toISOString(),
+      }))
+      const { error: profileErr } = await supabase
+        .from("user_profiles")
+        .upsert(profileUpdates, { onConflict: "user_id" })
+
+      if (profileErr) {
+        console.error("assign profile sync error", profileErr)
+        return NextResponse.json({ error: "Failed to sync user profiles" }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json({ ok: true, assigned_admin_email: adminProfile.email, assigned_admin_id: adminProfile.id })
   } catch (err) {
     console.error("POST /api/admin/applications/assign error", err)
     return NextResponse.json({ error: "Server error" }, { status: 500 })

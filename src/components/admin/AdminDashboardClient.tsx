@@ -151,6 +151,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
   const [emailDraft, setEmailDraft] = useState<string>("")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [assignOpen, setAssignOpen] = useState(false)
+  const [assigning, setAssigning] = useState(false)
   const [admins, setAdmins] = useState<{ id: string; name: string; email: string | null; role?: string }[]>([])
   const [loadingAdmins, setLoadingAdmins] = useState(false)
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
@@ -274,6 +275,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
 
   const assignSelected = async () => {
     if (!selectedAdminId || selectedIds.size === 0) return
+    setAssigning(true)
     try {
       const res = await fetch("/api/admin/applications/assign", {
         method: "POST",
@@ -284,10 +286,13 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
         console.error("Assign failed", await res.text())
         return
       }
+      setAssignOpen(false)
       // refresh to show new assignments
       window.location.reload()
     } catch (e) {
       console.error("Assign error", e)
+    } finally {
+      setAssigning(false)
     }
   }
 
@@ -546,10 +551,10 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               </Button>
               <Button
                 className="bg-orange-500 text-white hover:bg-orange-600"
-                disabled={!selectedAdminId || selectedIds.size === 0}
-                onClick={() => setAssignOpen(false)}
+                disabled={!selectedAdminId || selectedIds.size === 0 || assigning}
+                onClick={assignSelected}
               >
-                Assign
+                {assigning ? "Assigning..." : "Assign"}
               </Button>
             </div>
           </div>
