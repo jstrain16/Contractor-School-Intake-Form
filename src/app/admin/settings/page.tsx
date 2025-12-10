@@ -35,7 +35,7 @@ export default async function AdminSettingsPage({
   // Fetch all user profiles (store all users here)
   const { data: profiles } = await supabase
     .from("user_profiles")
-    .select("user_id,email,first_name,last_name,phone,created_at,updated_at")
+    .select("user_id,email,first_name,last_name,phone,created_at,updated_at,role,last_active_at")
 
   const profileRows = profiles || []
 
