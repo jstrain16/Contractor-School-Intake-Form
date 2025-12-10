@@ -52,9 +52,17 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
   }
 
   return (
-    <details className="border rounded-md p-3 bg-slate-50">
-      <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-slate-800">
-        <span>{label}</span>
+    <details className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <summary className="flex items-center justify-between cursor-pointer px-4 py-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <ClipboardList className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-slate-900">{label}</div>
+            <div className="text-xs text-slate-500">Click to view details</div>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button variant={editing ? "default" : "outline"} size="sm" onClick={(e) => { e.preventDefault(); toggleEdit() }}>
             {editing ? "Cancel" : "Edit"}
@@ -66,13 +74,9 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
           )}
         </div>
       </summary>
-      <div className="mt-3 space-y-3 text-sm">
+      <div className="border-t border-slate-200 bg-slate-50/60 px-4 py-3 space-y-3 text-sm">
         {editing ? (
-          <EditableFields
-            data={formData}
-            onChange={setFormData}
-            error={error}
-          />
+          <EditableFields data={formData} onChange={setFormData} error={error} />
         ) : (
           children
         )}
@@ -104,7 +108,10 @@ function EditableFields({
       {entries.map(([key, value]) => {
         if (typeof value === "boolean") {
           return (
-            <label key={key} className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2">
+            <label
+              key={key}
+              className="flex items-center justify-between rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm"
+            >
               <span className="text-sm font-medium text-slate-800">{formatLabel(key)}</span>
               <input
                 type="checkbox"
@@ -117,7 +124,7 @@ function EditableFields({
         }
         if (typeof value === "number") {
           return (
-            <div key={key} className="space-y-1 rounded-md border border-slate-200 bg-white px-3 py-2">
+            <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <div className="text-sm font-medium text-slate-800">{formatLabel(key)}</div>
               <input
                 type="number"
@@ -130,7 +137,7 @@ function EditableFields({
         }
         if (Array.isArray(value)) {
           return (
-            <div key={key} className="space-y-1 rounded-md border border-slate-200 bg-white px-3 py-2">
+            <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <div className="text-sm font-medium text-slate-800">{formatLabel(key)}</div>
               <textarea
                 defaultValue={value.join(", ")}
@@ -144,7 +151,7 @@ function EditableFields({
         }
         if (typeof value === "object" && value !== null) {
           return (
-            <div key={key} className="space-y-1 rounded-md border border-slate-200 bg-white px-3 py-2">
+            <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <div className="text-sm font-medium text-slate-800">{formatLabel(key)}</div>
               <textarea
                 defaultValue={JSON.stringify(value, null, 2)}
@@ -164,7 +171,7 @@ function EditableFields({
           )
         }
         return (
-          <div key={key} className="space-y-1 rounded-md border border-slate-200 bg-white px-3 py-2">
+          <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
             <div className="text-sm font-medium text-slate-800">{formatLabel(key)}</div>
             <input
               type="text"
