@@ -47,15 +47,7 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
     },
     {
       label: "Entity",
-      started:
-        !!d.step2?.legalBusinessName ||
-        !!d.step2?.entityType ||
-        !!d.step2?.stateOfIncorporation ||
-        !!d.step2?.utahEntityNumber ||
-        !!d.step2?.dateRegistered ||
-        !!d.step2?.businessPhone ||
-        !!d.step2?.businessEmail ||
-        !!d.step2?.physicalAddress?.street,
+      started: !!d.step2?.hasEntityRegistered || !!d.step2?.legalBusinessName || !!d.step2?.federalEin,
       done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin,
       weight: PROGRESS_WEIGHTS.entity,
     },
