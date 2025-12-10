@@ -187,19 +187,12 @@ export default async function AdminSettingsPage({
               >
                 Search
               </Button>
-              <Button
-                type="button"
-                className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
-                onClick={() => {
-                  // scroll to invite section
-                  if (typeof window !== "undefined") {
-                    const el = document.getElementById("invite-admin")
-                    if (el) el.scrollIntoView({ behavior: "smooth" })
-                  }
-                }}
+              <a
+                href="#invite-admin"
+                className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:from-orange-600 hover:to-orange-700"
               >
                 + Add User
-              </Button>
+              </a>
             </form>
             <AdminSyncUsersButton />
           </div>
@@ -267,7 +260,7 @@ export default async function AdminSettingsPage({
           </div>
         </Card>
 
-        <Card className="border-slate-200 px-4 py-4">
+        <Card className="border-slate-200 px-4 py-4" id="invite-admin">
           <h2 className="text-lg font-semibold text-slate-900">Invite an admin</h2>
           <p className="text-sm text-slate-600">Add an email to allow admin access.</p>
           <div className="mt-3">
