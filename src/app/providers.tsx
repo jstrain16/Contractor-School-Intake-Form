@@ -60,12 +60,10 @@ function AdminPortalButton() {
   return (
     <Link
       href="/admin/settings"
-      className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/40 hover:translate-y-[-1px]"
+      className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
     >
-      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shadow-inner shadow-orange-900/20 transition-transform duration-200 group-hover:scale-105">
-        <Shield className="h-4 w-4" />
-      </span>
-      <span className="leading-none">Admin Portal</span>
+      <Shield className="h-4 w-4 text-slate-700" />
+      <span className="leading-none">Admin</span>
     </Link>
   )
 }
