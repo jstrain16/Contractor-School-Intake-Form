@@ -17,6 +17,8 @@ type ApplicationRow = {
   primary_trade: string | null
   license_type: string | null
   archived?: boolean | null
+  assigned_admin_id?: string | null
+  assigned_admin_email?: string | null
 }
 
 type ProfileRow = {
@@ -46,7 +48,7 @@ async function fetchAdminData(): Promise<AdminRow[]> {
 
   const { data: applications, error: appsError } = await supabase
     .from("contractor_applications")
-    .select("id,user_id,data,updated_at,created_at,primary_trade,license_type,archived")
+    .select("id,user_id,data,updated_at,created_at,primary_trade,license_type,archived,assigned_admin_id,assigned_admin_email")
     .order("updated_at", { ascending: false })
 
   if (appsError) throw appsError
