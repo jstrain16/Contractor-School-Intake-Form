@@ -15,13 +15,24 @@ export default function SignInPage() {
   useEffect(() => {
     if (!isSignedIn || redirecting) return
 
-    const redirectUrl =
+    const rawRedirect =
       searchParams.get("redirect_url") ||
       searchParams.get("redirectUrl") ||
       searchParams.get("returnUrl")
 
-    if (redirectUrl) {
-      router.replace(redirectUrl)
+    const normalizedRedirect = (() => {
+      if (!rawRedirect) return null
+      try {
+        const url = new URL(rawRedirect, window.location.origin)
+        if (url.pathname === "/" || url.pathname === "") return null
+        return url.toString()
+      } catch {
+        return null
+      }
+    })()
+
+    if (normalizedRedirect) {
+      router.replace(normalizedRedirect)
       return
     }
 
