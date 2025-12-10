@@ -16,7 +16,7 @@ export function Step2() {
     defaultValues: {
       hasEntityRegistered: data.step2?.hasEntityRegistered ?? false,
       legalBusinessName: data.step2?.legalBusinessName ?? "",
-      entityType: data.step2?.entityType ?? "",
+      entityType: data.step2?.entityType ?? undefined,
       stateOfIncorporation: data.step2?.stateOfIncorporation ?? "",
       utahEntityNumber: data.step2?.utahEntityNumber ?? "",
       dateRegistered: data.step2?.dateRegistered ?? "",
