@@ -1,14 +1,12 @@
 import { WizardData } from "@/lib/schemas"
 
 export const PROGRESS_WEIGHTS = {
-  licenseSetup: 5,
-  preLicensure: 15,
-  business: 25,
-  gl: 9,
-  wc: 11,
-  experience: 10,
-  exams: 10,
-  dopl: 2,
+  education: 30, // 25/30-hour course + business & law exam for general
+  entity: 10,
+  bank: 10,
+  gl: 20,
+  wc: 20,
+  remainder: 10, // experience, dopl, etc.
 }
 
 export type StatusItem = {
@@ -37,23 +35,19 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
 
   const items: StatusItem[] = [
     {
-      label: "Account Setup",
-      done:
-        !!d.step0?.firstName &&
-        !!d.step0?.email &&
-        ((d.step0?.generalLicenses?.length ?? 0) + (d.step0?.specialtyLicenses?.length ?? 0) > 0 ||
-          !!d.step0?.licenseType),
-      weight: PROGRESS_WEIGHTS.licenseSetup,
-    },
-    {
-      label: "Pre-Licensure / Education",
+      label: "Education",
       done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0,
-      weight: PROGRESS_WEIGHTS.preLicensure,
+      weight: PROGRESS_WEIGHTS.education,
     },
     {
-      label: "Business Entity, FEIN & Banking",
+      label: "Entity",
       done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin,
-      weight: PROGRESS_WEIGHTS.business,
+      weight: PROGRESS_WEIGHTS.entity,
+    },
+    {
+      label: "Business Bank Account",
+      done: !!d.step2?.hasBusinessBankAccount,
+      weight: PROGRESS_WEIGHTS.bank,
     },
     {
       label: "General Liability",
@@ -68,17 +62,12 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
     {
       label: "Experience / Qualifier",
       done: hasGeneral ? !!d.step4?.hasExperience : true,
-      weight: PROGRESS_WEIGHTS.experience,
+      weight: PROGRESS_WEIGHTS.remainder / 2,
     },
     {
       label: "Business & Law Exam",
       done: hasGeneral ? d.step5?.examStatus === "passed" : true,
-      weight: hasGeneral ? PROGRESS_WEIGHTS.exams : 0,
-    },
-    {
-      label: "DOPL Application",
-      done: d.step6?.doplAppCompleted === true,
-      weight: PROGRESS_WEIGHTS.dopl,
+      weight: hasGeneral ? PROGRESS_WEIGHTS.remainder / 2 : 0,
     },
   ]
 
