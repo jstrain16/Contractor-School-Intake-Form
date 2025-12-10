@@ -20,9 +20,10 @@ export async function POST(req: Request) {
     // Look up admin email for display
     const { data: adminProfile, error: adminErr } = await supabase
       .from("user_profiles")
-      .select("id,email")
-      .eq("id", adminId)
-      .single()
+      .select("id,email,user_id,clerk_id")
+      .or(`id.eq.${adminId},user_id.eq.${adminId},clerk_id.eq.${adminId}`)
+      .limit(1)
+      .maybeSingle()
 
     if (adminErr || !adminProfile) {
       return NextResponse.json({ error: "Admin not found" }, { status: 404 })
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
     const { error: updateErr } = await supabase
       .from("contractor_applications")
       .update({
-        assigned_admin_id: adminId,
+        assigned_admin_id: adminProfile.id,
         assigned_admin_email: adminProfile.email,
         updated_at: new Date().toISOString(),
       })
