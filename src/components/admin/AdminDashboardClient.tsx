@@ -28,6 +28,7 @@ import type { WizardData } from "@/lib/schemas"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 import { ReminderActions } from "@/components/admin/ReminderActions"
 import { AttachmentList } from "@/components/admin/AttachmentList"
+import { buildStatus, getMissingSteps } from "@/lib/progress"
 
 type ApplicationRow = {
   id: string
@@ -187,6 +188,41 @@ export function AdminDashboardClient({
     return totals
   }, [classifiedRows])
 
+  const statCards = useMemo(
+    () => [
+      {
+        label: "Last 30 days",
+        value: stats.progress,
+        subtitle: "In Progress",
+        accent: "orange",
+        delta: "+3 this week",
+      },
+      {
+        label: "Needs attention",
+        value: stats.ready,
+        subtitle: "Ready for Review",
+        accent: "blue",
+        cta: () => setActiveTab("recent"),
+        ctaLabel: "Review now →",
+      },
+      {
+        label: "All time",
+        value: stats.approved,
+        subtitle: "Approved",
+        accent: "green",
+        delta: "+12 this month",
+      },
+      {
+        label: "Awaiting action",
+        value: stats.needsRevision,
+        subtitle: "Needs Revision",
+        accent: "rose",
+        delta: "Pending applicant",
+      },
+    ],
+    [stats, setActiveTab]
+  )
+
   const isAssignedToMe = (row: (typeof classifiedRows)[number]) => {
     const assignedId = (row.app as any).assigned_admin_id as string | null
     return Boolean(currentAdminId && assignedId && assignedId === currentAdminId)
@@ -315,44 +351,39 @@ export function AdminDashboardClient({
     <div className="space-y-6">
       {/* Stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-5 space-y-3">
-            <div className="text-xs font-semibold uppercase text-slate-500">Last 30 days</div>
-            <div className="text-4xl font-bold text-slate-900">{stats.progress}</div>
-            <div className="text-sm text-slate-600">In Progress</div>
-            <div className="text-sm font-semibold text-orange-600">+3 this week</div>
-          </div>
-        </Card>
-        <Card className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-5 space-y-3">
-            <div className="text-xs font-semibold uppercase text-slate-500">Needs attention</div>
-            <div className="text-4xl font-bold text-slate-900">{stats.ready}</div>
-            <div className="text-sm text-slate-600">Ready for Review</div>
-            <button
-              type="button"
-              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-              onClick={() => setActiveTab("recent")}
-            >
-              Review now →
-            </button>
-          </div>
-        </Card>
-        <Card className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-5 space-y-3">
-            <div className="text-xs font-semibold uppercase text-slate-500">All time</div>
-            <div className="text-4xl font-bold text-slate-900">{stats.approved}</div>
-            <div className="text-sm text-slate-600">Approved</div>
-            <div className="text-sm font-semibold text-green-600">+12 this month</div>
-          </div>
-        </Card>
-        <Card className="rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="p-5 space-y-3">
-            <div className="text-xs font-semibold uppercase text-slate-500">Awaiting action</div>
-            <div className="text-4xl font-bold text-slate-900">{stats.needsRevision}</div>
-            <div className="text-sm text-slate-600">Needs Revision</div>
-            <div className="text-sm font-semibold text-rose-600">Pending applicant</div>
-          </div>
-        </Card>
+        {statCards.map((card) => {
+          const accentMap: Record<string, { bg: string; text: string; border: string }> = {
+            orange: { bg: "bg-orange-100", text: "text-orange-700", border: "text-orange-600" },
+            blue: { bg: "bg-blue-100", text: "text-blue-700", border: "text-blue-600" },
+            green: { bg: "bg-green-100", text: "text-green-700", border: "text-green-600" },
+            rose: { bg: "bg-rose-100", text: "text-rose-700", border: "text-rose-600" },
+          }
+          const colors = accentMap[card.accent] || accentMap.orange
+          return (
+            <Card key={card.label} className="rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="p-5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colors.bg} ${colors.text}`}>
+                    <ClipboardList className="h-6 w-6" />
+                  </div>
+                  <div className="text-xs font-semibold uppercase text-slate-500">{card.label}</div>
+                </div>
+                <div className="text-4xl font-bold text-slate-900">{card.value}</div>
+                <div className="text-sm text-slate-600">{card.subtitle}</div>
+                {card.delta && <div className={`text-sm font-semibold ${colors.border}`}>{card.delta}</div>}
+                {card.cta && card.ctaLabel && (
+                  <button
+                    type="button"
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+                    onClick={card.cta}
+                  >
+                    {card.ctaLabel}
+                  </button>
+                )}
+              </div>
+            </Card>
+          )
+        })}
       </div>
 
       {/* Table controls */}
