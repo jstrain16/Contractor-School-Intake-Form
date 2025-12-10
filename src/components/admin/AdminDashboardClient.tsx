@@ -3,6 +3,22 @@
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  User,
+  Briefcase,
+  CheckCircle2,
+  Mail,
+  Eye,
+  Download,
+  X,
+  ClipboardList,
+  Shield,
+  GraduationCap,
+  Building2,
+  FileText,
+  BadgeCheck,
+  ClipboardCheck,
+} from "lucide-react"
 import type { WizardData } from "@/lib/schemas"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 import { ReminderActions } from "@/components/admin/ReminderActions"
@@ -360,100 +376,138 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
       </Card>
 
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
           <div className="w-full max-w-5xl rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
-              <div>
-                <div className="text-lg font-semibold text-slate-900">{getName(selected.profile, selected.app.data).name}</div>
-                <div className="text-sm text-slate-600">{getName(selected.profile, selected.app.data).email}</div>
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                  <User className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="text-xl font-semibold text-slate-900">{getName(selected.profile, selected.app.data).name}</div>
+                  <div className="text-sm text-slate-600">{getName(selected.profile, selected.app.data).email}</div>
+                  <div className="text-xs font-semibold text-slate-500 mt-1">APP-{selected.app.id?.slice(0, 4).toUpperCase() || "ID"}</div>
+                </div>
               </div>
-              <Button variant="ghost" onClick={() => setSelected(null)} className="text-slate-700">
-                Close
+              <Button variant="ghost" size="icon" onClick={() => setSelected(null)} className="text-slate-600 hover:text-slate-900">
+                <X className="h-5 w-5" />
               </Button>
             </div>
-            <div className="space-y-4 px-6 py-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
-                  Progress: {Math.round(selected.progress)}%
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
-                  Primary Trade: {selected.app.primary_trade || "—"}
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
-                  License Type: {selected.app.license_type || "—"}
-                </span>
+
+            <div className="space-y-5 px-6 py-5">
+              {/* Quick stats */}
+              <div className="grid gap-3 md:grid-cols-3">
+                <Card className="border border-slate-200 bg-white shadow-sm">
+                  <div className="flex items-center gap-3 p-4">
+                    <CheckCircle2 className="h-10 w-10 text-green-500" />
+                    <div>
+                      <div className="text-xs font-semibold uppercase text-slate-500">Progress</div>
+                      <div className="text-2xl font-bold text-slate-900">{Math.round(selected.progress)}%</div>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="border border-slate-200 bg-white shadow-sm">
+                  <div className="flex items-center gap-3 p-4">
+                    <Briefcase className="h-10 w-10 text-blue-500" />
+                    <div>
+                      <div className="text-xs font-semibold uppercase text-slate-500">Primary Trade</div>
+                      <div className="text-lg font-semibold text-slate-900">{selected.app.primary_trade || "—"}</div>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="border border-slate-200 bg-white shadow-sm">
+                  <div className="flex items-center gap-3 p-4">
+                    <BadgeCheck className="h-10 w-10 text-amber-500" />
+                    <div>
+                      <div className="text-xs font-semibold uppercase text-slate-500">License Type</div>
+                      <div className="text-lg font-semibold text-slate-900">{selected.app.license_type || "—"}</div>
+                    </div>
+                  </div>
+                </Card>
               </div>
 
-              <div className="space-y-2">
-                <AdminSectionBlock
-                  label="License Setup & Basic Info"
-                  sectionKey="step0"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step0 as Record<string, unknown>}
-                >
-                  {renderSection("License Setup & Basic Info", (selected.app.data?.step0 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="Pre-Licensure / Education"
-                  sectionKey="step1"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step1 as Record<string, unknown>}
-                >
-                  {renderSection("Pre-Licensure / Education", (selected.app.data?.step1 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="Business Entity, FEIN & Banking"
-                  sectionKey="step2"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step2 as Record<string, unknown>}
-                >
-                  {renderSection("Business Entity, FEIN & Banking", (selected.app.data?.step2 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="Insurance"
-                  sectionKey="step3"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step3 as Record<string, unknown>}
-                >
-                  {renderSection("Insurance", (selected.app.data?.step3 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="Experience & Qualifier"
-                  sectionKey="step4"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step4 as Record<string, unknown>}
-                >
-                  {renderSection("Experience & Qualifier", (selected.app.data?.step4 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="Exams (Business & Law)"
-                  sectionKey="step5"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step5 as Record<string, unknown>}
-                >
-                  {renderSection("Exams (Business & Law)", (selected.app.data?.step5 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="DOPL Application"
-                  sectionKey="step6"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step6 as Record<string, unknown>}
-                >
-                  {renderSection("DOPL Application", (selected.app.data?.step6 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
-                <AdminSectionBlock
-                  label="Review / Attestation"
-                  sectionKey="step7"
-                  applicationId={selected.app.id}
-                  data={selected.app.data?.step7 as Record<string, unknown>}
-                >
-                  {renderSection("Review / Attestation", (selected.app.data?.step7 as Record<string, unknown>) || {})}
-                </AdminSectionBlock>
+              {/* Sections */}
+              <div className="space-y-3">
+                {[
+                  { key: "step0", label: "License Setup & Basic Info", desc: "Complete your profile and license details", icon: ClipboardList },
+                  { key: "step1", label: "Pre-Licensure / Education", desc: "Upload course completion or exemptions", icon: GraduationCap },
+                  { key: "step2", label: "Business Entity, FEIN & Banking", desc: "Business structure and tax information", icon: Building2 },
+                  { key: "step3", label: "Insurance", desc: "General liability and workers comp coverage", icon: Shield },
+                  { key: "step4", label: "Experience & Qualifier", desc: "Document qualifier experience if required", icon: Briefcase },
+                  { key: "step5", label: "Exams (Business & Law)", desc: "Pass the Business & Law exam or provide specialty", icon: FileText },
+                  { key: "step6", label: "DOPL Application", desc: "Complete and mark DOPLs", icon: ClipboardCheck },
+                  { key: "step7", label: "Review / Attestation", desc: "Final review and sign attestation", icon: CheckCircle2 },
+                ].map((section) => (
+                  <Card key={section.key} className="border border-slate-200 bg-white shadow-sm">
+                    <div className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+                          <section.icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">{section.label}</div>
+                          <div className="text-xs text-slate-600">{section.desc}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
+                      <AdminSectionBlock
+                        label={section.label}
+                        sectionKey={section.key as keyof WizardData}
+                        applicationId={selected.app.id}
+                        data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                      >
+                        {renderSection(section.label, (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {})}
+                      </AdminSectionBlock>
+                    </div>
+                  </Card>
+                ))}
               </div>
 
-              <ReminderActions applicationId={selected.app.id} data={selected.app.data ?? {}} email={selected.profile?.email ?? selected.app.data?.step0?.email ?? null} />
+              {/* Reminder + attachments */}
+              <div className="grid gap-4 lg:grid-cols-3">
+                <Card className="lg:col-span-2 border border-slate-200 bg-white shadow-sm">
+                  <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+                    <Mail className="h-4 w-4 text-slate-600" />
+                    <div className="text-sm font-semibold text-slate-900">Reminder Email</div>
+                  </div>
+                  <div className="p-4">
+                    <ReminderActions
+                      applicationId={selected.app.id}
+                      data={selected.app.data ?? {}}
+                      email={selected.profile?.email ?? selected.app.data?.step0?.email ?? null}
+                    />
+                  </div>
+                </Card>
+                <Card className="border border-slate-200 bg-white shadow-sm">
+                  <div className="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">Attachments</div>
+                  <div className="p-4">
+                    <AttachmentList attachments={selected.attachments} />
+                  </div>
+                </Card>
+              </div>
 
-              <AttachmentList attachments={selected.attachments} />
+              {/* Footer actions */}
+              <div className="flex flex-wrap gap-3 border-t border-slate-200 pt-4">
+                <Button className="bg-green-600 text-white hover:bg-green-700">
+                  Approve Application
+                </Button>
+                <Button variant="outline" className="border-slate-200 text-slate-800">
+                  Contact
+                </Button>
+                <Button className="bg-amber-500 text-white hover:bg-amber-600">
+                  Request Revision
+                </Button>
+              </div>
             </div>
           </div>
         </div>
