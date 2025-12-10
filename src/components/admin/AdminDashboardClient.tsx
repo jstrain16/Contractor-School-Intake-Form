@@ -1,9 +1,12 @@
- "use client"
+"use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { WizardData } from "@/lib/schemas"
+import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
+import { ReminderActions } from "@/components/admin/ReminderActions"
+import { AttachmentList } from "@/components/admin/AttachmentList"
 
 type ApplicationRow = {
   id: string
@@ -66,9 +69,63 @@ function getName(profile?: ProfileRow, data?: WizardData | null) {
   return { name, email }
 }
 
+function formatKey(key: string) {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function formatValue(value: unknown): React.ReactNode {
+  if (value === null || value === undefined) return "—"
+  if (typeof value === "boolean") return value ? "Yes" : "No"
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "—"
+    return value.map((v, i) => (
+      <span key={i}>
+        {formatValue(v)}
+        {i < value.length - 1 ? ", " : ""}
+      </span>
+    ))
+  }
+  if (typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) return "—"
+    return (
+      <div className="space-y-1">
+        {entries.map(([k, v]) => (
+          <div key={k}>
+            <span className="font-medium">{formatKey(k)}:</span> {formatValue(v)}
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return String(value)
+}
+
+function renderSection(label: string, data?: Record<string, unknown> | null) {
+  const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined)
+  return (
+    <details className="border rounded-md p-3 bg-slate-50">
+      <summary className="cursor-pointer text-sm font-medium text-slate-800">{label}</summary>
+      <div className="mt-3 space-y-3 text-sm">
+        {entries.length === 0 && <div className="text-slate-600">No responses</div>}
+        {entries.map(([k, v]) => (
+          <div key={k} className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
+            <div className="mt-1 text-slate-900">{formatValue(v)}</div>
+          </div>
+        ))}
+      </div>
+    </details>
+  )
+}
+
 export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
   const [query, setQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"recent" | "my">("recent")
+  const [selected, setSelected] = useState<AdminRow | null>(null)
 
   const classifiedRows = useMemo(
     () =>
@@ -113,6 +170,16 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
       return haystack.includes(q)
     })
   }, [activeTab, classifiedRows, query])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelected(null)
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -262,10 +329,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                       <Button
                         variant="ghost"
                         className="text-slate-700 hover:bg-slate-100"
-                        onClick={() => {
-                          const anchor = document.getElementById("admin-legacy-details")
-                          if (anchor) anchor.scrollIntoView({ behavior: "smooth" })
-                        }}
+                        onClick={() => setSelected({ app, profile, progress, attachments })}
                       >
                         View details
                       </Button>
@@ -294,6 +358,106 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
           </div>
         </div>
       </Card>
+
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 overflow-y-auto">
+          <div className="w-full max-w-5xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <div className="text-lg font-semibold text-slate-900">{getName(selected.profile, selected.app.data).name}</div>
+                <div className="text-sm text-slate-600">{getName(selected.profile, selected.app.data).email}</div>
+              </div>
+              <Button variant="ghost" onClick={() => setSelected(null)} className="text-slate-700">
+                Close
+              </Button>
+            </div>
+            <div className="space-y-4 px-6 py-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+                  Progress: {Math.round(selected.progress)}%
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+                  Primary Trade: {selected.app.primary_trade || "—"}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
+                  License Type: {selected.app.license_type || "—"}
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <AdminSectionBlock
+                  label="License Setup & Basic Info"
+                  sectionKey="step0"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step0 as Record<string, unknown>}
+                >
+                  {renderSection("License Setup & Basic Info", (selected.app.data?.step0 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="Pre-Licensure / Education"
+                  sectionKey="step1"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step1 as Record<string, unknown>}
+                >
+                  {renderSection("Pre-Licensure / Education", (selected.app.data?.step1 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="Business Entity, FEIN & Banking"
+                  sectionKey="step2"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step2 as Record<string, unknown>}
+                >
+                  {renderSection("Business Entity, FEIN & Banking", (selected.app.data?.step2 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="Insurance"
+                  sectionKey="step3"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step3 as Record<string, unknown>}
+                >
+                  {renderSection("Insurance", (selected.app.data?.step3 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="Experience & Qualifier"
+                  sectionKey="step4"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step4 as Record<string, unknown>}
+                >
+                  {renderSection("Experience & Qualifier", (selected.app.data?.step4 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="Exams (Business & Law)"
+                  sectionKey="step5"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step5 as Record<string, unknown>}
+                >
+                  {renderSection("Exams (Business & Law)", (selected.app.data?.step5 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="DOPL Application"
+                  sectionKey="step6"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step6 as Record<string, unknown>}
+                >
+                  {renderSection("DOPL Application", (selected.app.data?.step6 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+                <AdminSectionBlock
+                  label="Review / Attestation"
+                  sectionKey="step7"
+                  applicationId={selected.app.id}
+                  data={selected.app.data?.step7 as Record<string, unknown>}
+                >
+                  {renderSection("Review / Attestation", (selected.app.data?.step7 as Record<string, unknown>) || {})}
+                </AdminSectionBlock>
+              </div>
+
+              <ReminderActions applicationId={selected.app.id} data={selected.app.data ?? {}} email={selected.profile?.email ?? selected.app.data?.step0?.email ?? null} />
+
+              <AttachmentList attachments={selected.attachments} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

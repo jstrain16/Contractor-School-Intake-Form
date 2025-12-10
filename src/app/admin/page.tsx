@@ -6,7 +6,6 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import { WizardData } from "@/lib/schemas"
 import { buildStatus } from "@/lib/progress"
 import Link from "next/link"
-import { AdminListClient } from "@/components/admin/AdminListClient"
 import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient"
 
 type ApplicationRow = {
@@ -160,23 +159,6 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   }
 
   const rows = await fetchAdminData()
-  const qRaw = typeof searchParams?.q === "string" ? searchParams?.q : ""
-  const sortRaw = typeof searchParams?.sort === "string" ? searchParams?.sort : ""
-  const q = qRaw.toLowerCase().trim()
-
-  const filtered = rows.filter(({ app, profile }) => {
-    if (!q) return true
-    const nameParts = [
-      profile?.first_name ?? "",
-      profile?.last_name ?? "",
-      app.data?.step0?.firstName ?? "",
-      app.data?.step0?.lastName ?? "",
-      profile?.email ?? app.data?.step0?.email ?? "",
-    ]
-      .join(" ")
-      .toLowerCase()
-    return nameParts.includes(q)
-  })
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -196,15 +178,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
           </div>
         </div>
 
-        <AdminDashboardClient rows={filtered} />
-
-        <div id="admin-legacy-details" className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Detailed view</h2>
-            <p className="text-sm text-slate-600">Full applicant responses, attachments, reminders, and archive controls.</p>
-          </div>
-          <AdminListClient rows={filtered} />
-        </div>
+        <AdminDashboardClient rows={rows} />
       </div>
     </div>
   )
