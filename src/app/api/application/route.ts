@@ -11,10 +11,12 @@ const EMPTY_DATA: Partial<WizardData> = {
     phone: "",
     email: "",
     preferredContact: "email",
-    licenseType: "",
+    licenseType: undefined,
     trade: "",
     hasEmployees: false,
     employeeCount: undefined,
+    generalLicenses: [],
+    specialtyLicenses: [],
   } as Step0Data,
   step1: {
     preLicensureCompleted: false,
