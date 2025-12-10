@@ -94,7 +94,7 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
     },
     {
       label: "Business & Law Exam",
-      started: hasGeneral ? (d.step5?.examStatus && d.step5.examStatus !== "not_scheduled") : false,
+      started: hasGeneral ? !!(d.step5?.examStatus && d.step5.examStatus !== "not_scheduled") : false,
       done: hasGeneral ? d.step5?.examStatus === "passed" : true,
       weight: hasGeneral ? PROGRESS_WEIGHTS.remainder / 2 : 0,
     },
