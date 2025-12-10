@@ -28,9 +28,6 @@ export default async function AdminSettingsPage({
 
   const appRows = applications || []
 
-  // Fetch admin allowlist to derive roles
-  const { data: adminUsers } = await supabase.from("admin_users").select("email, role")
-
   // Fetch all user profiles (store all users here)
   const { data: profiles } = await supabase
     .from("user_profiles")
@@ -47,9 +44,6 @@ export default async function AdminSettingsPage({
   }))
 
   const now = Date.now()
-  const adminEmailMap = new Map<string, string>( // email -> role
-    (adminUsers || []).map((a) => [a.email?.toLowerCase() ?? "", (a.role || "admin").toLowerCase()])
-  )
 
   const formatDate = (d?: string | null) => {
     if (!d) return "—"
@@ -58,16 +52,24 @@ export default async function AdminSettingsPage({
     return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
   }
 
+  const normalizeRole = (val?: string | null) => {
+    const raw = (val || "").toLowerCase().trim().replace(/[\s-]+/g, "_")
+    if (raw === "super_admin" || raw === "superadmin") return "super_admin"
+    if (raw === "admin") return "admin"
+    if (raw === "applicant" || raw === "user") return "applicant"
+    return "applicant"
+  }
+
+  const roleLabel = (role: string) => {
+    if (role === "super_admin") return "Super Admin"
+    if (role === "admin") return "Admin"
+    return "Applicant"
+  }
+
   const userRows = (profileRows || []).map((u) => {
     const email = u.email?.toLowerCase() || ""
-    const profileRole = (u.role || "").toLowerCase()
-    const adminRole = email ? adminEmailMap.get(email) : undefined
-    const resolvedRole =
-      profileRole === "super_admin" || profileRole === "admin" || profileRole === "applicant"
-        ? profileRole
-        : adminRole
-    const role =
-      resolvedRole === "super_admin" ? "Super Admin" : resolvedRole === "admin" ? "Admin" : "Applicant"
+    const resolvedRole = normalizeRole(u.role)
+    const resolvedRoleLabel = roleLabel(resolvedRole)
 
     // compute last active from profile.updated_at or app updated_at
     const relatedApps = appRows.filter((a) => a.user_id === u.user_id)
@@ -87,7 +89,8 @@ export default async function AdminSettingsPage({
 
     return {
       ...u,
-      role,
+      role: resolvedRole,
+      roleLabel: resolvedRoleLabel,
       status,
       lastActiveDisplay,
       createdDisplay,
@@ -95,9 +98,9 @@ export default async function AdminSettingsPage({
   })
 
   const stats = {
-    superAdmins: userRows.filter((u) => u.role === "Super Admin").length,
-    admins: userRows.filter((u) => u.role === "Admin").length,
-    applicants: userRows.filter((u) => u.role === "Applicant").length,
+    superAdmins: userRows.filter((u) => u.role === "super_admin").length,
+    admins: userRows.filter((u) => u.role === "admin").length,
+    applicants: userRows.filter((u) => u.role === "applicant").length,
     activeUsers: userRows.filter((u) => u.status === "Active").length,
   }
 
@@ -116,7 +119,7 @@ export default async function AdminSettingsPage({
     first_name: u.first_name,
     last_name: u.last_name,
     phone: u.phone,
-    role: (u.role || "applicant").toLowerCase(),
+    role: normalizeRole(u.role),
     status: u.status || "Active",
     lastActiveDisplay: u.lastActiveDisplay,
     createdDisplay: u.createdDisplay,
