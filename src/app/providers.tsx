@@ -38,8 +38,8 @@ export function Providers({ children }: ProvidersProps) {
       publishableKey={publishableKey}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
     >
       <ClerkLoading>
         <div className="p-4 text-sm text-slate-600">Loading account...</div>
