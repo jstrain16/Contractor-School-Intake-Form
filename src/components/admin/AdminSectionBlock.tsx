@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { ClipboardCheck } from "lucide-react"
 
 type SectionKey = "step0" | "step1" | "step2" | "step3" | "step4" | "step5" | "step6" | "step7"
 
@@ -56,7 +57,7 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
       <summary className="flex items-center justify-between cursor-pointer px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-            <ClipboardList className="h-4 w-4" />
+            <ClipboardCheck className="h-4 w-4" />
           </div>
           <div>
             <div className="text-sm font-semibold text-slate-900">{label}</div>
