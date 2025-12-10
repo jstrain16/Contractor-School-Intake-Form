@@ -377,150 +377,93 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
-          <div className="w-full max-w-5xl rounded-2xl bg-white shadow-2xl">
-            {/* Header */}
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-sm">
-                  <span className="text-lg font-semibold">CS</span>
-                </div>
-                <div>
-                  <div className="text-xl font-semibold text-slate-900">{getName(selected.profile, selected.app.data).name}</div>
-                  <div className="text-sm text-slate-600">{getName(selected.profile, selected.app.data).email}</div>
-                  <div className="mt-1 inline-flex items-center gap-2">
-                    <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-orange-700">Application Services</span>
-                    <span className="text-xs font-semibold text-slate-500">APP-{selected.app.id?.slice(0, 4).toUpperCase() || "ID"}</span>
+          <div className="w-full max-w-5xl rounded-3xl bg-white shadow-2xl">
+            {/* Orange header */}
+            <div className="relative rounded-t-3xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 pb-6 pt-5 text-white">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 text-white shadow-inner shadow-orange-900/20">
+                    <User className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-semibold leading-tight">{getName(selected.profile, selected.app.data).name}</div>
+                    <div className="text-sm text-white/80">APP-{selected.app.id?.slice(0, 4).toUpperCase() || "ID"}</div>
                   </div>
                 </div>
+                <Button variant="ghost" size="icon" onClick={() => setSelected(null)} className="text-white hover:bg-white/10">
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setSelected(null)} className="text-slate-600 hover:text-slate-900">
-                <X className="h-5 w-5" />
-              </Button>
+
+              {/* Top stats cards */}
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="rounded-xl bg-white/10 px-4 py-3">
+                  <div className="text-sm text-white/80">Progress</div>
+                  <div className="text-3xl font-bold">{Math.round(selected.progress)}%</div>
+                </div>
+                <div className="rounded-xl bg-white/10 px-4 py-3">
+                  <div className="text-sm text-white/80">Primary Trade</div>
+                  <div className="text-lg font-semibold">{selected.app.primary_trade || "—"}</div>
+                </div>
+                <div className="rounded-xl bg-white/10 px-4 py-3">
+                  <div className="text-sm text-white/80">License Type</div>
+                  <div className="text-lg font-semibold">{selected.app.license_type || "—"}</div>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-6 px-6 py-6">
-              {/* Quick stats */}
-              <div className="grid gap-3 md:grid-cols-3">
-                <Card className="border border-slate-200 bg-white shadow-sm">
-                  <div className="flex items-center gap-3 p-4">
-                    <CheckCircle2 className="h-10 w-10 text-green-500" />
-                    <div>
-                      <div className="text-xs font-semibold uppercase text-slate-500">Progress</div>
-                      <div className="text-2xl font-bold text-slate-900">{Math.round(selected.progress)}%</div>
-                    </div>
-                  </div>
-                </Card>
-                <Card className="border border-slate-200 bg-white shadow-sm">
-                  <div className="flex items-center gap-3 p-4">
-                    <Briefcase className="h-10 w-10 text-blue-500" />
-                    <div>
-                      <div className="text-xs font-semibold uppercase text-slate-500">Primary Trade</div>
-                      <div className="text-lg font-semibold text-slate-900">{selected.app.primary_trade || "—"}</div>
-                    </div>
-                  </div>
-                </Card>
-                <Card className="border border-slate-200 bg-white shadow-sm">
-                  <div className="flex items-center gap-3 p-4">
-                    <BadgeCheck className="h-10 w-10 text-amber-500" />
-                    <div>
-                      <div className="text-xs font-semibold uppercase text-slate-500">License Type</div>
-                      <div className="text-lg font-semibold text-slate-900">{selected.app.license_type || "—"}</div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Status / meta */}
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                  Ready for Review
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  Updated: {selected.app.updated_at ? new Date(selected.app.updated_at).toLocaleDateString() : "—"}
-                </span>
-              </div>
-
-              {/* Sections */}
-              <div className="space-y-3">
-                {[
-                  { key: "step0", label: "License Setup & Basic Info", desc: "Complete your profile and license details", icon: ClipboardList },
-                  { key: "step1", label: "Pre-Licensure / Education", desc: "Upload course completion or exemptions", icon: GraduationCap },
-                  { key: "step2", label: "Business Entity, FEIN & Banking", desc: "Business structure and tax information", icon: Building2 },
-                  { key: "step3", label: "Insurance", desc: "General liability and workers comp coverage", icon: Shield },
-                  { key: "step4", label: "Experience & Qualifier", desc: "Document qualifier experience if required", icon: Briefcase },
-                  { key: "step5", label: "Exams (Business & Law)", desc: "Pass the Business & Law exam or provide specialty", icon: FileText },
-                  { key: "step6", label: "DOPL Application", desc: "Complete and mark DOPLs", icon: ClipboardCheck },
-                  { key: "step7", label: "Review / Attestation", desc: "Final review and sign attestation", icon: CheckCircle2 },
-                ].map((section) => (
-                  <Card key={section.key} className="border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-center justify-between p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700">
-                          <section.icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-900">{section.label}</div>
-                          <div className="text-xs text-slate-600">{section.desc}</div>
-                        </div>
+            {/* Steps list */}
+            <div className="space-y-2 bg-white px-4 py-5">
+              {[
+                { key: "step0", label: "License Setup & Basic Info", desc: "Complete your profile and license details", color: "text-blue-600", bg: "bg-blue-50" },
+                { key: "step1", label: "Pre-Licensure / Education", desc: "Upload course completion or exemptions", color: "text-purple-600", bg: "bg-purple-50" },
+                { key: "step2", label: "Business Entity, FEIN & Banking", desc: "Business structure and tax information", color: "text-green-600", bg: "bg-green-50" },
+                { key: "step3", label: "Insurance", desc: "General liability and workers comp coverage", color: "text-slate-600", bg: "bg-slate-100" },
+                { key: "step4", label: "Experience & Qualifier", desc: "Document qualifier experience if required", color: "text-amber-600", bg: "bg-amber-50" },
+                { key: "step5", label: "Exams (Business & Law)", desc: "Pass the Business & Law exam or provide specialty proof", color: "text-pink-600", bg: "bg-pink-50" },
+              ].map((section, idx) => {
+                // determine status icon
+                const sectionData = selected.app.data?.[section.key as keyof WizardData]
+                const hasData = sectionData && Object.keys(sectionData as Record<string, unknown>).length > 0
+                const isPending = section.key === "step3" && !hasData
+                const StatusIcon = isPending ? () => <span className="text-orange-500">⏳</span> : () => <span className="text-green-600">✓</span>
+                const Icon = (() => {
+                  switch (section.key) {
+                    case "step0":
+                      return ClipboardList
+                    case "step1":
+                      return GraduationCap
+                    case "step2":
+                      return Building2
+                    case "step3":
+                      return Shield
+                    case "step4":
+                      return Briefcase
+                    case "step5":
+                    default:
+                      return FileText
+                  }
+                })()
+                return (
+                  <Card
+                    key={section.key}
+                    className="flex items-center justify-between border border-slate-200 bg-white px-3 py-3 shadow-sm"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${section.bg} ${section.color}`}>
+                        <Icon className="h-5 w-5" />
                       </div>
-                      <div className="flex items-center gap-2 text-slate-500">
-                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="text-slate-600 hover:text-slate-900">
-                          <Download className="h-4 w-4" />
-                        </Button>
+                      <div>
+                        <div className="text-sm font-semibold text-slate-900">{section.label}</div>
+                        <div className="text-xs text-slate-600">{section.desc}</div>
                       </div>
                     </div>
-                    <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
-                      <AdminSectionBlock
-                        label={section.label}
-                        sectionKey={section.key as keyof WizardData}
-                        applicationId={selected.app.id}
-                        data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
-                      >
-                        {renderSection(section.label, (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {})}
-                      </AdminSectionBlock>
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <StatusIcon />
                     </div>
                   </Card>
-                ))}
-              </div>
-
-              {/* Reminder + attachments */}
-              <div className="grid gap-4 lg:grid-cols-3">
-                <Card className="lg:col-span-2 border border-slate-200 bg-white shadow-sm">
-                  <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
-                    <Mail className="h-4 w-4 text-slate-600" />
-                    <div className="text-sm font-semibold text-slate-900">Reminder Email</div>
-                  </div>
-                  <div className="p-4">
-                    <ReminderActions
-                      applicationId={selected.app.id}
-                      data={selected.app.data ?? {}}
-                      email={selected.profile?.email ?? selected.app.data?.step0?.email ?? null}
-                    />
-                  </div>
-                </Card>
-                <Card className="border border-slate-200 bg-white shadow-sm">
-                  <div className="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-900">Attachments</div>
-                  <div className="p-4">
-                    <AttachmentList attachments={selected.attachments} />
-                  </div>
-                </Card>
-              </div>
-
-              {/* Footer actions */}
-              <div className="flex flex-wrap gap-3 border-t border-slate-200 pt-4">
-                <Button className="bg-green-600 text-white hover:bg-green-700">
-                  Approve Application
-                </Button>
-                <Button variant="outline" className="border-slate-200 text-slate-800">
-                  Contact
-                </Button>
-                <Button className="bg-amber-500 text-white hover:bg-amber-600">
-                  Request Revision
-                </Button>
-              </div>
+                )
+              })}
             </div>
           </div>
         </div>
