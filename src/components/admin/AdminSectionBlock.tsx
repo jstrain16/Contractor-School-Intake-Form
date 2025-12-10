@@ -75,12 +75,8 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
           )}
         </div>
       </summary>
-      <div className="border-t border-slate-200 bg-slate-50/60 px-4 py-3 space-y-3 text-sm">
-        {editing ? (
-          <EditableFields data={formData} onChange={setFormData} error={error} />
-        ) : (
-          children
-        )}
+      <div className="border-t border-slate-200 bg-slate-50/60 px-4 py-3 text-sm">
+        {editing ? <EditableFields data={formData} onChange={setFormData} error={error} /> : children}
       </div>
     </details>
   )
