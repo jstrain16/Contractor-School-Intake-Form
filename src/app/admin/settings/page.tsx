@@ -8,7 +8,6 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import ArchivedApplications from "@/components/admin/ArchivedApplications"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { format } from "date-fns"
 import { AdminUserActions } from "@/components/admin/AdminUserActions"
 
 export default async function AdminSettingsPage() {
@@ -49,6 +48,13 @@ export default async function AdminSettingsPage() {
     (adminUsers || []).map((a) => [a.email?.toLowerCase() ?? "", (a.role || "admin").toLowerCase()])
   )
 
+  const formatDate = (d?: string | null) => {
+    if (!d) return "—"
+    const dt = new Date(d)
+    if (Number.isNaN(dt.getTime())) return "—"
+    return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  }
+
   const userRows = (profileRows || []).map((u) => {
     const email = u.email?.toLowerCase() || ""
     const adminRole = email ? adminEmailMap.get(email) : undefined
@@ -61,10 +67,10 @@ export default async function AdminSettingsPage() {
       .reduce((m, v) => Math.max(m, v), 0)
     const profileUpdatedTs = u.updated_at ? new Date(u.updated_at as string).getTime() : 0
     const lastActiveTs = Math.max(latestAppTs, profileUpdatedTs)
-    const lastActiveDisplay = lastActiveTs ? format(new Date(lastActiveTs), "MMM d, yyyy") : "—"
+    const lastActiveDisplay = lastActiveTs ? formatDate(new Date(lastActiveTs).toISOString()) : "—"
 
     const createdTs = u.created_at ? new Date(u.created_at as string).getTime() : 0
-    const createdDisplay = createdTs ? format(new Date(createdTs), "MMM d, yyyy") : "—"
+    const createdDisplay = createdTs ? formatDate(new Date(createdTs).toISOString()) : "—"
 
     const inactiveThreshold = 1000 * 60 * 60 * 24 * 30 // 30 days
     const status = lastActiveTs && now - lastActiveTs > inactiveThreshold ? "Inactive" : "Active"
