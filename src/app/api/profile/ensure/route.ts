@@ -18,6 +18,18 @@ export async function POST() {
     const clerkId = userId
 
     const supabase = getSupabaseAdminClient()
+
+    // Fetch existing to preserve role if present
+    const { data: existing, error: existingErr } = await supabase
+      .from("user_profiles")
+      .select("role")
+      .or(`email.eq.${email ?? ""},user_id.eq.${userId}`)
+      .maybeSingle()
+    if (existingErr) {
+      console.error("ensure profile existing lookup failed", existingErr)
+    }
+    const resolvedRole = existing?.role ?? "applicant"
+
     const { data, error } = await supabase
       .from("user_profiles")
       .upsert(
@@ -28,11 +40,11 @@ export async function POST() {
           first_name: firstName,
           last_name: lastName,
           phone,
-          role: "applicant",
+          role: resolvedRole,
           last_active_at: lastActive,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "user_id" }
+        { onConflict: "email" }
       )
       .select()
       .maybeSingle()
