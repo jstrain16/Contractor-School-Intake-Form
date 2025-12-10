@@ -6,7 +6,7 @@ export const PROGRESS_WEIGHTS = {
   bank: 10,
   gl: 20,
   wc: 20,
-  remainder: 10, // experience, dopl, etc.
+  remainder: 10, // experience + exam
 }
 
 export type StatusItem = {
@@ -102,7 +102,7 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
       label: "DOPL Application",
       started: !!d.step6?.doplAppCompleted || !!d.step6?.reviewRequested,
       done: d.step6?.doplAppCompleted === true,
-      weight: PROGRESS_WEIGHTS.dopl,
+      weight: PROGRESS_WEIGHTS.remainder / 2,
     },
   ]
 
