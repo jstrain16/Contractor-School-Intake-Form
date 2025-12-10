@@ -381,13 +381,16 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
             {/* Header */}
             <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                  <User className="h-6 w-6" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-sm">
+                  <span className="text-lg font-semibold">CS</span>
                 </div>
                 <div>
                   <div className="text-xl font-semibold text-slate-900">{getName(selected.profile, selected.app.data).name}</div>
                   <div className="text-sm text-slate-600">{getName(selected.profile, selected.app.data).email}</div>
-                  <div className="text-xs font-semibold text-slate-500 mt-1">APP-{selected.app.id?.slice(0, 4).toUpperCase() || "ID"}</div>
+                  <div className="mt-1 inline-flex items-center gap-2">
+                    <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-orange-700">Application Services</span>
+                    <span className="text-xs font-semibold text-slate-500">APP-{selected.app.id?.slice(0, 4).toUpperCase() || "ID"}</span>
+                  </div>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setSelected(null)} className="text-slate-600 hover:text-slate-900">
