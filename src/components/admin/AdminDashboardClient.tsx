@@ -19,6 +19,10 @@ import {
   FileText,
   BadgeCheck,
   ClipboardCheck,
+  CheckCircle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import type { WizardData } from "@/lib/schemas"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
@@ -437,7 +441,8 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                 const sectionData = selected.app.data?.[section.key as keyof WizardData]
                 const hasData = sectionData && Object.keys(sectionData as Record<string, unknown>).length > 0
                 const isPending = section.key === "step3" && !hasData
-                const StatusIcon = isPending ? () => <span className="text-orange-500">⏳</span> : () => <span className="text-green-600">✓</span>
+                const StatusIcon = () =>
+                  isPending ? <Clock className="h-4 w-4 text-orange-500" /> : <CheckCircle className="h-4 w-4 text-green-600" />
                 const Icon = (() => {
                   switch (section.key) {
                     case "step0":
@@ -458,7 +463,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                 return (
                   <Card
                     key={section.key}
-                    className="border border-slate-200 bg-white shadow-sm"
+                    className="border border-slate-200 bg-white shadow-sm rounded-2xl"
                   >
                     <button
                       type="button"
@@ -466,7 +471,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                       onClick={() => setExpandedSection(expandedSection === section.key ? null : section.key)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${section.bg} ${section.color}`}>
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${section.bg} ${section.color}`}>
                           <Icon className="h-5 w-5" />
                         </div>
                         <div>
@@ -476,6 +481,11 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                       </div>
                       <div className="flex items-center gap-2 text-slate-500">
                         <StatusIcon />
+                        {expandedSection === section.key ? (
+                          <ChevronUp className="h-4 w-4 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-slate-400" />
+                        )}
                       </div>
                     </button>
                     {expandedSection === section.key && (
