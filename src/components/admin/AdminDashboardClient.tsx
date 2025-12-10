@@ -160,6 +160,8 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
       rows.map((r) => ({
         ...r,
         status: classify(r.progress),
+        assigned_admin_email: (r.app as any).assigned_admin_email,
+        assigned_admin_id: (r.app as any).assigned_admin_id,
       })),
     [rows]
   )
@@ -247,6 +249,25 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
       console.error("Failed to load admins", e)
     } finally {
       setLoadingAdmins(false)
+    }
+  }
+
+  const assignSelected = async () => {
+    if (!selectedAdminId || selectedIds.size === 0) return
+    try {
+      const res = await fetch("/api/admin/applications/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationIds: Array.from(selectedIds), adminId: selectedAdminId }),
+      })
+      if (!res.ok) {
+        console.error("Assign failed", await res.text())
+        return
+      }
+      // refresh to show new assignments
+      window.location.reload()
+    } catch (e) {
+      console.error("Assign error", e)
     }
   }
 
@@ -367,7 +388,9 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               {filtered.map(({ app, profile, progress, status, attachments }) => {
                 const user = getName(profile, app.data)
                 const chip = statusChip(status)
-                const assigned = "Mike Davis" // placeholder until assignment exists
+                const assignedEmail = (app as any).assigned_admin_email as string | null
+                const assigned = assignedEmail || "Unassigned"
+                const assignedInitials = assignedEmail ? assignedEmail.slice(0, 2).toUpperCase() : "NA"
                 const updated =
                   app.updated_at ? new Date(app.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"
                 return (
@@ -410,7 +433,9 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white text-xs font-semibold">A</div>
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white text-xs font-semibold">
+                          {assignedInitials}
+                        </div>
                         <div>
                           <div className="font-semibold text-slate-900">{assigned}</div>
                           <div className="text-xs text-slate-500">Admin</div>
@@ -432,7 +457,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td className="px-6 py-10 text-center text-slate-500" colSpan={7}>
+                  <td className="px-6 py-10 text-center text-slate-500" colSpan={8}>
                     No applications found.
                   </td>
                 </tr>
