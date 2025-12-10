@@ -5,7 +5,6 @@ import Link from "next/link"
 import { AdminInviteForm } from "@/components/admin/AdminInviteForm"
 import { requireAdminEmail } from "@/lib/admin-auth"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
-import ArchivedApplications from "@/components/admin/ArchivedApplications"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminUsersTable, type AdminUserRow } from "@/components/admin/AdminUsersTable"
@@ -188,24 +187,6 @@ export default async function AdminSettingsPage({
           <AdminUsersTable rows={clientRows} />
         </Card>
 
-        <Card className="border-slate-200 px-4 py-4" id="invite-admin">
-          <h2 className="text-lg font-semibold text-slate-900">Invite an admin</h2>
-          <p className="text-sm text-slate-600">Add an email to allow admin access.</p>
-          <div className="mt-3">
-            <AdminInviteForm />
-          </div>
-        </Card>
-
-        <details className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <summary className="flex cursor-pointer items-center justify-between text-lg font-semibold text-slate-900">
-            <span>Archived applications</span>
-            <span className="text-sm font-normal text-slate-600">(click to expand)</span>
-          </summary>
-          <p className="mt-2 text-sm text-slate-600">Restore or delete archived applications.</p>
-          <div className="mt-3">
-            <ArchivedApplications items={archived} />
-          </div>
-        </details>
       </div>
     </div>
   )

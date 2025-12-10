@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { AdminSyncUsersButton } from "@/components/admin/AdminSyncUsersButton"
+import { AdminInviteForm } from "@/components/admin/AdminInviteForm"
 
 export type AdminUserRow = {
   id: string
@@ -38,6 +39,7 @@ export function AdminUsersTable({ rows }: Props) {
   const [role, setRole] = useState<"super_admin" | "admin" | "applicant">("applicant")
   const [active, setActive] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showInvite, setShowInvite] = useState(false)
 
   const doFilter = (val: string) => {
     setQ(val)
@@ -130,7 +132,7 @@ export function AdminUsersTable({ rows }: Props) {
     <div className="space-y-0">
       <div className="flex flex-col gap-3 border-b border-slate-200 pb-3 md:flex-row md:items-center md:justify-between">
         <div className="text-lg font-semibold text-slate-900">All Users</div>
-        <div className="flex flex-1 items-center gap-3 md:flex-none">
+        <div className="flex flex-1 flex-wrap items-center gap-3 md:flex-none">
           <input
             type="text"
             value={q}
@@ -139,6 +141,13 @@ export function AdminUsersTable({ rows }: Props) {
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none md:w-80"
           />
           <AdminSyncUsersButton />
+          <Button
+            type="button"
+            className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700"
+            onClick={() => setShowInvite(true)}
+          >
+            + Add User
+          </Button>
         </div>
       </div>
 
@@ -287,6 +296,27 @@ export function AdminUsersTable({ rows }: Props) {
                   {deleting ? "Deleting..." : "Delete User"}
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div className="text-lg font-semibold text-slate-900">Add User</div>
+              <Button variant="ghost" onClick={() => setShowInvite(false)} className="text-slate-600">
+                ✕
+              </Button>
+            </div>
+            <div className="px-6 py-4">
+              <AdminInviteForm
+                onInvited={() => {
+                  setShowInvite(false)
+                }}
+                onError={setError}
+              />
             </div>
           </div>
         </div>
