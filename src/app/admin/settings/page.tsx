@@ -120,7 +120,7 @@ export default async function AdminSettingsPage({
     status: u.status || "Active",
     lastActiveDisplay: u.lastActiveDisplay,
     createdDisplay: u.createdDisplay,
-    active: u.active !== false,
+    active: (u as any).active !== false,
   }))
 
   return (
