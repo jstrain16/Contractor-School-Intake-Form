@@ -42,7 +42,7 @@ export async function POST() {
           lastActiveAt: u.lastActiveAt,
         })
       })
-      if (!page.hasMore) break
+      if (page.data.length < limit) break
       offset += limit
     }
 
