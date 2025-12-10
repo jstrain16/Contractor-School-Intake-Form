@@ -377,7 +377,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
-          <div className="w-full max-w-5xl rounded-2xl bg-white shadow-2xl">
+          <div className="w-full max-w-5xl rounded-2xl bg-slate-50 shadow-2xl">
             {/* Header */}
             <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
               <div className="flex items-center gap-3">
@@ -398,7 +398,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               </Button>
             </div>
 
-            <div className="space-y-5 px-6 py-5">
+            <div className="space-y-6 px-6 py-6">
               {/* Quick stats */}
               <div className="grid gap-3 md:grid-cols-3">
                 <Card className="border border-slate-200 bg-white shadow-sm">
@@ -428,6 +428,16 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                     </div>
                   </div>
                 </Card>
+              </div>
+
+              {/* Status / meta */}
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                  Ready for Review
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  Updated: {selected.app.updated_at ? new Date(selected.app.updated_at).toLocaleDateString() : "—"}
+                </span>
               </div>
 
               {/* Sections */}
