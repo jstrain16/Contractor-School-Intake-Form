@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [wizardData, setWizardData] = useState<Partial<WizardData> | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const userKey = user?.id ?? "anonymous"
 
   const isAdmin = useMemo(() => {
     const allowlist = (process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || "")
@@ -37,6 +38,9 @@ export default function DashboardPage() {
       router.replace("/admin")
       return
     }
+    setWizardData(null)
+    setError(null)
+    setLoading(true)
     const load = async () => {
       try {
         const res = await fetchWizardData()
@@ -49,7 +53,7 @@ export default function DashboardPage() {
       }
     }
     load()
-  }, [isAdmin, isLoaded, isSignedIn, router])
+  }, [isAdmin, isLoaded, isSignedIn, router, userKey])
 
   const statusList = useMemo(() => buildStatus(wizardData), [wizardData])
   const progressPct = statusList.progress
@@ -72,6 +76,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-6 space-y-8">
+        {loading && (
+          <Card className="border border-slate-200 bg-white shadow-sm">
+            <div className="px-6 py-5 space-y-2 text-sm text-slate-600">Loading your dashboard...</div>
+          </Card>
+        )}
+        {!loading && (
+        <>
         {/* Intro / CTA */}
         <Card className="border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
@@ -186,6 +197,8 @@ export default function DashboardPage() {
 
         {error && (
           <div className="text-sm text-red-600">{error}</div>
+        )}
+        </>
         )}
       </main>
 
