@@ -9,6 +9,7 @@ import ArchivedApplications from "@/components/admin/ArchivedApplications"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminUserActions } from "@/components/admin/AdminUserActions"
+import { AdminSyncUsersButton } from "@/components/admin/AdminSyncUsersButton"
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -200,6 +201,7 @@ export default async function AdminSettingsPage({
                 + Add User
               </Button>
             </form>
+            <AdminSyncUsersButton />
           </div>
 
           <div className="overflow-x-auto">
