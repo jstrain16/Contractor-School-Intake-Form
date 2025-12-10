@@ -7,6 +7,7 @@ import { WizardData } from "@/lib/schemas"
 import { buildStatus } from "@/lib/progress"
 import Link from "next/link"
 import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient"
+import { AdminHeaderBar } from "@/components/admin/AdminHeaderBar"
 
 type ApplicationRow = {
   id: string
@@ -162,22 +163,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Admin Portal</h1>
-            <p className="text-sm text-slate-600">Review applicant progress, answers, and attachments.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/admin/settings"
-              className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
-            >
-              Admin Settings
-            </Link>
-          </div>
-        </div>
-
+      <div className="mx-auto max-w-6xl space-y-6">
+        <AdminHeaderBar />
         <AdminDashboardClient rows={rows} />
       </div>
     </div>

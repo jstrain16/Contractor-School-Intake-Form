@@ -8,6 +8,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AdminUsersTable, type AdminUserRow } from "@/components/admin/AdminUsersTable"
+import { AdminHeaderBar } from "@/components/admin/AdminHeaderBar"
 
 export default async function AdminSettingsPage({
   searchParams,
@@ -126,26 +127,7 @@ export default async function AdminSettingsPage({
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
-        <Card className="flex items-center justify-between border-slate-200 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin"
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
-            >
-              ←
-            </Link>
-            <div>
-              <div className="text-lg font-semibold text-slate-900">Settings</div>
-              <div className="text-sm text-slate-500">System Configuration</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="rounded-lg border-slate-200 text-slate-900">
-              Save Changes
-            </Button>
-            <Button className="rounded-lg bg-orange-500 text-white hover:bg-orange-600">Publish</Button>
-          </div>
-        </Card>
+        <AdminHeaderBar title="Settings" subtitle="System Configuration" backHref="/admin" />
 
         <Card className="border-slate-200 px-4 py-2">
           <div className="flex flex-wrap items-center gap-2">
