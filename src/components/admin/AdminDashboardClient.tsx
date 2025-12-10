@@ -142,6 +142,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
   const [query, setQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"recent" | "my">("recent")
   const [selected, setSelected] = useState<AdminRow | null>(null)
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
 
   const classifiedRows = useMemo(
     () =>
@@ -413,7 +414,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
             </div>
 
             {/* Steps list */}
-            <div className="space-y-2 bg-white px-4 py-5">
+            <div className="space-y-2 bg-white px-4 py-5 max-h-[70vh] overflow-y-auto">
               {[
                 { key: "step0", label: "License Setup & Basic Info", desc: "Complete your profile and license details", color: "text-blue-600", bg: "bg-blue-50" },
                 { key: "step1", label: "Pre-Licensure / Education", desc: "Upload course completion or exemptions", color: "text-purple-600", bg: "bg-purple-50" },
@@ -447,20 +448,38 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                 return (
                   <Card
                     key={section.key}
-                    className="flex items-center justify-between border border-slate-200 bg-white px-3 py-3 shadow-sm"
+                    className="border border-slate-200 bg-white shadow-sm"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${section.bg} ${section.color}`}>
-                        <Icon className="h-5 w-5" />
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between px-3 py-3 text-left"
+                      onClick={() => setExpandedSection(expandedSection === section.key ? null : section.key)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${section.bg} ${section.color}`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">{section.label}</div>
+                          <div className="text-xs text-slate-600">{section.desc}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900">{section.label}</div>
-                        <div className="text-xs text-slate-600">{section.desc}</div>
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <StatusIcon />
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-500">
-                      <StatusIcon />
-                    </div>
+                    </button>
+                    {expandedSection === section.key && (
+                      <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
+                        <AdminSectionBlock
+                          label={section.label}
+                          sectionKey={section.key as keyof WizardData}
+                          applicationId={selected.app.id}
+                          data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                        >
+                          {renderSection(section.label, (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {})}
+                        </AdminSectionBlock>
+                      </div>
+                    )}
                   </Card>
                 )
               })}
