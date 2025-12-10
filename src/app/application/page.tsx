@@ -120,15 +120,24 @@ export default function WizardPage() {
         const res = await fetchWizardData()
         setApplicationId(res.applicationId || null)
         if (res.data) {
-          // hydrate store
-          updateData("step0", res.data.step0 || {})
-          updateData("step1", res.data.step1 || {})
-          updateData("step2", res.data.step2 || {})
-          updateData("step3", res.data.step3 || {})
-          updateData("step4", res.data.step4 || {})
-          updateData("step5", res.data.step5 || {})
-          updateData("step6", res.data.step6 || {})
-          updateData("step7", res.data.step7 || {})
+          const enriched = { ...res.data }
+          // Prefill account info from Clerk if missing
+          const step0 = { ...(enriched.step0 || {}) }
+          if (user?.firstName && !step0.firstName) step0.firstName = user.firstName
+          if (user?.lastName && !step0.lastName) step0.lastName = user.lastName
+          if (user?.primaryEmailAddress?.emailAddress && !step0.email) {
+            step0.email = user.primaryEmailAddress.emailAddress
+          }
+          enriched.step0 = step0
+
+          updateData("step0", enriched.step0 || {})
+          updateData("step1", enriched.step1 || {})
+          updateData("step2", enriched.step2 || {})
+          updateData("step3", enriched.step3 || {})
+          updateData("step4", enriched.step4 || {})
+          updateData("step5", enriched.step5 || {})
+          updateData("step6", enriched.step6 || {})
+          updateData("step7", enriched.step7 || {})
           setStep(targetStep)
         }
       } catch (e) {
@@ -138,7 +147,7 @@ export default function WizardPage() {
       }
     }
     load()
-  }, [isAdmin, isSignedIn, setApplicationId, setStep, targetStep, updateData])
+  }, [isAdmin, isSignedIn, setApplicationId, setStep, targetStep, updateData, user?.firstName, user?.lastName, user?.primaryEmailAddress])
 
   // respond to section param changes after load
   useEffect(() => {

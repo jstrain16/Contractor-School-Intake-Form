@@ -12,6 +12,7 @@ export const PROGRESS_WEIGHTS = {
 export type StatusItem = {
   label: string
   done: boolean
+  started: boolean
   weight: number
 }
 
@@ -36,38 +37,72 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
   const items: StatusItem[] = [
     {
       label: "Education",
+      started:
+        !!d.step1?.preLicensureCompleted ||
+        !!d.step1?.courseProvider ||
+        !!d.step1?.dateCompleted ||
+        (d.step1?.exemptions?.length ?? 0) > 0,
       done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0,
       weight: PROGRESS_WEIGHTS.education,
     },
     {
       label: "Entity",
+      started:
+        !!d.step2?.legalBusinessName ||
+        !!d.step2?.entityType ||
+        !!d.step2?.stateOfIncorporation ||
+        !!d.step2?.utahEntityNumber ||
+        !!d.step2?.dateRegistered ||
+        !!d.step2?.businessPhone ||
+        !!d.step2?.businessEmail ||
+        !!d.step2?.physicalAddress?.street,
       done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin,
       weight: PROGRESS_WEIGHTS.entity,
     },
     {
       label: "Business Bank Account",
+      started: d.step2?.hasBusinessBankAccount === true || !!d.step2?.voidedCheckFile,
       done: !!d.step2?.hasBusinessBankAccount,
       weight: PROGRESS_WEIGHTS.bank,
     },
     {
       label: "General Liability",
+      started:
+        d.step3?.hasGlInsurance === true ||
+        !!d.step3?.glCarrier ||
+        !!d.step3?.glPolicyNumber ||
+        !!d.step3?.glEffectiveDate ||
+        !!d.step3?.glExpirationDate,
       done: d.step3?.hasGlInsurance === true,
       weight: PROGRESS_WEIGHTS.gl,
     },
     {
       label: "Workers Compensation",
+      started:
+        d.step3?.hasWorkersComp === true ||
+        d.step3?.hasWcWaiver === true ||
+        !!d.step3?.wcCarrier ||
+        !!d.step3?.wcPolicyNumber,
       done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true,
       weight: PROGRESS_WEIGHTS.wc,
     },
     {
       label: "Experience / Qualifier",
+      started: (d.step4?.experienceEntries?.length ?? 0) > 0 || d.step4?.hasExperience === true,
       done: hasGeneral ? !!d.step4?.hasExperience : true,
       weight: PROGRESS_WEIGHTS.remainder / 2,
     },
     {
       label: "Business & Law Exam",
+      started: hasGeneral ? (d.step5?.examStatus && d.step5.examStatus !== "not_scheduled") : false,
       done: hasGeneral ? d.step5?.examStatus === "passed" : true,
       weight: hasGeneral ? PROGRESS_WEIGHTS.remainder / 2 : 0,
+    },
+    {
+      label: "DOPL Application",
+      started: !!d.step6?.doplAppCompleted || !!d.step6?.reviewRequested,
+      done: d.step6?.doplAppCompleted === true,
+      weight: PROGRESS_WEIGHTS.dopl,
     },
   ]
 

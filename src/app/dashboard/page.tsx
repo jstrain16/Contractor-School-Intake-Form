@@ -54,6 +54,16 @@ export default function DashboardPage() {
   const statusList = useMemo(() => buildStatus(wizardData), [wizardData])
   const progressPct = statusList.progress
   const nextUp = statusList.nextUp
+  const businessItems = useMemo(
+    () => statusList.items.filter((i) => ["Entity", "Business Bank Account", "General Liability", "Workers Compensation"].includes(i.label)),
+    [statusList.items]
+  )
+  const businessTotal = businessItems.reduce((sum, i) => sum + i.weight, 0)
+  const businessCompleted = businessItems.filter((i) => i.done).reduce((sum, i) => sum + i.weight, 0)
+  const businessProgress = businessTotal > 0 ? Math.round((businessCompleted / businessTotal) * 100) : 0
+  const businessStarted = businessItems.some((i) => i.started)
+  const businessDone = businessItems.every((i) => i.done)
+  const businessStatus = businessDone ? "Complete" : businessStarted ? "Pending" : "Not Started"
 
   const goToApplication = () => router.push("/application")
 
@@ -99,9 +109,15 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {steps.map((item) => {
             const isComplete = item.done
-            const statusLabel = isComplete ? "Complete" : "Pending"
-            const statusColor = isComplete ? "text-green-700 bg-green-50" : "text-orange-700 bg-orange-50"
-            const barColor = isComplete ? "bg-green-500" : "bg-slate-300"
+            const isStarted = item.started
+            const statusLabel = isComplete ? "Complete" : isStarted ? "Pending" : "Not Started"
+            const statusColor = isComplete
+              ? "text-green-700 bg-green-50"
+              : isStarted
+                ? "text-orange-700 bg-orange-50"
+                : "text-slate-600 bg-slate-100"
+            const barColor = isComplete ? "bg-green-500" : isStarted ? "bg-orange-400" : "bg-slate-300"
+            const barWidth = isComplete ? "100%" : isStarted ? "50%" : "0%"
             return (
               <Card key={item.label} className="border border-slate-200 bg-white shadow-sm">
                 <div className="flex flex-col gap-3 px-5 py-4">
@@ -117,7 +133,7 @@ export default function DashboardPage() {
                     <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                    <div className={`h-full rounded-full ${barColor}`} style={{ width: isComplete ? "100%" : "20%" }} />
+                    <div className={`h-full rounded-full ${barColor}`} style={{ width: barWidth }} />
                   </div>
                 </div>
               </Card>
@@ -135,7 +151,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-3">
           <Card className="border border-slate-200 bg-white shadow-sm">
             <div className="px-5 py-4 space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Progress</p>
@@ -148,6 +164,22 @@ export default function DashboardPage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Next Action</p>
               <div className="text-lg font-semibold text-slate-900">{nextUp}</div>
               <p className="text-xs text-slate-600">Complete the next section to move forward.</p>
+            </div>
+          </Card>
+          <Card className="border border-slate-200 bg-white shadow-sm">
+            <div className="px-5 py-4 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">Account & Business</p>
+              <div className="text-4xl font-bold text-slate-900">{businessProgress}%</div>
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <span
+                  className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                    businessDone ? "bg-green-50 text-green-700" : businessStarted ? "bg-orange-50 text-orange-700" : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {businessStatus}
+                </span>
+                <span className="text-xs text-slate-500">Entity, banking, insurance</span>
+              </div>
             </div>
           </Card>
         </div>
