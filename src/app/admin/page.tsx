@@ -7,6 +7,7 @@ import { WizardData } from "@/lib/schemas"
 import { buildStatus } from "@/lib/progress"
 import Link from "next/link"
 import { AdminListClient } from "@/components/admin/AdminListClient"
+import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient"
 
 type ApplicationRow = {
   id: string
@@ -178,12 +179,12 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="mx-auto max-w-6xl space-y-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Admin Portal</h1>
-            <p className="text-slate-600 text-sm">Review applicant progress, answers, and attachments.</p>
+            <p className="text-sm text-slate-600">Review applicant progress, answers, and attachments.</p>
           </div>
           <div className="flex items-center gap-2">
             <Link
@@ -195,7 +196,15 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
           </div>
         </div>
 
-        <AdminListClient rows={rows} />
+        <AdminDashboardClient rows={filtered} />
+
+        <div id="admin-legacy-details" className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">Detailed view</h2>
+            <p className="text-sm text-slate-600">Full applicant responses, attachments, reminders, and archive controls.</p>
+          </div>
+          <AdminListClient rows={filtered} />
+        </div>
       </div>
     </div>
   )
