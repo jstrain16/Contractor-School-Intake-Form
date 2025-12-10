@@ -14,58 +14,11 @@ import {
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Shield } from "lucide-react"
+import { Bell, Cog, Shield, Users, ArrowLeft } from "lucide-react"
 import ChatWidget from "@/components/chat/ChatWidget"
 
 type ProvidersProps = {
   children: ReactNode
-}
-
-function AdminPortalButton() {
-  const { user } = useUser()
-  const [apiAllowed, setApiAllowed] = useState<boolean | null>(null)
-  const adminAllowlist = useMemo(() => {
-    const list = process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || ""
-    return list
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
-      .filter(Boolean)
-  }, [])
-  const isAdmin = useMemo(() => {
-    const metaAdmin = user?.publicMetadata && (user.publicMetadata as Record<string, unknown>).isAdmin === true
-    if (metaAdmin) return true
-    const emails =
-      user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
-    return emails.some((em) => adminAllowlist.includes(em as string))
-  }, [adminAllowlist, user?.emailAddresses, user?.publicMetadata])
-
-  useEffect(() => {
-    let mounted = true
-    fetch("/api/admin/check")
-      .then((r) => r.json())
-      .then((j) => {
-        if (mounted) setApiAllowed(Boolean(j?.isAllowed))
-      })
-      .catch(() => {
-        if (mounted) setApiAllowed(null)
-      })
-    return () => {
-      mounted = false
-    }
-  }, [])
-
-  const allowed = isAdmin || apiAllowed
-  if (!allowed) return null
-
-  return (
-    <Link
-      href="/admin/settings"
-      className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
-    >
-      <Shield className="h-4 w-4 text-slate-700" />
-      <span className="leading-none">Admin</span>
-    </Link>
-  )
 }
 
 export function Providers({ children }: ProvidersProps) {
@@ -91,47 +44,7 @@ export function Providers({ children }: ProvidersProps) {
         <div className="p-4 text-sm text-slate-600">Loading account...</div>
       </ClerkLoading>
       <ClerkLoaded>
-        <header className="flex justify-between items-center px-5 py-3 h-16 bg-white text-slate-900 border-b border-slate-200">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm">
-              <span className="text-lg font-semibold">CS</span>
-            </div>
-            <div className="leading-tight">
-              <p className="text-sm font-semibold text-slate-900">CONTRACTORS SCHOOL</p>
-              <p className="text-xs text-slate-500">Licensing Specialists</p>
-            </div>
-          </Link>
-          <div className="flex items-center gap-3">
-            <SignedOut>
-              <SignInButton>
-                <button className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
-                  Sign In
-                </button>
-              </SignInButton>
-              <SignUpButton>
-                <button className="rounded-full bg-orange-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-600">
-                  Sign Up
-                </button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <Link
-                href="/dashboard"
-                className="text-sm font-semibold text-slate-800 hover:text-slate-900"
-              >
-                Dashboard
-              </Link>
-              <AdminPortalButton />
-              <UserButton
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "border border-slate-200 shadow-sm",
-                  },
-                }}
-              />
-            </SignedIn>
-          </div>
-        </header>
+        <GlobalHeader />
         <EnsureProfileOnce />
         {children}
         <ChatWidget />
@@ -150,5 +63,90 @@ function EnsureProfileOnce() {
     })
   }, [])
   return null
+}
+
+function GlobalHeader() {
+  return (
+    <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 text-slate-900">
+      <div className="flex items-center gap-3">
+        <Link
+          href="/dashboard"
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm">
+          <Users className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="text-base font-semibold text-slate-900">Settings</div>
+          <div className="text-sm text-slate-500">System Configuration</div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
+            aria-label="Notifications"
+          >
+            <Bell className="h-5 w-5" />
+          </button>
+          <span className="absolute right-2 top-2 block h-2 w-2 rounded-full bg-orange-500" />
+        </div>
+        <Link
+          href="/admin/settings"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
+          aria-label="Settings"
+        >
+          <Cog className="h-5 w-5" />
+        </Link>
+        <SignedOut>
+          <div className="flex items-center gap-2">
+            <SignInButton>
+              <button className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton>
+              <button className="rounded-md bg-orange-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-orange-600">
+                Sign Up
+              </button>
+            </SignUpButton>
+          </div>
+        </SignedOut>
+        <SignedIn>
+          <div className="flex items-center gap-3">
+            <AdminPortalBadge />
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "border border-slate-200 shadow-sm",
+                },
+              }}
+            />
+          </div>
+        </SignedIn>
+      </div>
+    </header>
+  )
+}
+
+function AdminPortalBadge() {
+  const { user } = useUser()
+  const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+  const name = user?.fullName || emails[0] || "Admin"
+  return (
+    <div className="flex items-center gap-2 rounded-full bg-blue-500 px-3 py-2 text-white">
+      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
+        <Shield className="h-4 w-4" />
+      </div>
+      <div className="leading-tight">
+        <div className="text-sm font-semibold">{name}</div>
+        <div className="text-[11px] text-white/80">Admin</div>
+      </div>
+    </div>
+  )
 }
 
