@@ -105,12 +105,12 @@ export default function HomePage() {
               Access your personalized dashboard to manage your licensing intake, monitor progress, and complete all requirements seamlessly.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/application">
+              <Link href="/sign-in">
                 <Button size="lg" className="bg-orange-500 text-white shadow-sm shadow-orange-400/40 hover:bg-orange-600">
                   Access Your Dashboard
                 </Button>
               </Link>
-              <Link href="/application">
+              <Link href="/sign-in">
                 <Button size="lg" variant="outline" className="border-[#0c5dcc] text-[#0c5dcc] hover:bg-[#0c5dcc]/10">
                   Sign In
                 </Button>

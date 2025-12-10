@@ -16,10 +16,11 @@ import { Step7 } from "@/components/wizard/Step7"
 import { fetchWizardData, saveWizardData } from "@/lib/wizard-api"
 
 export default function WizardPage() {
-  const { user } = useUser()
+  const { user, isSignedIn, isLoaded } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [mounted, setMounted] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
   const [loadingServerData, setLoadingServerData] = useState(false)
   const { currentStep, setStep } = useWizardStore()
   const wizardData = useWizardStore((state) => state.data)
@@ -68,6 +69,15 @@ export default function WizardPage() {
   }, [])
 
   useEffect(() => {
+    if (!mounted || !isLoaded || redirecting) return
+    if (!isSignedIn) {
+      setRedirecting(true)
+      router.replace(`/sign-in?redirect_url=${encodeURIComponent("/application")}`)
+      return
+    }
+  }, [isLoaded, isSignedIn, mounted, redirecting, router])
+
+  useEffect(() => {
     if (isAdmin) {
       router.replace("/admin")
     }
@@ -93,10 +103,10 @@ export default function WizardPage() {
     checkSf()
   }, [])
 
-  // Load saved data (now allowed signed-out with fallback)
+  // Load saved data
   useEffect(() => {
     const load = async () => {
-      if (isAdmin) return
+      if (!isSignedIn || isAdmin) return
       setLoadingServerData(true)
       try {
         const res = await fetchWizardData()
@@ -120,7 +130,7 @@ export default function WizardPage() {
       }
     }
     load()
-  }, [isAdmin, setApplicationId, setStep, targetStep, updateData])
+  }, [isAdmin, isSignedIn, setApplicationId, setStep, targetStep, updateData])
 
   // respond to section param changes after load
   useEffect(() => {
@@ -143,7 +153,7 @@ export default function WizardPage() {
     save()
   }, [wizardData, applicationId])
 
-  if (!mounted) return <div className="p-8 text-center">Loading...</div>
+  if (!mounted || !isLoaded || redirecting) return <div className="p-8 text-center">Loading...</div>
   if (loadingServerData) return <div className="p-8 text-center">Loading your saved data...</div>
 
   const steps = [
