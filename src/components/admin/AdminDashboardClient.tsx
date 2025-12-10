@@ -796,7 +796,6 @@ export function AdminDashboardClient({
                       applicationId={selected.app.id}
                       data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
                       simple
-                      simple
                     >
                       {renderSectionContent(
                         (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {}
