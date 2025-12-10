@@ -459,7 +459,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                           {assignedInitials}
                         </div>
                         <div>
-                          <div className="font-semibold text-slate-900">{assigned}</div>
+                          <div className="font-semibold text-slate-900">{assignedDisplay}</div>
                           <div className="text-xs text-slate-500">Admin</div>
                         </div>
                       </div>
