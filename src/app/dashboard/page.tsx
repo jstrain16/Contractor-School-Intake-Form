@@ -129,25 +129,58 @@ export default function DashboardPage() {
                 : "text-slate-600 bg-slate-100"
             const barColor = isComplete ? "bg-green-500" : isStarted ? "bg-orange-400" : "bg-slate-300"
             const barWidth = isComplete ? "100%" : isStarted ? "50%" : "0%"
+            const targetSection = (() => {
+              switch (item.label) {
+                case "Education":
+                  return "step1"
+                case "Entity":
+                  return "step2"
+                case "Business Bank Account":
+                  return "step2"
+                case "General Liability":
+                  return "step3"
+                case "Workers Compensation":
+                  return "step3"
+                case "Experience / Qualifier":
+                  return "step4"
+                case "Business & Law Exam":
+                  return "step5"
+                case "DOPL Application":
+                  return "step6"
+                default:
+                  return null
+              }
+            })()
+            const go = () => {
+              const path = targetSection ? `/application?section=${targetSection}` : "/application"
+              router.push(path)
+            }
             return (
-              <Card key={item.label} className="border border-slate-200 bg-white shadow-sm">
-                <div className="flex flex-col gap-3 px-5 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-slate-900">
-                      {isComplete ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-orange-500" />
-                      )}
-                      <span className="text-sm font-semibold">{item.label}</span>
+              <button
+                key={item.label}
+                type="button"
+                onClick={go}
+                className="text-left"
+              >
+                <Card className="border border-slate-200 bg-white shadow-sm hover:border-orange-300 hover:shadow">
+                  <div className="flex flex-col gap-3 px-5 py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-slate-900">
+                        {isComplete ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Circle className="h-4 w-4 text-orange-500" />
+                        )}
+                        <span className="text-sm font-semibold">{item.label}</span>
+                      </div>
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
                     </div>
-                    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                      <div className={`h-full rounded-full ${barColor}`} style={{ width: barWidth }} />
+                    </div>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                    <div className={`h-full rounded-full ${barColor}`} style={{ width: barWidth }} />
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </button>
             )
           })}
         </div>
