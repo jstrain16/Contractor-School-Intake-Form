@@ -129,18 +129,15 @@ function formatValue(value: unknown): React.ReactNode {
 function renderSection(label: string, data?: Record<string, unknown> | null) {
   const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined)
   return (
-    <details className="border rounded-md p-3 bg-slate-50">
-      <summary className="cursor-pointer text-sm font-medium text-slate-800">{label}</summary>
-      <div className="mt-3 space-y-3 text-sm">
-        {entries.length === 0 && <div className="text-slate-600">No responses</div>}
-        {entries.map(([k, v]) => (
-          <div key={k} className="rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
-            <div className="mt-1 text-slate-900">{formatValue(v)}</div>
-          </div>
-        ))}
-      </div>
-    </details>
+    <div className="space-y-3 text-sm">
+      {entries.length === 0 && <div className="text-slate-600">No responses</div>}
+      {entries.map(([k, v]) => (
+        <div key={k} className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
+          <div className="mt-1 text-slate-900">{formatValue(v)}</div>
+        </div>
+      ))}
+    </div>
   )
 }
 
