@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 const navItems = [
+  { label: "Pricing", href: "/pricing" },
   { label: "Portal Features", href: "#features" },
   { label: "Requirements", href: "#requirements" },
   { label: "Support", href: "#support" },
