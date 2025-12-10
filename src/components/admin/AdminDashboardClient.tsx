@@ -705,16 +705,17 @@ export function AdminDashboardClient({
                       </div>
                     </button>
                     {expandedSection === section.key && (
-                      <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
-                        <AdminSectionBlock
-                          label={section.label}
-                          sectionKey={section.key as keyof WizardData}
-                          applicationId={selected.app.id}
-                          data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
-                        >
-                          {renderSection(section.label, (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {})}
-                        </AdminSectionBlock>
-                      </div>
+                  <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
+                    <AdminSectionBlock
+                      label={section.label}
+                      sectionKey={section.key as keyof WizardData}
+                      applicationId={selected.app.id}
+                      data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                      simple
+                    >
+                      {renderSection(section.label, (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {})}
+                    </AdminSectionBlock>
+                  </div>
                     )}
                   </Card>
                 )

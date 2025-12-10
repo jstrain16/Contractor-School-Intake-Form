@@ -12,9 +12,10 @@ type Props = {
   applicationId: string
   data?: Record<string, unknown> | null
   children: React.ReactNode
+  simple?: boolean
 }
 
-export function AdminSectionBlock({ label, sectionKey, applicationId, data, children }: Props) {
+export function AdminSectionBlock({ label, sectionKey, applicationId, data, children, simple = false }: Props) {
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -50,6 +51,10 @@ export function AdminSectionBlock({ label, sectionKey, applicationId, data, chil
     } finally {
       setSaving(false)
     }
+  }
+
+  if (simple) {
+    return <div className="rounded-2xl border border-slate-200 bg-white shadow-sm px-4 py-3 text-sm">{children}</div>
   }
 
   return (
