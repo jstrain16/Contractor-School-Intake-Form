@@ -51,7 +51,7 @@ function statusChip(kind: StatusKind) {
     ready: { label: "Ready for Review", bg: "bg-blue-100", text: "text-blue-700" },
     progress: { label: "In Progress", bg: "bg-amber-100", text: "text-amber-800" },
     approved: { label: "Approved", bg: "bg-green-100", text: "text-green-700" },
-    needs-revision: { label: "Needs Revision", bg: "bg-rose-100", text: "text-rose-700" },
+    "needs-revision": { label: "Needs Revision", bg: "bg-rose-100", text: "text-rose-700" },
   }
   return map[kind]
 }
