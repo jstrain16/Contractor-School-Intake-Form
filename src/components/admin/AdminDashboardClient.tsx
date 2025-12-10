@@ -279,7 +279,7 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white text-sm text-slate-800">
-              {filtered.map(({ app, profile, progress, status }) => {
+              {filtered.map(({ app, profile, progress, status, attachments }) => {
                 const user = getName(profile, app.data)
                 const chip = statusChip(status)
                 const assigned = "Mike Davis" // placeholder until assignment exists
