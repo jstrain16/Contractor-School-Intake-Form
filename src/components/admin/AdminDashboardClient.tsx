@@ -189,10 +189,7 @@ export function AdminDashboardClient({
 
   const isAssignedToMe = (row: (typeof classifiedRows)[number]) => {
     const assignedId = (row.app as any).assigned_admin_id as string | null
-    const assignedEmail = (row.app as any).assigned_admin_email as string | null
-    if (currentAdminId && assignedId && assignedId === currentAdminId) return true
-    if (currentAdminEmail && assignedEmail && assignedEmail.toLowerCase() === currentAdminEmail.toLowerCase()) return true
-    return false
+    return Boolean(currentAdminId && assignedId && assignedId === currentAdminId)
   }
 
   const myQueueRows = useMemo(() => classifiedRows.filter(isAssignedToMe), [classifiedRows, currentAdminEmail, currentAdminId])
@@ -432,10 +429,9 @@ export function AdminDashboardClient({
                 const user = getName(profile, app.data)
                 const chip = statusChip(status)
                 const assignedId = (app as any).assigned_admin_id as string | null
-                const assignedEmail = (app as any).assigned_admin_email as string | null
                 const adminFromMap = assignedId ? adminMap.get(assignedId) : undefined
-                const assignedDisplay = adminFromMap?.name || assignedEmail || "Unassigned"
-                const assignedInitials = (adminFromMap?.name || assignedEmail || "NA").slice(0, 2).toUpperCase()
+                const assignedDisplay = adminFromMap?.name || "Unassigned"
+                const assignedInitials = (adminFromMap?.name || "NA").slice(0, 2).toUpperCase()
                 const updated =
                   app.updated_at ? new Date(app.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"
                 return (
