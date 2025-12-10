@@ -13,7 +13,7 @@ import {
 } from "@clerk/nextjs"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Shield } from "lucide-react"
 import ChatWidget from "@/components/chat/ChatWidget"
 
@@ -23,6 +23,7 @@ type ProvidersProps = {
 
 function AdminPortalButton() {
   const { user } = useUser()
+  const [apiAllowed, setApiAllowed] = useState<boolean | null>(null)
   const adminAllowlist = useMemo(() => {
     const list = process.env.NEXT_PUBLIC_ADMIN_EMAIL_ALLOWLIST || process.env.ADMIN_EMAIL_ALLOWLIST || ""
     return list
@@ -38,11 +39,27 @@ function AdminPortalButton() {
     return emails.some((em) => adminAllowlist.includes(em as string))
   }, [adminAllowlist, user?.emailAddresses, user?.publicMetadata])
 
-  if (!isAdmin) return null
+  useEffect(() => {
+    let mounted = true
+    fetch("/api/admin/check")
+      .then((r) => r.json())
+      .then((j) => {
+        if (mounted) setApiAllowed(Boolean(j?.isAllowed))
+      })
+      .catch(() => {
+        if (mounted) setApiAllowed(null)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const allowed = isAdmin || apiAllowed
+  if (!allowed) return null
 
   return (
     <Link
-      href="/admin"
+      href="/admin/settings"
       className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg hover:shadow-orange-500/40 hover:translate-y-[-1px]"
     >
       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-white shadow-inner shadow-orange-900/20 transition-transform duration-200 group-hover:scale-105">
