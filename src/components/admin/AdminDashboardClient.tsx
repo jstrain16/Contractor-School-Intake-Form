@@ -163,14 +163,14 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
         <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <Button
-              variant={activeTab === "recent" ? "secondary" : "ghost"}
+              variant={activeTab === "recent" ? "outline" : "ghost"}
               className={`rounded-full px-4 ${activeTab === "recent" ? "bg-orange-100 text-orange-800" : ""}`}
               onClick={() => setActiveTab("recent")}
             >
               Recent Applications <span className="ml-2 rounded-full bg-white px-2 py-0.5 text-xs text-orange-700">{rows.length}</span>
             </Button>
             <Button
-              variant={activeTab === "my" ? "secondary" : "ghost"}
+              variant={activeTab === "my" ? "outline" : "ghost"}
               className={`rounded-full px-4 ${activeTab === "my" ? "bg-slate-100 text-slate-800" : ""}`}
               onClick={() => setActiveTab("my")}
             >
