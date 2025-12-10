@@ -1,6 +1,5 @@
-import { create, type StateCreator } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import { WizardData } from '@/lib/schemas'
+import { create, type StateCreator } from "zustand"
+import { WizardData } from "@/lib/schemas"
 
 interface WizardState {
   currentStep: number
@@ -32,12 +31,5 @@ const store: StateCreator<WizardState> = (set) => ({
   reset: () => set({ currentStep: 0, data: {}, applicationId: null }),
 })
 
-const persistedStore = persist<WizardState>(store, {
-  name: 'wizard-storage',
-  storage: createJSONStorage(() => localStorage),
-}) as StateCreator<WizardState>
-
-export const useWizardStore = create<WizardState>()(
-  typeof window !== 'undefined' ? persistedStore : store
-)
+export const useWizardStore = create<WizardState>()(store)
 

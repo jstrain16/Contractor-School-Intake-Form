@@ -11,7 +11,7 @@ const EMPTY_DATA: Partial<WizardData> = {
     phone: "",
     email: "",
     preferredContact: "email",
-    licenseType: "general",
+    licenseType: "",
     trade: "",
     hasEmployees: false,
     employeeCount: undefined,
@@ -79,7 +79,7 @@ export async function GET() {
       return NextResponse.json({ data: existing.data ?? null, applicationId: existing.id })
     }
 
-    // create new
+    // create new empty application scoped to this user
     const { data: created, error: insertError } = await supabase
       .from("contractor_applications")
       .insert({ user_id: clerkUserId, data: EMPTY_DATA })
