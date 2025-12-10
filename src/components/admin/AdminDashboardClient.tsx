@@ -46,39 +46,54 @@ function InlineSectionEditor({
   applicationId,
   sectionKey,
   data,
+  editingSection,
+  setEditingSection,
+  editFormData,
+  setEditFormData,
+  savingSection,
+  setSavingSection,
+  savedSection,
+  setSavedSection,
   onSaved,
 }: {
   applicationId: string
   sectionKey: keyof WizardData
   data?: Record<string, unknown>
+  editingSection: string | null
+  setEditingSection: (k: string | null) => void
+  editFormData: Record<string, unknown>
+  setEditFormData: (d: Record<string, unknown>) => void
+  savingSection: string | null
+  setSavingSection: (k: string | null) => void
+  savedSection: string | null
+  setSavedSection: (k: string | null) => void
   onSaved: (updated: Record<string, unknown>) => void
 }) {
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [formData, setFormData] = useState<Record<string, unknown>>(data || {})
+  const editing = editingSection === sectionKey
+  const saving = savingSection === sectionKey
+  const saved = savedSection === sectionKey
 
   const handleSave = async () => {
-    setSaving(true)
-    setSaved(false)
+    setSavingSection(sectionKey)
+    setSavedSection(null)
     try {
       const res = await fetch("/api/admin/application", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId, sectionKey, data: formData }),
+        body: JSON.stringify({ applicationId, sectionKey, data: editFormData }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.error || "Failed to save")
       }
-      setSaved(true)
-      onSaved(formData)
-      setEditing(false)
-      setTimeout(() => setSaved(false), 1500)
+      setSavedSection(sectionKey)
+      onSaved(editFormData)
+      setEditingSection(null)
+      setTimeout(() => setSavedSection(null), 1500)
     } catch (e) {
       console.error(e)
     } finally {
-      setSaving(false)
+      setSavingSection(null)
     }
   }
 
@@ -89,11 +104,12 @@ function InlineSectionEditor({
         variant={editing ? "default" : "outline"}
         onClick={(e) => {
           e.preventDefault()
+          e.stopPropagation()
           if (editing) {
             handleSave()
           } else {
-            setFormData(data || {})
-            setEditing(true)
+            setEditFormData(data || {})
+            setEditingSection(sectionKey)
           }
         }}
         disabled={saving}
@@ -161,6 +177,86 @@ function formatKey(key: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+function renderEditableSection(
+  data: Record<string, unknown>,
+  onChange: (next: Record<string, unknown>) => void
+) {
+  const entries = Object.entries(data || {})
+  if (entries.length === 0) return <div className="text-slate-600 text-sm">No fields to edit.</div>
+
+  const updateValue = (key: string, value: unknown) => {
+    onChange({ ...data, [key]: value })
+  }
+
+  return (
+    <div className="space-y-3 text-sm">
+      {entries.map(([key, value]) => {
+        if (typeof value === "boolean") {
+          return (
+            <label
+              key={key}
+              className="flex items-center justify-between rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm"
+            >
+              <span className="text-sm font-medium text-slate-800">{formatKey(key)}</span>
+              <input
+                type="checkbox"
+                checked={Boolean(value)}
+                onChange={(e) => updateValue(key, e.target.checked)}
+                className="h-4 w-4"
+              />
+            </label>
+          )
+        }
+        if (typeof value === "number") {
+          return (
+            <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <div className="text-sm font-medium text-slate-800">{formatKey(key)}</div>
+              <input
+                type="number"
+                value={value}
+                onChange={(e) => updateValue(key, Number(e.target.value))}
+                className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+          )
+        }
+        if (typeof value === "object" && value !== null) {
+          return (
+            <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <div className="text-sm font-medium text-slate-800">{formatKey(key)}</div>
+              <textarea
+                value={JSON.stringify(value, null, 2)}
+                onChange={(e) => {
+                  try {
+                    const parsed = JSON.parse(e.target.value || "{}")
+                    updateValue(key, parsed)
+                  } catch {
+                    // ignore parse errors
+                  }
+                }}
+                className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                rows={4}
+              />
+              <div className="text-xs text-slate-500">JSON object.</div>
+            </div>
+          )
+        }
+        return (
+          <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="text-sm font-medium text-slate-800">{formatKey(key)}</div>
+            <input
+              type="text"
+              value={String(value ?? "")}
+              onChange={(e) => updateValue(key, e.target.value)}
+              className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function formatValue(value: unknown): React.ReactNode {
   if (value === null || value === undefined) return "—"
   if (typeof value === "boolean") return value ? "Yes" : "No"
@@ -225,6 +321,10 @@ export function AdminDashboardClient({
   const [loadingAdmins, setLoadingAdmins] = useState(false)
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
   const [adminMap, setAdminMap] = useState<Map<string, { name: string; email: string | null; role?: string }>>(new Map())
+  const [editingSection, setEditingSection] = useState<string | null>(null)
+  const [editFormData, setEditFormData] = useState<Record<string, unknown>>({})
+  const [savingSection, setSavingSection] = useState<string | null>(null)
+  const [savedSection, setSavedSection] = useState<string | null>(null)
 
   const classifiedRows = useMemo(
     () =>
@@ -761,8 +861,15 @@ export function AdminDashboardClient({
                         applicationId={selected.app.id}
                         sectionKey={section.key as keyof WizardData}
                         data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                        editingSection={editingSection}
+                        setEditingSection={setEditingSection}
+                        editFormData={editFormData}
+                        setEditFormData={setEditFormData}
+                        savingSection={savingSection}
+                        setSavingSection={setSavingSection}
+                        savedSection={savedSection}
+                        setSavedSection={setSavedSection}
                         onSaved={async (updated) => {
-                          // replace data locally to reflect edits
                           setSelected((prev) =>
                             prev
                               ? {
@@ -797,8 +904,12 @@ export function AdminDashboardClient({
                       data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
                       simple
                     >
-                      {renderSectionContent(
-                        (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {}
+                      {editingSection === section.key ? (
+                        renderEditableSection(editFormData, setEditFormData)
+                      ) : (
+                        renderSectionContent(
+                          (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {}
+                        )
                       )}
                     </AdminSectionBlock>
                   </div>
