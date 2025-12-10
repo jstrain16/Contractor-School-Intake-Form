@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       const { data: profile, error: profErr } = await supabase
         .from("user_profiles")
         .select("email")
-        .eq("user_id", userId)
+        .or(`user_id.eq.${userId},clerk_id.eq.${userId}`)
         .maybeSingle()
       if (profErr) {
         console.error("profile lookup failed", profErr)
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     const { error: upsertErr, data: profileData } = await supabase
       .from("user_profiles")
-      .upsert({ user_id: userId, email, role, updated_at: new Date().toISOString() }, { onConflict: "user_id" })
+      .upsert({ user_id: userId, clerk_id: userId, email, role, updated_at: new Date().toISOString() }, { onConflict: "user_id" })
       .select()
       .maybeSingle()
 
