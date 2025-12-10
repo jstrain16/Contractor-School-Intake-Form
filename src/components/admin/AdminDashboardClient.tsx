@@ -149,6 +149,11 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
   const [selected, setSelected] = useState<AdminRow | null>(null)
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
   const [emailDraft, setEmailDraft] = useState<string>("")
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [admins, setAdmins] = useState<{ id: string; name: string; email: string | null; role?: string }[]>([])
+  const [loadingAdmins, setLoadingAdmins] = useState(false)
+  const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
 
   const classifiedRows = useMemo(
     () =>
@@ -211,6 +216,39 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
       `Hi ${name}, you're almost done with your contractor license application! Just two more steps to complete: add workers comp (or a waiver if no employees) and complete the final review/attestation. Reply here if you need help.`
     )
   }, [selected])
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filtered.map((r) => r.app.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const openAssign = async () => {
+    setAssignOpen(true)
+    setLoadingAdmins(true)
+    try {
+      const res = await fetch("/api/admin/users/list")
+      if (res.ok) {
+        const data = await res.json()
+        setAdmins(data.admins || [])
+      }
+    } catch (e) {
+      console.error("Failed to load admins", e)
+    } finally {
+      setLoadingAdmins(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -300,6 +338,14 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
+                <th className="px-3 py-3">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    checked={selectedIds.size === filtered.length && filtered.length > 0}
+                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                  />
+                </th>
                 <th className="px-6 py-3">Applicant</th>
                 <th className="px-6 py-3">Business Name</th>
                 <th className="px-6 py-3">Status</th>
@@ -318,6 +364,14 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
                   app.updated_at ? new Date(app.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"
                 return (
                   <tr key={app.id} className="hover:bg-slate-50">
+                    <td className="px-3 py-4">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                        checked={selectedIds.has(app.id)}
+                        onChange={() => toggleSelect(app.id)}
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="font-semibold text-slate-900">{user.name}</div>
@@ -389,6 +443,63 @@ export function AdminDashboardClient({ rows }: { rows: AdminRow[] }) {
           </div>
         </div>
       </Card>
+
+      {/* Assign modal */}
+      {assignOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <div className="text-lg font-semibold text-slate-900">Assign to admin</div>
+                <div className="text-sm text-slate-600">Select an admin or super admin to assign {selectedIds.size} application(s).</div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setAssignOpen(false)} className="text-slate-600">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto px-6 py-4 space-y-3">
+              {loadingAdmins && <div className="text-sm text-slate-600">Loading admins...</div>}
+              {!loadingAdmins && admins.length === 0 && (
+                <div className="text-sm text-slate-600">No admins found.</div>
+              )}
+              {!loadingAdmins &&
+                admins.map((adm) => (
+                  <button
+                    key={adm.id}
+                    type="button"
+                    onClick={() => setSelectedAdminId(adm.id)}
+                    className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left shadow-sm ${
+                      selectedAdminId === adm.id ? "border-orange-400 bg-orange-50" : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700 font-semibold">
+                        {(adm.name || adm.email || "?").substring(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-slate-900">{adm.name}</div>
+                        <div className="text-xs text-slate-600">{adm.email}</div>
+                      </div>
+                    </div>
+                    <div className="text-xs font-semibold uppercase text-slate-500">{adm.role || "admin"}</div>
+                  </button>
+                ))}
+            </div>
+            <div className="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
+              <Button variant="outline" className="border-slate-200 text-slate-800" onClick={() => setAssignOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-orange-500 text-white hover:bg-orange-600"
+                disabled={!selectedAdminId || selectedIds.size === 0}
+                onClick={() => setAssignOpen(false)}
+              >
+                Assign
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
