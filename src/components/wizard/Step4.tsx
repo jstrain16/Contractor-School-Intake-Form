@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { UploadField } from "@/components/wizard/UploadField"
 import { Plus, Trash2 } from "lucide-react"
 
 export function Step4() {
-  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
+  const { data, updateData, nextStep, prevStep } = useWizardStore()
+  const hasEmployees = data.step0?.hasEmployees
 
   const form = useForm<Step4FormValues>({
     resolver: zodResolver(step4Schema),
@@ -23,6 +23,7 @@ export function Step4() {
       totalYearsExperience: data.step4?.totalYearsExperience || 0,
       primaryTrade: data.step4?.primaryTrade || "",
       experienceEntries: data.step4?.experienceEntries || [],
+      hasEmployeeWorkersComp: data.step4?.hasEmployeeWorkersComp || false,
       wantsInsuranceQuote: data.step4?.wantsInsuranceQuote || false,
     }
   })
@@ -33,6 +34,7 @@ export function Step4() {
   })
 
   const hasExperience = form.watch("hasExperience")
+  const employeeWc = form.watch("hasEmployeeWorkersComp")
 
   const onSubmit = (values: Step4FormValues) => {
     const parsed: Step4Data = step4Schema.parse(values)
@@ -47,6 +49,39 @@ export function Step4() {
       </CardHeader>
       <CardContent>
         <form id="step4-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          {hasEmployees && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Workers Compensation (Employees)</h3>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="hasEmployeeWorkersComp"
+                  {...form.register("hasEmployeeWorkersComp")}
+                  className="w-4 h-4 rounded border-gray-300"
+                />
+                <Label htmlFor="hasEmployeeWorkersComp" className="mb-0">Do you have Workers Compensation Insurance?</Label>
+              </div>
+              {employeeWc ? (
+                <div className="pl-4 border-l-2 border-slate-200 space-y-2">
+                  <Label>Upload Workers Comp Certificate</Label>
+                  <Input type="file" accept=".pdf,.jpg,.png" />
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-50 rounded-md border space-y-2">
+                  <p className="text-sm">Would you like Integrated Insurance Solutions to contact you with a quote?</p>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      {...form.register("wantsInsuranceQuote")}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span>Yes, please have Integrated Insurance Solutions reach out.</span>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Work Experience</h3>
             <div className="space-y-2">

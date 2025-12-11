@@ -16,7 +16,7 @@ export function Step7() {
   const form = useForm<Step7FormValues>({
     resolver: zodResolver(step7Schema),
     defaultValues: {
-      attested: true,
+      attested: true, // Default to true for UI but user must confirm if we used a checkbox, but here we just show text
       signature: "",
       signatureDate: new Date().toISOString().split('T')[0],
     }
@@ -25,6 +25,8 @@ export function Step7() {
   const onSubmit = (values: Step7FormValues) => {
     const parsed: Step7Data = step7Schema.parse(values)
     updateData("step7", parsed)
+    alert("Application Packet Generated! (Mock)")
+    console.log("Final Data:", { ...data, step7: parsed })
   }
 
   // Helper to check status
@@ -36,7 +38,6 @@ export function Step7() {
 
   const isGeneral = data.step0?.licenseType === "general"
   const hasEmployees = data.step0?.hasEmployees
-  const hasGeneralSelection = (data.step0?.generalLicenses?.length ?? 0) > 0 || isGeneral
 
   const requirements = [
     { 
@@ -47,45 +48,43 @@ export function Step7() {
     { 
       label: "Pre-Licensure Education", 
       valid: data.step1?.preLicensureCompleted || (data.step1?.exemptions && data.step1.exemptions.length > 0),
-      step: 2
+      step: 1
     },
     { 
       label: "Business Entity & EIN", 
       valid: !!data.step2?.legalBusinessName && !!data.step2?.federalEin,
-      step: 3
+      step: 2
     },
     { 
       label: "General Liability Insurance", 
       valid: !!data.step3?.hasGlInsurance,
-      step: 4
+      step: 3
     },
     { 
       label: "Workers Comp", 
       valid: hasEmployees ? !!data.step3?.hasWorkersComp : !!data.step3?.hasWcWaiver,
-      step: 4
+      step: 3
     },
-    ...(hasGeneralSelection ? [{
+    ...(isGeneral ? [{
       label: "Experience / Qualifier",
       valid: !!data.step4?.hasExperience,
-      step: 5
+      step: 4
     }, {
       label: "Business & Law Exam",
       valid: data.step5?.examStatus === "passed",
-      step: 6
+      step: 5
     }] : []),
     {
       label: "DOPL Application",
       valid: !!data.step6?.doplAppCompleted,
-      step: 7
+      step: 6
     }
   ]
-
-  const allComplete = requirements.every((r) => r.valid)
 
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle>Review</CardTitle>
+        <CardTitle>Review & Attestation</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
@@ -112,52 +111,36 @@ export function Step7() {
              </div>
           </div>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="signature">Type your full name to attest</Label>
-              <Input id="signature" {...form.register("signature")} />
-              {form.formState.errors.signature && (
-                <p className="text-sm text-red-600">{form.formState.errors.signature.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="signatureDate">Date</Label>
-              <Input id="signatureDate" type="date" {...form.register("signatureDate")} />
-            </div>
-            <Button type="submit" className="bg-green-600 hover:bg-green-700">
-              Save Attestation
-            </Button>
+          <form id="step7-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-6 border-t">
+             <div className="space-y-4">
+                <div className="flex items-start gap-2">
+                   <input 
+                     type="checkbox" 
+                     {...form.register("attested")} 
+                     className="mt-1 w-4 h-4 rounded border-gray-300"
+                   />
+                   <Label className="leading-tight">I certify that the information provided is true and complete to the best of my knowledge.</Label>
+                </div>
+                {form.formState.errors.attested && <p className="text-red-500 text-sm">{form.formState.errors.attested.message}</p>}
+                
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                      <Label htmlFor="signature">Typed Signature</Label>
+                      <Input id="signature" {...form.register("signature")} placeholder="Type full name" />
+                      {form.formState.errors.signature && <p className="text-red-500 text-sm">{form.formState.errors.signature.message}</p>}
+                   </div>
+                   <div className="space-y-2">
+                      <Label htmlFor="signatureDate">Date</Label>
+                      <Input id="signatureDate" type="date" {...form.register("signatureDate")} readOnly />
+                   </div>
+                </div>
+             </div>
           </form>
-
-          {allComplete && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-md space-y-2">
-              <div className="flex items-center gap-2 text-green-700 font-semibold">
-                <CheckCircle2 className="h-5 w-5" /> Your application is complete.
-              </div>
-              <p className="text-sm text-green-800">
-                You can review your entries or download your uploaded documents from the sections above.
-              </p>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => setStep(0)}>
-                  Review from start
-                </Button>
-                <Button type="button" onClick={() => window.print()}>
-                  Print / Save as PDF
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={prevStep}>Previous</Button>
-        <Button
-          type="button"
-          onClick={() => window.open("https://beacontractor.com/contact-us/", "_blank", "noreferrer")}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          Contact Contractor School team for help
-        </Button>
+        <Button type="submit" form="step7-form" className="bg-green-600 hover:bg-green-700">Generate Application Packet</Button>
       </CardFooter>
     </Card>
   )

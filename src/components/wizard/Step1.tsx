@@ -8,10 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { UploadField } from "@/components/wizard/UploadField"
 
 export function Step1() {
-  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
+  const { data, updateData, nextStep, prevStep } = useWizardStore()
   const form = useForm<Step1FormValues>({
     resolver: zodResolver(step1Schema),
     defaultValues: {
@@ -68,16 +67,7 @@ export function Step1() {
 
           {!completed && (
             <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm">
-              You need to complete the course.{" "}
-              <a
-                href="https://members.agc-utah.org/events"
-                target="_blank"
-                rel="noreferrer"
-                className="underline font-medium"
-              >
-                Click here to schedule the 25 Hour Pre-license Course at the AGC Utah
-              </a>
-              .
+              You need to complete the course. <a href="https://utahhba.com" target="_blank" rel="noreferrer" className="underline font-medium">Click here to schedule the 25 Hour Pre-license Course</a>.
             </div>
           )}
 
@@ -97,13 +87,10 @@ export function Step1() {
                   <Input id="certificateNumber" {...form.register("certificateNumber")} />
                 </div>
               </div>
-              <UploadField
-                label="Upload Prelicensure Certificate"
-                step={1}
-                fileType="prelicensure_certificate"
-                applicationId={applicationId}
-                accept=".pdf,.jpg,.png"
-              />
+              <div className="space-y-2">
+                <Label>Upload Prelicensure Certificate</Label>
+                <Input type="file" accept=".pdf,.jpg,.png" />
+              </div>
             </div>
           )}
 
@@ -132,24 +119,14 @@ export function Step1() {
 
             {exemptions?.includes("degree") && (
                <div className="space-y-2 pl-6">
-                 <UploadField
-                   label="Upload Degree Diploma / Transcript"
-                   step={1}
-                   fileType="degree_transcript"
-                   applicationId={applicationId}
-                   accept=".pdf,.jpg,.png"
-                 />
+                 <Label>Upload Degree Diploma / Transcript</Label>
+                 <Input type="file" accept=".pdf,.jpg,.png" />
                </div>
             )}
             {exemptions?.includes("pe_license") && (
                <div className="space-y-2 pl-6">
-                 <UploadField
-                   label="Upload PE License Documentation"
-                   step={1}
-                   fileType="pe_license_doc"
-                   applicationId={applicationId}
-                   accept=".pdf,.jpg,.png"
-                 />
+                 <Label>Upload PE License Documentation</Label>
+                 <Input type="file" accept=".pdf,.jpg,.png" />
                </div>
             )}
           </div>

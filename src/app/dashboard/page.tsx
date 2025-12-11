@@ -163,23 +163,23 @@ export default function DashboardPage() {
                 className="text-left"
               >
                 <Card className="border border-slate-200 bg-white shadow-sm hover:border-orange-300 hover:shadow">
-                  <div className="flex flex-col gap-3 px-5 py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-slate-900">
-                        {isComplete ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <Circle className="h-4 w-4 text-orange-500" />
-                        )}
-                        <span className="text-sm font-semibold">{item.label}</span>
-                      </div>
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
+                <div className="flex flex-col gap-3 px-5 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-slate-900">
+                      {isComplete ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-orange-500" />
+                      )}
+                      <span className="text-sm font-semibold">{item.label}</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                      <div className={`h-full rounded-full ${barColor}`} style={{ width: barWidth }} />
-                    </div>
+                    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusColor}`}>{statusLabel}</span>
                   </div>
-                </Card>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                      <div className={`h-full rounded-full ${barColor}`} style={{ width: barWidth }} />
+                  </div>
+                </div>
+              </Card>
               </button>
             )
           })}
