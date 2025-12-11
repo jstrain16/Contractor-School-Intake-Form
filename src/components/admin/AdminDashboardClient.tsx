@@ -388,7 +388,7 @@ export function AdminDashboardClient({
     return Boolean(currentAdminId && assignedId && assignedId === currentAdminId)
   }
 
-  const myQueueRows = useMemo(() => classifiedRows.filter(isAssignedToMe), [classifiedRows, currentAdminEmail, currentAdminId])
+  const myQueueRows = useMemo(() => classifiedRows.filter(isAssignedToMe), [classifiedRows, currentAdminId])
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
