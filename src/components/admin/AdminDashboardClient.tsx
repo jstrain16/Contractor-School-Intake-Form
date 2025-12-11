@@ -392,10 +392,9 @@ export function AdminDashboardClient({
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()
-    const base = classifiedRows
-    const byTab = activeTab === "recent" ? base : myQueueRows
-    if (!q) return byTab
-    return byTab.filter(({ app, profile }) => {
+    const base = activeTab === "my" ? myQueueRows : classifiedRows
+    if (!q) return base
+    return base.filter(({ app, profile }) => {
       const step0 = app.data?.step0
       const haystack = [
         profile?.first_name,
