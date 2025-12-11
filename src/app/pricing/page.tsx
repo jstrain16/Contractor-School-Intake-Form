@@ -161,7 +161,7 @@ export default function PricingPage() {
             {plans.map((plan, idx) => (
               <Card
                 key={plan.name}
-                className={`relative border ${idx === 2 ? "border-slate-700 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-900"} shadow-lg`}
+                className={`relative h-full border ${idx === 2 ? "border-slate-700 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-900"} shadow-lg`}
               >
                 {plan.badge && (
                   <div
@@ -170,7 +170,7 @@ export default function PricingPage() {
                     {plan.badge}
                   </div>
                 )}
-                <div className="space-y-3 p-6">
+                <div className={`space-y-3 ${plan.badge ? "p-6 pt-12" : "p-6"}`}>
                   <div className={`text-sm font-semibold ${idx === 2 ? "text-white" : "text-slate-700"}`}>{plan.name}</div>
                   <div className="text-3xl font-bold">{plan.price} <span className="text-sm font-normal text-slate-500">{idx === 2 ? "" : "one-time"}</span></div>
                   <p className={`text-sm ${idx === 2 ? "text-slate-200" : "text-slate-600"}`}>{plan.description}</p>
