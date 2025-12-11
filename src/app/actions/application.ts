@@ -3,18 +3,21 @@
 import { getSupabaseServerClient } from "@/lib/supabase-server"
 import { WizardData, Step0Data, Step4Data } from "@/lib/schemas"
 
-const EMPTY_DATA: WizardData = {
+// Default data for a brand-new application; keep licenseType unset so progress starts at 0.
+const EMPTY_DATA: Partial<WizardData> = {
   step0: {
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
     preferredContact: "email",
-    licenseType: "specialty",
+    licenseType: undefined,
+    generalLicenses: [],
+    specialtyLicenses: [],
     trade: "",
     hasEmployees: false,
     employeeCount: undefined,
-  },
+  } as Step0Data,
   step1: {
     preLicensureCompleted: false,
     courseProvider: "",
@@ -32,6 +35,8 @@ const EMPTY_DATA: WizardData = {
   },
   step3: {
     hasGlInsurance: false,
+    contactInsurancePartner: false,
+    insuranceContactRequested: false,
     hasWorkersComp: false,
     hasWcWaiver: false,
   },

@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { step0Schema, Step0Data, Step0FormValues } from "@/lib/schemas"
@@ -9,41 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { useUser } from "@clerk/nextjs"
-
-const generalLicenses = [
-  "B100 – General Building Contractor",
-  "B200 – Modular Unit Installation Contractor",
-  "E100 – General Engineering Contractor",
-  "E200 – General Electrical Contractor (Must be Master Electrician)",
-  "P200 – General Plumbing Contractor (Must be Master Plumber)",
-  "R100 – Residential/Small Commercial, General Contractor (20k sq ft/3 stories)",
-  "R200 – Factory-Built Housing Contractor (Manufactured Housing)",
-  "S700 – Limited Scope License Contractor",
-]
-
-const specialtyLicenses = [
-  "E201 – Residential Electrical Contractor (Must be Residential Master Electrician)",
-  "P201 – Residential Plumbing Contractor (Must be a Master Plumber)",
-  "R101 – Residential/Small Commercial, Non-Structural Remodel & Repair (50k sq ft/existing structure)",
-  "S202 – Solar Photovoltaic Contractor (Requires NABCEP Certificate)",
-  "S220 – Carpentry & Flooring Contractor (Mechanical Insulation)",
-  "S230 – Masonry, Siding, Stucco, Glass, & Rain Gutter Contractor",
-  "S260 – Asphalt & Concrete Contractor",
-  "S270 – Drywall, Paint, Plaster, & Insulation Contractor",
-  "S280 – Roofing Contractor",
-  "S310 – Foundation, Excavation, & Demolition Contractor",
-  "S330 – Landscape & Recreation Contractor",
-  "S350 – HVAC Contractor",
-  "S354 – Radon Mitigation (Must have NEHA Certification)",
-  "S370 – Fire Suppression Systems Contractor",
-  "S410 – Boiler, Pipeline, Waste Water, & Water Conditioner Contractor",
-  "S440 – Sign Installation Contractor",
-  "S510 – Elevator Contractor (Must be a Licensed Elevator Mechanic)",
-]
 
 export function Step0() {
-  const { isLoaded, user } = useUser()
   const { data, updateData, nextStep } = useWizardStore()
   const form = useForm<Step0FormValues>({
     resolver: zodResolver(step0Schema),
@@ -53,25 +19,10 @@ export function Step0() {
       phone: data.step0?.phone || "",
       email: data.step0?.email || "",
       preferredContact: data.step0?.preferredContact || "email",
-      licenseType: data.step0?.licenseType || "specialty",
-      trade: data.step0?.trade || "",
       hasEmployees: data.step0?.hasEmployees ?? false,
       employeeCount: data.step0?.employeeCount,
     }
   })
-
-  // Prefill email/phone from Clerk once loaded (respect existing user edits)
-  useEffect(() => {
-    if (!isLoaded || !user) return
-    if (!form.getValues("email")) {
-      const email = user.primaryEmailAddress?.emailAddress
-      if (email) form.setValue("email", email)
-    }
-    if (!form.getValues("phone")) {
-      const phone = user.primaryPhoneNumber?.phoneNumber
-      if (phone) form.setValue("phone", phone)
-    }
-  }, [isLoaded, user, form])
 
   const onSubmit = (values: Step0FormValues) => {
     const parsed: Step0Data = step0Schema.parse(values)
@@ -82,7 +33,7 @@ export function Step0() {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Account & License Setup</CardTitle>
+        <CardTitle>Account Info</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="step0-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -126,48 +77,71 @@ export function Step0() {
             </select>
           </div>
 
-          <div className="space-y-3">
-            <Label className="text-base">License Type</Label>
+          <div className="space-y-2">
+            <Label className="text-base">Will you have employees?</Label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" value="specialty" {...form.register("licenseType")} className="w-4 h-4" />
-                <span>Specialty Contractor</span>
+                <input
+                  type="radio"
+                  value="yes"
+                  checked={form.watch("hasEmployees") === true}
+                  onChange={() => form.setValue("hasEmployees", true)}
+                  className="w-4 h-4"
+                />
+                <span>Yes</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" value="general" {...form.register("licenseType")} className="w-4 h-4" />
-                <span>General Contractor</span>
+                <input
+                  type="radio"
+                  value="no"
+                  checked={form.watch("hasEmployees") === false}
+                  onChange={() => {
+                    form.setValue("hasEmployees", false)
+                    form.setValue("employeeCount", undefined)
+                  }}
+                  className="w-4 h-4"
+                />
+                <span>No</span>
               </label>
-            </div>
-            {form.formState.errors.licenseType && <p className="text-red-500 text-sm">{form.formState.errors.licenseType.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="trade">Planned Trade / Classification</Label>
-            {form.watch("licenseType") ? (
-              <select
-                id="trade"
-                {...form.register("trade")}
-                className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-              >
-                {form.watch("licenseType") === "general"
-                  ? generalLicenses.map((opt) => <option key={opt} value={opt}>{opt}</option>)
-                  : specialtyLicenses.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            ) : (
-              <Input id="trade" {...form.register("trade")} placeholder="Select a license type first" readOnly />
-            )}
-            {form.formState.errors.trade && <p className="text-red-500 text-sm">{form.formState.errors.trade.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="hasEmployees" {...form.register("hasEmployees")} className="w-4 h-4 rounded border-gray-300" />
-              <Label htmlFor="hasEmployees" className="mb-0">Will you have employees?</Label>
             </div>
             {form.watch("hasEmployees") && (
               <div className="pl-6 space-y-2">
-                <Label htmlFor="employeeCount">If yes, how many?</Label>
-                <Input id="employeeCount" type="number" min={1} {...form.register("employeeCount", { valueAsNumber: true })} />
+                <Label htmlFor="employeeCount">If yes, how many employees?</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border border-slate-300 rounded-md">
+                    <button
+                      type="button"
+                      className="h-10 w-10 flex items-center justify-center text-lg text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        const current = form.watch("employeeCount") || 1
+                        const next = Math.max(1, current - 1)
+                        form.setValue("employeeCount", next)
+                      }}
+                    >
+                      –
+                    </button>
+                    <input
+                      id="employeeCount"
+                      type="number"
+                      min={1}
+                      max={15}
+                      {...form.register("employeeCount", { valueAsNumber: true })}
+                      className="h-10 w-16 text-center border-x border-slate-300 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      className="h-10 w-10 flex items-center justify-center text-lg text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        const current = form.watch("employeeCount") || 1
+                        const next = Math.min(15, current + 1)
+                        form.setValue("employeeCount", next)
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span className="text-sm text-slate-600">1-15 (15+ allowed)</span>
+                </div>
               </div>
             )}
           </div>
