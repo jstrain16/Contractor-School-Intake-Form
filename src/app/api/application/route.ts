@@ -55,6 +55,7 @@ const EMPTY_DATA: Partial<WizardData> = {
     qualifierDob: "",
     hasExperience: false,
     experienceEntries: [],
+    hasEmployeeWorkersComp: false,
     wantsInsuranceQuote: false,
   },
   step5: {
