@@ -5,14 +5,6 @@ import { Activity, FileText, RouteIcon, ShieldCheck, GraduationCap, Building2, F
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
-const navItems = [
-  { label: "Portal Features", href: "#features" },
-  { label: "Requirements", href: "#requirements" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Support", href: "#support" },
-  { label: "FAQs", href: "#faqs" },
-]
-
 const features = [
   {
     icon: Activity,
@@ -61,23 +53,6 @@ export default function HomePage() {
           <div className="text-sm font-semibold">Need Help? Chat with us</div>
         </div>
       </div>
-
-      {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <div className="text-lg font-bold text-slate-900">CONTRACTORS SCHOOL</div>
-            <div className="text-xs text-slate-600">Licensing Portal</div>
-          </div>
-          <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-800 md:flex">
-            {navItems.map((item) => (
-              <Link key={item.label} href={item.href} className="hover:text-slate-500">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
 
       {/* Hero */}
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-12">

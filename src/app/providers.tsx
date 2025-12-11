@@ -124,12 +124,11 @@ function GlobalHeader() {
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm">
           <Users className="h-5 w-5" />
         </div>
-        {navConfig.title && (
-        <div>
-            <div className="text-base font-semibold text-slate-900">{navConfig.title}</div>
-            {navConfig.subtitle && <div className="text-sm text-slate-500">{navConfig.subtitle}</div>}
+        <div className="leading-tight">
+          <div className="text-base font-semibold text-slate-900">Contractor School</div>
+          {navConfig.title && <div className="text-sm text-slate-700">{navConfig.title}</div>}
+          {navConfig.subtitle && <div className="text-xs text-slate-500">{navConfig.subtitle}</div>}
         </div>
-        )}
       </div>
 
       <div className="hidden flex-1 items-center justify-center gap-6 text-sm font-semibold text-slate-800 md:flex">
