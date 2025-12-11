@@ -304,10 +304,12 @@ export function AdminDashboardClient({
   rows,
   currentAdminId,
   currentAdminEmail,
+  currentAdminProfileId,
 }: {
   rows: AdminRow[]
   currentAdminId?: string | null
   currentAdminEmail?: string | null
+  currentAdminProfileId?: string | null
 }) {
   const [query, setQuery] = useState("")
   const [activeTab, setActiveTab] = useState<"recent" | "my">("recent")
@@ -385,10 +387,10 @@ export function AdminDashboardClient({
 
   const isAssignedToMe = (row: (typeof classifiedRows)[number]) => {
     const assignedId = (row.app as any).assigned_admin_id as string | null
-    return Boolean(currentAdminId && assignedId && assignedId === currentAdminId)
+    return Boolean(currentAdminProfileId && assignedId && assignedId === currentAdminProfileId)
   }
 
-  const myQueueRows = useMemo(() => classifiedRows.filter(isAssignedToMe), [classifiedRows, currentAdminId])
+  const myQueueRows = useMemo(() => classifiedRows.filter(isAssignedToMe), [classifiedRows, currentAdminProfileId])
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim()

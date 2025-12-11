@@ -162,10 +162,23 @@ export default async function AdminPage({ searchParams }: { searchParams?: Recor
 
   const rows = await fetchAdminData()
 
+  // Lookup current admin profile id (assigned_admin_id uses profile.id)
+  const supabase = getSupabaseAdminClient()
+  let currentAdminProfileId: string | null = null
+  if (user?.id) {
+    const { data: meProfile } = await supabase.from("user_profiles").select("id,user_id").eq("user_id", user.id).maybeSingle()
+    currentAdminProfileId = meProfile?.id ?? null
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
       <div className="mx-auto max-w-6xl space-y-6">
-        <AdminDashboardClient rows={rows} currentAdminId={user?.id ?? null} currentAdminEmail={email ?? null} />
+        <AdminDashboardClient
+          rows={rows}
+          currentAdminId={user?.id ?? null}
+          currentAdminEmail={email ?? null}
+          currentAdminProfileId={currentAdminProfileId}
+        />
       </div>
     </div>
   )
