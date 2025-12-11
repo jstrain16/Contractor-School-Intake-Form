@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 const navItems = [
-  { label: "Pricing", href: "/pricing" },
   { label: "Portal Features", href: "#features" },
   { label: "Requirements", href: "#requirements" },
   { label: "Support", href: "#support" },
@@ -80,6 +79,12 @@ export default function HomePage() {
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/pricing"
+              className="rounded-full border border-[#0c5dcc] px-4 py-2 text-[#0c5dcc] shadow-sm hover:bg-[#0c5dcc]/10"
+            >
+              Pricing
+            </Link>
             <Link href="/sign-in" className="rounded-full bg-orange-500 px-4 py-2 text-white shadow-sm shadow-orange-400/40 hover:bg-orange-600">
               Sign In
             </Link>
