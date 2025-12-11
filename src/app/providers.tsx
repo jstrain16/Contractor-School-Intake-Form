@@ -17,6 +17,7 @@ import type { ReactNode } from "react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Bell, Cog, Shield, Users, ArrowLeft } from "lucide-react"
 import ChatWidget from "@/components/chat/ChatWidget"
+import { useNotifications } from "@/hooks/useNotifications"
 
 type ProvidersProps = {
   children: ReactNode
@@ -105,43 +106,34 @@ function GlobalHeader() {
     <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 text-slate-900">
       <div className="flex items-center gap-3">
         {navConfig.showBack && (
-          <Link
+        <Link
             href={navConfig.backHref}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
+          className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
         )}
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm">
           <Users className="h-5 w-5" />
         </div>
         {navConfig.title && (
-          <div>
+        <div>
             <div className="text-base font-semibold text-slate-900">{navConfig.title}</div>
             {navConfig.subtitle && <div className="text-sm text-slate-500">{navConfig.subtitle}</div>}
-          </div>
+        </div>
         )}
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="relative">
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
-            aria-label="Notifications"
-          >
-            <Bell className="h-5 w-5" />
-          </button>
-          <span className="absolute right-2 top-2 block h-2 w-2 rounded-full bg-orange-500" />
-        </div>
+        <NotificationsBell />
         {isAdmin && (
-          <Link
-            href="/admin/settings"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
-            aria-label="Settings"
-          >
-            <Cog className="h-5 w-5" />
-          </Link>
+        <Link
+          href="/admin/settings"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
+          aria-label="Settings"
+        >
+          <Cog className="h-5 w-5" />
+        </Link>
         )}
         <SignedOut>
           <div className="flex items-center gap-2">
@@ -171,6 +163,53 @@ function GlobalHeader() {
         </SignedIn>
       </div>
     </header>
+  )
+}
+
+function NotificationsBell() {
+  const { items, unreadCount, markRead } = useNotifications()
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-slate-700 hover:bg-slate-100"
+        aria-label="Notifications"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && <span className="absolute right-2 top-2 block h-2 w-2 rounded-full bg-orange-500" />}
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
+            <div className="text-sm font-semibold text-slate-800">Notifications</div>
+            <div className="text-xs text-slate-500">{unreadCount} unread</div>
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {items.length === 0 && <div className="px-3 py-4 text-sm text-slate-500">No notifications</div>}
+            {items.map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                onClick={() => {
+                  if (n.id) markRead(n.id)
+                  if (n.link) window.location.href = n.link
+                }}
+                className={`w-full px-3 py-3 text-left hover:bg-slate-50 ${
+                  n.read ? "text-slate-700" : "bg-orange-50/40 text-slate-900"
+                }`}
+              >
+                <div className="text-sm font-semibold">{n.title}</div>
+                {n.message && <div className="text-xs text-slate-600">{n.message}</div>}
+                <div className="mt-1 text-[11px] uppercase tracking-wide text-slate-400">{new Date(n.created_at).toLocaleString()}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

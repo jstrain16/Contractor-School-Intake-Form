@@ -289,14 +289,14 @@ function renderSectionContent(data?: Record<string, unknown> | null) {
   const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined)
   return (
     <div className="space-y-3 text-sm">
-      {entries.length === 0 && <div className="text-slate-600">No responses</div>}
-      {entries.map(([k, v]) => (
+        {entries.length === 0 && <div className="text-slate-600">No responses</div>}
+        {entries.map(([k, v]) => (
         <div key={k} className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
-          <div className="mt-1 text-slate-900">{formatValue(v)}</div>
-        </div>
-      ))}
-    </div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
+            <div className="mt-1 text-slate-900">{formatValue(v)}</div>
+          </div>
+        ))}
+      </div>
   )
 }
 
@@ -522,27 +522,27 @@ export function AdminDashboardClient({
           const colors = accentMap[card.accent] || accentMap.orange
           return (
             <Card key={card.label} className="rounded-xl border border-slate-200 bg-white shadow-sm">
-              <div className="p-5 space-y-3">
+          <div className="p-5 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colors.bg} ${colors.text}`}>
                     <ClipboardList className="h-6 w-6" />
-                  </div>
+          </div>
                   <div className="text-xs font-semibold uppercase text-slate-500">{card.label}</div>
                 </div>
                 <div className="text-4xl font-bold text-slate-900">{card.value}</div>
                 <div className="text-sm text-slate-600">{card.subtitle}</div>
                 {card.delta && <div className={`text-sm font-semibold ${colors.border}`}>{card.delta}</div>}
                 {card.cta && card.ctaLabel && (
-                  <button
-                    type="button"
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+            <button
+              type="button"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
                     onClick={card.cta}
-                  >
+            >
                     {card.ctaLabel}
-                  </button>
+            </button>
                 )}
-              </div>
-            </Card>
+          </div>
+        </Card>
           )
         })}
       </div>
@@ -888,23 +888,23 @@ export function AdminDashboardClient({
                         }}
                       />
                     )}
-                    <StatusIcon />
-                    {expandedSection === section.key ? (
-                      <ChevronUp className="h-4 w-4 text-slate-400" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-slate-400" />
-                    )}
-                  </div>
+                        <StatusIcon />
+                        {expandedSection === section.key ? (
+                          <ChevronUp className="h-4 w-4 text-slate-400" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-slate-400" />
+                        )}
+                      </div>
                     </button>
                     {expandedSection === section.key && (
-                  <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
-                    <AdminSectionBlock
-                      label={section.label}
-                      sectionKey={section.key as keyof WizardData}
-                      applicationId={selected.app.id}
-                      data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                      <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
+                        <AdminSectionBlock
+                          label={section.label}
+                          sectionKey={section.key as keyof WizardData}
+                          applicationId={selected.app.id}
+                          data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
                       simple
-                    >
+                        >
                       {editingSection === section.key ? (
                         renderEditableSection(editFormData, setEditFormData)
                       ) : (
@@ -912,8 +912,8 @@ export function AdminDashboardClient({
                           (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {}
                         )
                       )}
-                    </AdminSectionBlock>
-                  </div>
+                        </AdminSectionBlock>
+                      </div>
                     )}
                   </Card>
                 )

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { createClient } from "@supabase/supabase-js"
 import { WizardData, Step0Data, Step4Data } from "@/lib/schemas"
+import { buildStatus } from "@/lib/progress"
 
 // Default data for a brand-new application; keep licenseType unset so progress starts at 0.
 const EMPTY_DATA: Partial<WizardData> = {
@@ -103,6 +104,21 @@ export async function GET() {
       return NextResponse.json({ error: "Server error", detail: insertError.message }, { status: 500 })
     }
 
+  // notify admins of new application
+  const adminProfiles = await getAdminProfileIds(supabase)
+  if (adminProfiles.length > 0) {
+    const notifRows = adminProfiles.map((pid) => ({
+      recipient_id: pid,
+      title: "New application submitted",
+      message: `New application ${created.id}`,
+      type: "new_application",
+      link: `/admin/application?id=${created.id}`,
+      read: false,
+      created_at: new Date().toISOString(),
+    }))
+    await supabase.from("notifications").insert(notifRows)
+  }
+
     return NextResponse.json({ data: created.data ?? null, applicationId: created.id })
   } catch (err) {
     console.error("GET /api/application error", err)
@@ -177,6 +193,11 @@ export async function POST(req: Request) {
       updated_at: new Date().toISOString(),
     }
 
+    // fetch existing progress for milestone checks
+    const { data: existing } = await supabase.from("contractor_applications").select("data").eq("id", applicationId).maybeSingle()
+    const prevProgress = buildStatus(existing?.data ?? null).progress
+    const newProgress = buildStatus(updates.data as Partial<WizardData>).progress
+
     const { error } = await supabase
       .from("contractor_applications")
       .update(updates)
@@ -186,6 +207,25 @@ export async function POST(req: Request) {
     if (error) {
       console.error("Supabase POST error", error)
       return NextResponse.json({ error: "Server error", detail: error.message }, { status: 500 })
+    }
+
+    // notify admins on milestones crossed (25,50,75,100)
+    const milestones = [25, 50, 75, 100]
+    const crossed = milestones.find((m) => prevProgress < m && newProgress >= m)
+    if (crossed !== undefined) {
+      const adminProfiles = await getAdminProfileIds(supabase)
+      if (adminProfiles.length > 0) {
+        const notifRows = adminProfiles.map((pid) => ({
+          recipient_id: pid,
+          title: `Application reached ${crossed}%`,
+          message: `Application ${applicationId} progressed to ${crossed}%`,
+          type: "milestone",
+          link: `/admin/application?id=${applicationId}`,
+          read: false,
+          created_at: new Date().toISOString(),
+        }))
+        await supabase.from("notifications").insert(notifRows)
+      }
     }
 
     return NextResponse.json({ ok: true })
@@ -202,5 +242,17 @@ function getSupabaseAdmin() {
     throw new Error("Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)")
   }
   return createClient(url, serviceKey)
+}
+
+async function getAdminProfileIds(supabase: ReturnType<typeof getSupabaseAdmin>) {
+  const { data: admins, error } = await supabase
+    .from("user_profiles")
+    .select("id,role")
+    .in("role", ["admin", "super_admin"])
+  if (error) {
+    console.error("admin profile fetch error", error)
+    return []
+  }
+  return (admins || []).map((a) => a.id).filter(Boolean)
 }
 
