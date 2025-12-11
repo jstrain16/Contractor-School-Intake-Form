@@ -125,7 +125,9 @@ function GlobalHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        <NotificationsBell />
+        <SignedIn>
+          <NotificationsBell />
+        </SignedIn>
         {isAdmin && (
         <Link
           href="/admin/settings"

@@ -65,14 +65,9 @@ export default function HomePage() {
       {/* Navigation */}
       <header className="border-b border-slate-200 bg-white/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-orange-400/60 bg-orange-500 text-white shadow-sm">
-              <span className="text-lg font-semibold">CS</span>
-            </div>
-            <div>
-              <div className="text-lg font-bold text-slate-900">CONTRACTORS SCHOOL</div>
-              <div className="text-xs text-slate-600">Licensing Portal</div>
-            </div>
+          <div>
+            <div className="text-lg font-bold text-slate-900">CONTRACTORS SCHOOL</div>
+            <div className="text-xs text-slate-600">Licensing Portal</div>
           </div>
           <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-800 md:flex">
             {navItems.map((item) => (
@@ -80,9 +75,6 @@ export default function HomePage() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/sign-in" className="rounded-full bg-orange-500 px-4 py-2 text-white shadow-sm shadow-orange-400/40 hover:bg-orange-600">
-              Sign In
-            </Link>
           </nav>
         </div>
       </header>
