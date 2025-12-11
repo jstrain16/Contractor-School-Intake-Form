@@ -19,6 +19,14 @@ import { Bell, Cog, Shield, Users, ArrowLeft } from "lucide-react"
 import ChatWidget from "@/components/chat/ChatWidget"
 import { useNotifications } from "@/hooks/useNotifications"
 
+const marketingNavItems = [
+  { label: "Portal Features", href: "/#features" },
+  { label: "Requirements", href: "/#requirements" },
+  { label: "Pricing", href: "/pricing" },
+  { label: "Support", href: "/#support" },
+  { label: "FAQs", href: "/#faqs" },
+]
+
 type ProvidersProps = {
   children: ReactNode
 }
@@ -103,7 +111,7 @@ function GlobalHeader() {
   }, [isAdminSettings, isApplicantFlow])
 
   return (
-    <header className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3 text-slate-900">
+    <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-5 py-3 text-slate-900">
       <div className="flex items-center gap-3">
         {navConfig.showBack && (
         <Link
@@ -122,6 +130,16 @@ function GlobalHeader() {
             {navConfig.subtitle && <div className="text-sm text-slate-500">{navConfig.subtitle}</div>}
         </div>
         )}
+      </div>
+
+      <div className="hidden flex-1 items-center justify-center gap-6 text-sm font-semibold text-slate-800 md:flex">
+        <SignedOut>
+          {marketingNavItems.map((item) => (
+            <Link key={item.label} href={item.href} className="hover:text-slate-500">
+              {item.label}
+            </Link>
+          ))}
+        </SignedOut>
       </div>
 
       <div className="flex items-center gap-3">
