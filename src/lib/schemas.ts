@@ -102,7 +102,8 @@ export const step4Schema = z.object({
   totalYearsExperience: z.number().optional(),
   primaryTrade: z.string().optional(),
   experienceEntries: z.array(experienceEntrySchema).default([]),
-  wantsInsuranceQuote: z.boolean().optional(),
+  hasEmployeeWorkersComp: z.boolean().default(false),
+  wantsInsuranceQuote: z.boolean().default(false),
 })
 
 export const step5Schema = z.object({
