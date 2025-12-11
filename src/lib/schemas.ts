@@ -10,11 +10,8 @@ export const step0Schema = z.object({
   phone: z.string().min(10, "Phone number is required"),
   email: z.string().email("Invalid email"),
   preferredContact: contactMethodSchema.default("email"),
-  // legacy licenseType kept for backwards compatibility; derived from selections
-  licenseType: licenseTypeSchema.optional(),
-  generalLicenses: z.array(z.string()).default([]),
-  specialtyLicenses: z.array(z.string()).max(3, "You can only select up to 3 specialties").default([]),
-  trade: z.string().optional(),
+  licenseType: licenseTypeSchema,
+  trade: z.string().min(1, "Trade is required"),
   hasEmployees: z.boolean().default(false),
   employeeCount: z.number().optional(),
 })
@@ -71,7 +68,6 @@ export const step3Schema = z.object({
   glExpirationDate: z.string().optional(),
   glLimits: z.string().optional(),
   contactInsurancePartner: z.boolean().optional(),
-  insuranceContactRequested: z.boolean().default(false),
   
   hasWorkersComp: z.boolean().default(false),
   wcCarrier: z.string().optional(),
@@ -102,6 +98,7 @@ export const step4Schema = z.object({
   totalYearsExperience: z.number().optional(),
   primaryTrade: z.string().optional(),
   experienceEntries: z.array(experienceEntrySchema).default([]),
+  hasEmployeeWorkersComp: z.boolean().optional(),
   wantsInsuranceQuote: z.boolean().optional(),
 })
 
@@ -111,7 +108,6 @@ export const step5Schema = z.object({
   examLocation: z.string().optional(),
   examPassedDate: z.string().optional(),
   examId: z.string().optional(),
-  planToTakeExam: z.boolean().optional(),
   
   // Files
   examScoreFile: z.any().optional(),
@@ -120,7 +116,6 @@ export const step5Schema = z.object({
 export const step6Schema = z.object({
   doplAppCompleted: z.boolean().default(false),
   reviewRequested: z.boolean().default(false),
-  doplDeliveryAck: z.boolean().optional(),
   
   // Files
   doplAppFile: z.any().optional(),

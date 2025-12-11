@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { step3Schema, Step3Data, Step3FormValues } from "@/lib/schemas"
@@ -9,13 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { UploadField } from "@/components/wizard/UploadField"
-import { HelpCircle } from "lucide-react"
-import { useChatWidget } from "@/hooks/useChatWidget"
 
 export function Step3() {
-  const { data, updateData, nextStep, prevStep, applicationId } = useWizardStore()
-  const { openWithPrompt } = useChatWidget()
+  const { data, updateData, nextStep, prevStep } = useWizardStore()
   const hasEmployees = data.step0?.hasEmployees
 
   const form = useForm<Step3FormValues>({
@@ -27,8 +22,6 @@ export function Step3() {
       glEffectiveDate: data.step3?.glEffectiveDate || "",
       glExpirationDate: data.step3?.glExpirationDate || "",
       glLimits: data.step3?.glLimits || "",
-      contactInsurancePartner: data.step3?.contactInsurancePartner || false,
-      insuranceContactRequested: data.step3?.insuranceContactRequested || false,
       
       hasWorkersComp: data.step3?.hasWorkersComp || false,
       wcCarrier: data.step3?.wcCarrier || "",
@@ -43,46 +36,6 @@ export function Step3() {
   const hasGl = form.watch("hasGlInsurance")
   const hasWc = form.watch("hasWorkersComp")
   const hasWaiver = form.watch("hasWcWaiver")
-  const wantsInsuranceContact = form.watch("contactInsurancePartner")
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState<boolean>(data.step3?.insuranceContactRequested || false)
-
-  useEffect(() => {
-    const alreadyRequested = sent || data.step3?.insuranceContactRequested
-    if (wantsInsuranceContact && !alreadyRequested && !sending) {
-      void sendInsuranceWebhook()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wantsInsuranceContact])
-
-  const sendInsuranceWebhook = async () => {
-    try {
-      setSending(true)
-      const payload = {
-        applicationId,
-        step0: data.step0,
-        step3: { ...form.getValues(), contactInsurancePartner: true },
-        step4: data.step4,
-      }
-      const res = await fetch("/api/webhook/insurance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) {
-        const detail = await res.text()
-        throw new Error(detail || "Webhook failed")
-      }
-      updateData("step3", { contactInsurancePartner: true, insuranceContactRequested: true })
-      setSent(true)
-    } catch (err) {
-      console.error("Insurance webhook error", err)
-      alert("Could not send your request to Integrated Insurance Solutions. Please try again.")
-      form.setValue("contactInsurancePartner", false)
-    } finally {
-      setSending(false)
-    }
-  }
 
   const onSubmit = (values: Step3FormValues) => {
     const parsed: Step3Data = step3Schema.parse(values)
@@ -93,17 +46,7 @@ export function Step3() {
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span>Insurance & Workers Compensation</span>
-          <button
-            type="button"
-            onClick={() => openWithPrompt("What type of insurance do I need for my contractor business?")}
-            className="text-slate-500 hover:text-slate-700"
-            aria-label="Ask about insurance requirements"
-          >
-            <HelpCircle className="h-4 w-4" />
-          </button>
-        </CardTitle>
+        <CardTitle>Insurance & Workers Compensation</CardTitle>
       </CardHeader>
       <CardContent>
         <form id="step3-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -123,13 +66,10 @@ export function Step3() {
 
             {hasGl && (
               <div className="space-y-4 pl-4 border-l-2 border-slate-200">
-                <UploadField
-                  label="Upload General Liability Certificate (COI)"
-                  step={3}
-                  fileType="gl_certificate"
-                  applicationId={applicationId}
-                  accept=".pdf,.jpg,.png"
-                />
+                <div className="space-y-2">
+                   <Label>Upload General Liability Certificate (COI)</Label>
+                   <Input type="file" accept=".pdf,.jpg,.png" />
+                </div>
               </div>
             )}
             {!hasGl && (
@@ -143,9 +83,6 @@ export function Step3() {
                   />
                   <span>Yes, please have Integrated Insurance Solutions reach out.</span>
                 </label>
-                {sent && (
-                  <p className="text-xs text-green-700">Request sent. We will reach out soon.</p>
-                )}
               </div>
             )}
           </div>
@@ -189,13 +126,10 @@ export function Step3() {
                           <Input id="wcExpirationDate" type="date" {...form.register("wcExpirationDate")} />
                         </div>
                       </div>
-                      <UploadField
-                        label="Upload Workers Comp Certificate"
-                        step={3}
-                        fileType="wc_certificate"
-                        applicationId={applicationId}
-                        accept=".pdf,.jpg,.png"
-                      />
+                      <div className="space-y-2">
+                        <Label>Upload Workers Comp Certificate</Label>
+                        <Input type="file" accept=".pdf,.jpg,.png" />
+                      </div>
                     </div>
                  )}
 
@@ -231,13 +165,8 @@ export function Step3() {
 
                 {hasWaiver ? (
                   <div className="space-y-2 pl-4 border-l-2 border-slate-200">
-                    <UploadField
-                      label="Upload Workers Comp Waiver"
-                      step={3}
-                      fileType="wc_waiver"
-                      applicationId={applicationId}
-                      accept=".pdf,.jpg,.png"
-                    />
+                    <Label>Upload Workers Comp Waiver</Label>
+                    <Input type="file" accept=".pdf,.jpg,.png" />
                   </div>
                 ) : (
                   <div className="p-4 bg-yellow-50 text-yellow-800 rounded-md text-sm">
