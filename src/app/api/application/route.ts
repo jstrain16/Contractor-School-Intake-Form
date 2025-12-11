@@ -104,20 +104,21 @@ export async function GET() {
       return NextResponse.json({ error: "Server error", detail: insertError.message }, { status: 500 })
     }
 
-  // notify admins of new application
-  const adminProfiles = await getAdminProfileIds(supabase)
-  if (adminProfiles.length > 0) {
-    const notifRows = adminProfiles.map((pid) => ({
-      recipient_id: pid,
-      title: "New application submitted",
-      message: `New application ${created.id}`,
-      type: "new_application",
-      link: `/admin/application?id=${created.id}`,
-      read: false,
-      created_at: new Date().toISOString(),
-    }))
-    await supabase.from("notifications").insert(notifRows)
-  }
+    // notify admins of new application (use applicant name instead of UUID)
+    const applicantName = await getApplicantDisplayName(supabase, clerkUserId)
+    const adminProfiles = await getAdminProfileIds(supabase)
+    if (adminProfiles.length > 0) {
+      const notifRows = adminProfiles.map((pid) => ({
+        recipient_id: pid,
+        title: "New application submitted",
+        message: applicantName ? `New application from ${applicantName}` : "New application submitted",
+        type: "new_application",
+        link: `/admin/application?id=${created.id}`,
+        read: false,
+        created_at: new Date().toISOString(),
+      }))
+      await supabase.from("notifications").insert(notifRows)
+    }
 
     return NextResponse.json({ data: created.data ?? null, applicationId: created.id })
   } catch (err) {
@@ -213,12 +214,15 @@ export async function POST(req: Request) {
     const milestones = [25, 50, 75, 100]
     const crossed = milestones.find((m) => prevProgress < m && newProgress >= m)
     if (crossed !== undefined) {
+      const applicantName = await getApplicantDisplayName(supabase, clerkUserId)
       const adminProfiles = await getAdminProfileIds(supabase)
       if (adminProfiles.length > 0) {
         const notifRows = adminProfiles.map((pid) => ({
           recipient_id: pid,
           title: `Application reached ${crossed}%`,
-          message: `Application ${applicationId} progressed to ${crossed}%`,
+          message: applicantName
+            ? `${applicantName} progressed to ${crossed}%`
+            : `Application progressed to ${crossed}%`,
           type: "milestone",
           link: `/admin/application?id=${applicationId}`,
           read: false,
@@ -244,15 +248,34 @@ function getSupabaseAdmin() {
   return createClient(url, serviceKey)
 }
 
-async function getAdminProfileIds(supabase: ReturnType<typeof getSupabaseAdmin>) {
-  const { data: admins, error } = await supabase
+async function getApplicantDisplayName(supabase: ReturnType<typeof getSupabaseAdmin>, clerkUserId: string) {
+  const { data: profile } = await supabase
     .from("user_profiles")
-    .select("id,role")
-    .in("role", ["admin", "super_admin"])
+    .select("first_name,last_name,email")
+    .eq("user_id", clerkUserId)
+    .maybeSingle()
+  const name = [profile?.first_name, profile?.last_name].filter(Boolean).join(" ").trim()
+  return name || profile?.email || "New applicant"
+}
+
+async function getAdminProfileIds(supabase: ReturnType<typeof getSupabaseAdmin>) {
+  const { data: admins, error } = await supabase.from("user_profiles").select("id,role")
   if (error) {
     console.error("admin profile fetch error", error)
     return []
   }
-  return (admins || []).map((a) => a.id).filter(Boolean)
+  const normalizeRole = (val?: string | null) => {
+    const raw = (val || "").toLowerCase().trim().replace(/[\s-]+/g, "_")
+    if (raw === "super_admin" || raw === "superadmin") return "super_admin"
+    if (raw === "admin") return "admin"
+    return ""
+  }
+  return (admins || [])
+    .filter((a) => {
+      const r = normalizeRole(a.role)
+      return r === "admin" || r === "super_admin"
+    })
+    .map((a) => a.id)
+    .filter(Boolean)
 }
 
