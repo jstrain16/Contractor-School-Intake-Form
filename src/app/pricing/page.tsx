@@ -114,28 +114,6 @@ const faqs = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
-      {/* Nav */}
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-orange-400/60 bg-orange-500 text-white shadow-sm">
-              <span className="text-lg font-semibold">CS</span>
-            </div>
-            <div>
-              <div className="text-lg font-bold text-slate-900">CONTRACTORS SCHOOL</div>
-              <div className="text-xs text-slate-600">Application Services</div>
-            </div>
-          </Link>
-          <div className="hidden items-center gap-3 text-sm font-semibold text-slate-800 md:flex">
-            <Link href="/" className="hover:text-slate-500">Home</Link>
-            <Link href="/pricing" className="text-orange-600">Pricing</Link>
-            <Link href="/application" className="rounded-full bg-orange-500 px-4 py-2 text-white shadow-sm shadow-orange-400/40 hover:bg-orange-600">
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero */}
       <section className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
         <div className="mx-auto max-w-5xl px-4 py-16 text-center">
