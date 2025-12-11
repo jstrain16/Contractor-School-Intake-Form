@@ -29,10 +29,17 @@ export type MissingStep = {
 
 export function buildStatus(data: Partial<WizardData> | null | undefined): StatusSummary {
   const d = data || {}
-  const hasGeneral =
-    (d.step0?.generalLicenses && d.step0.generalLicenses.length > 0) || d.step0?.licenseType === "general"
-  const hasSpecialty =
-    (d.step0?.specialtyLicenses && d.step0.specialtyLicenses.length > 0) || d.step0?.licenseType === "specialty"
+  const hasAnyLicenseSelection =
+    !!d.step0?.licenseType ||
+    (d.step0?.generalLicenses?.length ?? 0) > 0 ||
+    (d.step0?.specialtyLicenses?.length ?? 0) > 0
+  const hasGeneralSelection =
+    d.step0?.licenseType === "general" || (d.step0?.generalLicenses?.length ?? 0) > 0
+  const hasSpecialtySelection =
+    d.step0?.licenseType === "specialty" || (d.step0?.specialtyLicenses?.length ?? 0) > 0
+
+  const experienceWeight = hasAnyLicenseSelection ? PROGRESS_WEIGHTS.remainder / 2 : 0
+  const examWeight = hasGeneralSelection ? PROGRESS_WEIGHTS.remainder / 2 : 0
 
   const items: StatusItem[] = [
     {
@@ -80,15 +87,17 @@ export function buildStatus(data: Partial<WizardData> | null | undefined): Statu
     },
     {
       label: "Experience / Qualifier",
-      started: (d.step4?.experienceEntries?.length ?? 0) > 0 || d.step4?.hasExperience === true,
-      done: hasGeneral ? !!d.step4?.hasExperience : true,
-      weight: PROGRESS_WEIGHTS.remainder / 2,
+      started:
+        hasAnyLicenseSelection &&
+        ((d.step4?.experienceEntries?.length ?? 0) > 0 || d.step4?.hasExperience === true),
+      done: hasAnyLicenseSelection ? !!d.step4?.hasExperience : false,
+      weight: experienceWeight,
     },
     {
       label: "Business & Law Exam",
-      started: hasGeneral ? !!(d.step5?.examStatus && d.step5.examStatus !== "not_scheduled") : false,
-      done: hasGeneral ? d.step5?.examStatus === "passed" : true,
-      weight: hasGeneral ? PROGRESS_WEIGHTS.remainder / 2 : 0,
+      started: hasGeneralSelection ? !!(d.step5?.examStatus && d.step5.examStatus !== "not_scheduled") : false,
+      done: hasGeneralSelection ? d.step5?.examStatus === "passed" : false,
+      weight: examWeight,
     },
     {
       label: "DOPL Application",
