@@ -60,6 +60,7 @@ export function SupportingMaterialsInline() {
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [view, setView] = useState<"hub" | { type: "section"; category: string } | { type: "detail"; incidentId: string }>("hub")
   const [creatingCategory, setCreatingCategory] = useState<string | null>(null)
+  const [createError, setCreateError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -152,8 +153,13 @@ export function SupportingMaterialsInline() {
   }
 
   const handleAddIncident = async (category: string) => {
-    if (!applicationId) return
+    if (!applicationId) {
+      setCreateError("Application not found. Please reload.")
+      return
+    }
+    setCreateError(null)
     setCreatingCategory(category)
+    const prevCategoryIds = new Set(incidents.filter((i) => i.category === category).map((i) => i.id))
     try {
       const defaultSubtype =
         category === "BACKGROUND"
@@ -173,15 +179,13 @@ export function SupportingMaterialsInline() {
         throw new Error(msg?.detail || msg?.error || "Failed to create incident")
       }
       const json = await res.json().catch(() => ({}))
-      await refreshHub()
+      const refreshedIncidents = await refreshHub()
 
       let newId = json?.incident?.id as string | undefined
       if (!newId) {
-        // fallback: pick most recent incident in category after refresh
-        const catIncidents = incidents.filter((i) => i.category === category)
-        if (catIncidents.length > 0) {
-          newId = catIncidents[catIncidents.length - 1]?.id
-        }
+        const catIncidents = refreshedIncidents.filter((i: Incident) => i.category === category)
+        const newest = catIncidents.find((i: Incident) => !prevCategoryIds.has(i.id))
+        newId = newest?.id ?? catIncidents[catIncidents.length - 1]?.id
       }
 
       if (newId) {
@@ -191,18 +195,19 @@ export function SupportingMaterialsInline() {
       }
     } catch (err) {
       console.error(err)
-      alert("Could not add item. Please try again.")
+      setCreateError(err instanceof Error ? err.message : "Could not add item. Please try again.")
     } finally {
       setCreatingCategory(null)
     }
   }
 
   const refreshHub = async () => {
-    if (!applicationId) return
+    if (!applicationId) return []
     const hubRes = await fetch(`/api/supporting-materials/${applicationId}`, { cache: "no-store" })
     const hubJson = await hubRes.json()
     setIncidents(hubJson.incidents ?? [])
     setSlots(hubJson.slots ?? [])
+    return hubJson.incidents ?? []
   }
 
   if (loading) return <div className="p-6 text-sm text-slate-600">Loading supporting materials...</div>
@@ -316,6 +321,7 @@ export function SupportingMaterialsInline() {
   return (
     <div className="space-y-4">
       {currentView}
+      {createError && <div className="text-sm text-red-600">{createError}</div>}
       <div className="mt-4 flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => router.push("/onboarding/screening")}>
           Return to Questions
