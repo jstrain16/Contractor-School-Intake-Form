@@ -58,6 +58,7 @@ export function SupportingMaterialsInline() {
   const [detailSlots, setDetailSlots] = useState<Slot[]>([])
   const [detailFiles, setDetailFiles] = useState<Record<string, FileRow[]>>({})
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [syncingIncidents, setSyncingIncidents] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -69,10 +70,15 @@ export function SupportingMaterialsInline() {
         if (!appJson?.applicationId) return
         setApplicationId(appJson.applicationId)
 
-        const hubRes = await fetch(`/api/supporting-materials/${appJson.applicationId}`, { cache: "no-store" })
-        const hubJson = await hubRes.json()
-        setIncidents(hubJson.incidents ?? [])
-        setSlots(hubJson.slots ?? [])
+        const refreshData = async () => {
+          const hubRes = await fetch(`/api/supporting-materials/${appJson.applicationId}`, { cache: "no-store" })
+          const hubJson = await hubRes.json()
+          setIncidents(hubJson.incidents ?? [])
+          setSlots(hubJson.slots ?? [])
+        }
+
+        await refreshData()
+        await ensureIncidentsFromScreening(appJson.applicationId, incidents, refreshData)
       } catch (err) {
         console.error(err)
       } finally {
@@ -80,6 +86,7 @@ export function SupportingMaterialsInline() {
       }
     }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const grouped = useMemo(() => {
@@ -140,6 +147,56 @@ export function SupportingMaterialsInline() {
 
   const selectedIncident = incidents.find((i) => i.id === selectedIncidentId) || null
 
+  async function ensureIncidentsFromScreening(
+    appId: string,
+    currentIncidents: Incident[],
+    refreshData: () => Promise<void>
+  ) {
+    setSyncingIncidents(true)
+    try {
+      const screenRes = await fetch(`/api/application/${appId}/screen4`, { cache: "no-store" })
+      if (!screenRes.ok) return
+      const screenJson = await screenRes.json()
+      const responses = screenJson.responses ?? {}
+
+      const needsBackground =
+        responses.pending_legal_matters === true ||
+        responses.misdemeanor_10yr === true ||
+        responses.felony_ever === true
+      const needsDiscipline = responses.prior_discipline === true
+      const needsFinancial = responses.financial_items_8yr === true
+      const needsBankruptcy = responses.bankruptcy_7yr === true
+
+      const requiredCategories = [
+        needsBackground ? "BACKGROUND" : null,
+        needsDiscipline ? "DISCIPLINE" : null,
+        needsFinancial ? "FINANCIAL" : null,
+        needsBankruptcy ? "BANKRUPTCY" : null,
+      ].filter(Boolean) as string[]
+
+      const hasCategory = (cat: string) => currentIncidents.some((i) => i.category === cat && i.is_active !== false)
+
+      let created = false
+      for (const cat of requiredCategories) {
+        if (hasCategory(cat)) continue
+        await fetch("/api/incidents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ applicationId: appId, category: cat }),
+        })
+        created = true
+      }
+
+      if (created) {
+        await refreshData()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSyncingIncidents(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       <header className="flex items-start justify-between">
@@ -167,6 +224,7 @@ export function SupportingMaterialsInline() {
             <span className="flex size-5 items-center justify-center rounded-full bg-white text-[#f54900]">+</span>
             <span className="text-sm font-semibold leading-none">Add Background Review Item</span>
           </button>
+          {syncingIncidents && <span className="text-xs text-slate-500">Syncing incidents from screening…</span>}
         </div>
       </div>
 
