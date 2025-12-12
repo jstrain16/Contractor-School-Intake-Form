@@ -76,3 +76,27 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ incidentI
   }
 }
 
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ incidentId: string }> }) {
+  try {
+    const { incidentId } = await ctx.params
+    const { userId } = await clerkAuth()
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const supabase = getSupabaseAdminClient()
+    const applicationId = await incidentOwnedByUser(supabase, incidentId, userId)
+    if (!applicationId) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+    const { data, error } = await supabase.from("incidents").select("*").eq("id", incidentId).maybeSingle()
+    if (error) {
+      console.error("incident fetch error", error)
+      return NextResponse.json({ error: "Server error", detail: error.message }, { status: 500 })
+    }
+    if (!data) return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+    return NextResponse.json({ incident: data })
+  } catch (err) {
+    console.error("GET /api/incidents/[incidentId] error", err)
+    return NextResponse.json({ error: "Server error" }, { status: 500 })
+  }
+}
+

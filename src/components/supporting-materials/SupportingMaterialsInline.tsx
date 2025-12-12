@@ -55,6 +55,7 @@ export function SupportingMaterialsInline() {
   const [slots, setSlots] = useState<Slot[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null)
+  const [selectedIncidentData, setSelectedIncidentData] = useState<Incident | null>(null)
   const [detailSlots, setDetailSlots] = useState<Slot[]>([])
   const [detailFiles, setDetailFiles] = useState<Record<string, FileRow[]>>({})
   const [loadingDetail, setLoadingDetail] = useState(false)
@@ -125,9 +126,18 @@ export function SupportingMaterialsInline() {
 
   const handleOpenIncident = async (incidentId: string) => {
     setSelectedIncidentId(incidentId)
+    setSelectedIncidentData(null)
     setView({ type: "detail", incidentId })
     setLoadingDetail(true)
     try {
+      const incidentRes = await fetch(`/api/incidents/${incidentId}`, { cache: "no-store" })
+      if (incidentRes.ok) {
+        const json = await incidentRes.json().catch(() => ({}))
+        if (json?.incident) {
+          setSelectedIncidentData(json.incident as Incident)
+        }
+      }
+
       const resSlots = await fetch(`/api/incidents/${incidentId}/slots`, { cache: "no-store" })
       const jsonSlots = await resSlots.json()
       const slotsData: Slot[] = jsonSlots.slots ?? []
@@ -217,6 +227,7 @@ export function SupportingMaterialsInline() {
   if (!applicationId) return <div className="p-6 text-sm text-slate-600">No application found.</div>
 
   const selectedIncident = incidents.find((i) => i.id === selectedIncidentId) || null
+  const activeIncident = selectedIncidentData || selectedIncident || null
 
   const hubView = (
     <div className="space-y-4">
@@ -308,14 +319,14 @@ export function SupportingMaterialsInline() {
           onAddIncident={() => handleAddIncident(view.category)}
           creating={creatingCategory === view.category}
       />
-    ) : selectedIncident ? (
+    ) : activeIncident ? (
       <IncidentDetailInline
-        incident={selectedIncident}
+        incident={activeIncident}
         slots={detailSlots}
         files={detailFiles}
         loading={loadingDetail}
-        onBack={() => setView({ type: "section", category: selectedIncident.category })}
-        onRefresh={() => handleOpenIncident(selectedIncident.id)}
+        onBack={() => setView({ type: "section", category: activeIncident.category })}
+        onRefresh={() => handleOpenIncident(activeIncident.id)}
       />
     ) : (
       hubView
