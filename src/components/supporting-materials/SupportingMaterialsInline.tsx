@@ -75,10 +75,11 @@ export function SupportingMaterialsInline() {
           const hubJson = await hubRes.json()
           setIncidents(hubJson.incidents ?? [])
           setSlots(hubJson.slots ?? [])
+          return hubJson.incidents ?? []
         }
 
-        await refreshData()
-        await ensureIncidentsFromScreening(appJson.applicationId, incidents, refreshData)
+        const initialIncidents = await refreshData()
+        await ensureIncidentsFromScreening(appJson.applicationId, initialIncidents, refreshData)
       } catch (err) {
         console.error(err)
       } finally {
@@ -150,7 +151,7 @@ export function SupportingMaterialsInline() {
   async function ensureIncidentsFromScreening(
     appId: string,
     currentIncidents: Incident[],
-    refreshData: () => Promise<void>
+    refreshData: () => Promise<Incident[]>
   ) {
     setSyncingIncidents(true)
     try {
