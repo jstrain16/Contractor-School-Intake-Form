@@ -13,6 +13,10 @@ import { Step4 } from "@/components/wizard/Step4"
 import { Step5 } from "@/components/wizard/Step5"
 import { Step6 } from "@/components/wizard/Step6"
 import { Step7 } from "@/components/wizard/Step7"
+import { StepClass } from "@/components/wizard/StepClass"
+import { StepScreeningInline } from "@/components/wizard/StepScreeningInline"
+import { StepAssistanceInline } from "@/components/wizard/StepAssistanceInline"
+import { StepPlaceholder } from "@/components/wizard/StepPlaceholder"
 import { fetchWizardData, saveWizardData } from "@/lib/wizard-api"
 
 export default function WizardPage() {
@@ -174,15 +178,23 @@ export default function WizardPage() {
   if (loadingServerData) return <div className="p-8 text-center">Loading your saved data...</div>
 
   const steps = [
-    { component: Step0, label: "Account" },
-    { component: Step0License, label: "Licenses" },
-    { component: Step1, label: "Education" },
-    { component: Step2, label: "Business" },
-    { component: Step3, label: "Insurance" },
-    { component: Step4, label: "Experience" },
-    { component: Step5, label: "Exams" },
-    { component: Step6, label: "DOPL" },
-    { component: Step7, label: "Review" },
+    { component: Step0, label: "Account" }, // Phase 1
+    { component: Step0License, label: "Licenses" }, // Phase 2
+    { component: StepClass, label: "Class" }, // Phase 3
+    { component: StepScreeningInline, label: "Screening" }, // Phase 4
+    { component: StepAssistanceInline, label: "Assistance" }, // Phase 5
+    { component: Step2, label: "Business" }, // Phase 6
+    { component: StepPlaceholder, label: "FEIN" }, // Phase 7
+    { component: StepPlaceholder, label: "Bank" }, // Phase 8
+    { component: StepPlaceholder, label: "Owners" }, // Phase 9
+    { component: Step3, label: "Workers Comp" }, // Phase 10
+    { component: StepPlaceholder, label: "Qualifier" }, // Phase 11
+    { component: StepPlaceholder, label: "Insurance Prep" }, // Phase 12
+    { component: StepPlaceholder, label: "Waiver Prep" }, // Phase 13
+    { component: StepPlaceholder, label: "Class Complete" }, // Phase 14
+    { component: Step5, label: "Exam" }, // Phase 15
+    { component: StepPlaceholder, label: "Insurance Active" }, // Phase 16
+    { component: StepPlaceholder, label: "Waiver/Submit" }, // Phase 17
   ]
 
   const CurrentComponent = steps[currentStep]?.component || Step0

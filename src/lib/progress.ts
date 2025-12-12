@@ -1,12 +1,24 @@
 import { WizardData } from "@/lib/schemas"
 
+// Simplified weight map for 17 phases; adjust as fidelity increases.
 export const PROGRESS_WEIGHTS = {
-  education: 30, // 25/30-hour course + business & law exam for general
-  entity: 10,
-  bank: 10,
-  gl: 20,
-  wc: 20,
-  remainder: 10, // experience + exam
+  phase1: 5,
+  phase2: 5,
+  phase3: 5,
+  phase4: 10,
+  phase5: 5,
+  phase6: 5,
+  phase7: 5,
+  phase8: 5,
+  phase9: 10,
+  phase10: 10,
+  phase11: 5,
+  phase12: 5,
+  phase13: 5,
+  phase14: 5,
+  phase15: 5,
+  phase16: 5,
+  phase17: 5,
 }
 
 export type StatusItem = {
@@ -27,95 +39,32 @@ export type MissingStep = {
   hint: string
 }
 
-export function buildStatus(data: Partial<WizardData> | null | undefined): StatusSummary {
-  const d = data || {}
-  const hasAnyLicenseSelection =
-    !!d.step0?.licenseType ||
-    (d.step0?.generalLicenses?.length ?? 0) > 0 ||
-    (d.step0?.specialtyLicenses?.length ?? 0) > 0
-  const hasGeneralSelection =
-    d.step0?.licenseType === "general" || (d.step0?.generalLicenses?.length ?? 0) > 0
-  const hasSpecialtySelection =
-    d.step0?.licenseType === "specialty" || (d.step0?.specialtyLicenses?.length ?? 0) > 0
-
-  const experienceWeight = hasAnyLicenseSelection ? PROGRESS_WEIGHTS.remainder / 2 : 0
-  const examWeight = hasGeneralSelection ? PROGRESS_WEIGHTS.remainder / 2 : 0
-
+export function buildStatus(_data: Partial<WizardData> | null | undefined): StatusSummary {
+  // Placeholder: treat each phase as equal weight completion gates based on minimal fields.
+  // TODO: refine completion criteria per phase.
   const items: StatusItem[] = [
-    {
-      label: "Education",
-      started:
-        !!d.step1?.preLicensureCompleted ||
-        !!d.step1?.courseProvider ||
-        !!d.step1?.dateCompleted ||
-        (d.step1?.exemptions?.length ?? 0) > 0,
-      done: !!d.step1?.preLicensureCompleted || (d.step1?.exemptions?.length ?? 0) > 0,
-      weight: PROGRESS_WEIGHTS.education,
-    },
-    {
-      label: "Entity",
-      started: !!d.step2?.hasEntityRegistered || !!d.step2?.legalBusinessName || !!d.step2?.federalEin,
-      done: !!d.step2?.legalBusinessName && !!d.step2?.federalEin,
-      weight: PROGRESS_WEIGHTS.entity,
-    },
-    {
-      label: "Business Bank Account",
-      started: d.step2?.hasBusinessBankAccount === true || !!d.step2?.voidedCheckFile,
-      done: !!d.step2?.hasBusinessBankAccount,
-      weight: PROGRESS_WEIGHTS.bank,
-    },
-    {
-      label: "General Liability",
-      started:
-        d.step3?.hasGlInsurance === true ||
-        !!d.step3?.glCarrier ||
-        !!d.step3?.glPolicyNumber ||
-        !!d.step3?.glEffectiveDate ||
-        !!d.step3?.glExpirationDate,
-      done: d.step3?.hasGlInsurance === true,
-      weight: PROGRESS_WEIGHTS.gl,
-    },
-    {
-      label: "Workers Compensation",
-      started:
-        d.step3?.hasWorkersComp === true ||
-        d.step3?.hasWcWaiver === true ||
-        !!d.step3?.wcCarrier ||
-        !!d.step3?.wcPolicyNumber,
-      done: d.step0?.hasEmployees ? d.step3?.hasWorkersComp === true : d.step3?.hasWcWaiver === true,
-      weight: PROGRESS_WEIGHTS.wc,
-    },
-    {
-      label: "Experience / Qualifier",
-      started:
-        hasAnyLicenseSelection &&
-        ((d.step4?.experienceEntries?.length ?? 0) > 0 || d.step4?.hasExperience === true),
-      done: hasAnyLicenseSelection ? !!d.step4?.hasExperience : false,
-      weight: experienceWeight,
-    },
-    {
-      label: "Business & Law Exam",
-      started: hasGeneralSelection ? !!(d.step5?.examStatus && d.step5.examStatus !== "not_scheduled") : false,
-      done: hasGeneralSelection ? d.step5?.examStatus === "passed" : false,
-      weight: examWeight,
-    },
-    {
-      label: "DOPL Application",
-      started: !!d.step6?.doplAppCompleted || !!d.step6?.reviewRequested,
-      done: d.step6?.doplAppCompleted === true,
-      weight: PROGRESS_WEIGHTS.remainder / 2,
-    },
+    { label: "Account", started: true, done: false, weight: PROGRESS_WEIGHTS.phase1 },
+    { label: "Licenses", started: true, done: false, weight: PROGRESS_WEIGHTS.phase2 },
+    { label: "Class", started: true, done: false, weight: PROGRESS_WEIGHTS.phase3 },
+    { label: "Screening", started: true, done: false, weight: PROGRESS_WEIGHTS.phase4 },
+    { label: "Assistance", started: true, done: false, weight: PROGRESS_WEIGHTS.phase5 },
+    { label: "Business", started: true, done: false, weight: PROGRESS_WEIGHTS.phase6 },
+    { label: "FEIN", started: false, done: false, weight: PROGRESS_WEIGHTS.phase7 },
+    { label: "Bank", started: false, done: false, weight: PROGRESS_WEIGHTS.phase8 },
+    { label: "Owners", started: false, done: false, weight: PROGRESS_WEIGHTS.phase9 },
+    { label: "Workers Comp", started: false, done: false, weight: PROGRESS_WEIGHTS.phase10 },
+    { label: "Qualifier", started: false, done: false, weight: PROGRESS_WEIGHTS.phase11 },
+    { label: "Insurance Prep", started: false, done: false, weight: PROGRESS_WEIGHTS.phase12 },
+    { label: "Waiver Prep", started: false, done: false, weight: PROGRESS_WEIGHTS.phase13 },
+    { label: "Class Complete", started: false, done: false, weight: PROGRESS_WEIGHTS.phase14 },
+    { label: "Exam", started: false, done: false, weight: PROGRESS_WEIGHTS.phase15 },
+    { label: "Insurance Active", started: false, done: false, weight: PROGRESS_WEIGHTS.phase16 },
+    { label: "Waiver/Submit", started: false, done: false, weight: PROGRESS_WEIGHTS.phase17 },
   ]
-
   const rawTotal = items.reduce((sum, item) => sum + item.weight, 0)
   const rawCompleted = items.filter((i) => i.done).reduce((sum, item) => sum + item.weight, 0)
   const progress = rawTotal > 0 ? Math.round((rawCompleted / rawTotal) * 100) : 0
-
-  return {
-    items,
-    progress,
-    nextUp: items.find((s) => !s.done)?.label ?? "Review & Submit",
-  }
+  return { items, progress, nextUp: items.find((s) => !s.done)?.label ?? "Review & Submit" }
 }
 
 export function getMissingSteps(data: Partial<WizardData> | null | undefined): MissingStep[] {
