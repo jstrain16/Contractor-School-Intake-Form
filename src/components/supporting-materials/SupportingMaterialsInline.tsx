@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { IncidentDetailInline } from "./IncidentDetailInline"
 
 type Incident = {
   id: string
@@ -17,6 +18,14 @@ type Slot = {
   incident_id: string
   slot_code: string
   status: string
+}
+
+type FileRow = {
+  id: string
+  system_filename: string
+  version: number
+  uploaded_at?: string
+  is_active: boolean
 }
 
 const CATEGORY_ORDER = ["BACKGROUND", "DISCIPLINE", "FINANCIAL", "BANKRUPTCY"] as const
@@ -45,6 +54,10 @@ export function SupportingMaterialsInline() {
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [slots, setSlots] = useState<Slot[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null)
+  const [detailSlots, setDetailSlots] = useState<Slot[]>([])
+  const [detailFiles, setDetailFiles] = useState<Record<string, FileRow[]>>({})
+  const [loadingDetail, setLoadingDetail] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -99,8 +112,33 @@ export function SupportingMaterialsInline() {
       ? PILL_COLOR.info
       : PILL_COLOR.warning
 
+  const handleOpenIncident = async (incidentId: string) => {
+    setSelectedIncidentId(incidentId)
+    setLoadingDetail(true)
+    try {
+      const resSlots = await fetch(`/api/incidents/${incidentId}/slots`, { cache: "no-store" })
+      const jsonSlots = await resSlots.json()
+      const slotsData: Slot[] = jsonSlots.slots ?? []
+      setDetailSlots(slotsData)
+
+      const groupedFiles: Record<string, FileRow[]> = {}
+      for (const slot of slotsData) {
+        const resFiles = await fetch(`/api/slots/${slot.id}/files`, { cache: "no-store" })
+        const jsonFiles = await resFiles.json()
+        groupedFiles[slot.id] = jsonFiles.files ?? []
+      }
+      setDetailFiles(groupedFiles)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingDetail(false)
+    }
+  }
+
   if (loading) return <div className="p-6 text-sm text-slate-600">Loading supporting materials...</div>
   if (!applicationId) return <div className="p-6 text-sm text-slate-600">No application found.</div>
+
+  const selectedIncident = incidents.find((i) => i.id === selectedIncidentId) || null
 
   return (
     <div className="space-y-4">
@@ -117,6 +155,20 @@ export function SupportingMaterialsInline() {
           Missing {totalMissing} required item{totalMissing === 1 ? "" : "s"} — Please complete all required items to continue with your application.
         </div>
       )}
+
+      <div className="rounded-xl border border-slate-200 bg-[#f7f8fb] p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            className="relative flex items-center gap-2 rounded-lg px-5 py-3 text-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
+            style={{ background: "linear-gradient(90deg, #ff6900 0%, #f54900 100%)" }}
+            onClick={() => alert("Add background review item coming soon")}
+          >
+            <span className="flex size-5 items-center justify-center rounded-full bg-white text-[#f54900]">+</span>
+            <span className="text-sm font-semibold leading-none">Add Background Review Item</span>
+          </button>
+        </div>
+      </div>
 
       <div className="space-y-4">
         {CATEGORY_ORDER.map((cat) => {
@@ -142,22 +194,81 @@ export function SupportingMaterialsInline() {
                       {data.missing} missing
                     </span>
                   )}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const target = data.incidents[0]
-                      if (target) router.push(`/supporting-materials/incidents/${target.id}`)
-                      else router.push("/supporting-materials/incidents/new")
-                    }}
-                  >
-                    Open
-                  </Button>
                 </div>
               </CardHeader>
+              {data.incidents.length > 0 && (
+                <div className="space-y-3 px-6 pb-5">
+                  {data.incidents.map((incident, idx) => {
+                    const incidentSlots = slots.filter((s) => s.incident_id === incident.id)
+                    const completed = incidentSlots.filter((s) => s.status === "uploaded").length
+                    const total = incidentSlots.length
+                    const percent = total === 0 ? 0 : Math.round((completed / total) * 100)
+                    const missing = Math.max(total - completed, 0)
+                    const codeLabel = incident.subtype
+                      ? incident.subtype.toUpperCase()
+                      : `INC-${(idx + 1).toString().padStart(2, "0")}`
+
+                    return (
+                      <div
+                        key={incident.id}
+                        className="relative w-full rounded-xl border border-gray-200 bg-white px-6 py-5"
+                        style={{ boxShadow: "0px 12px 30px rgba(0,0,0,0.05)" }}
+                      >
+                        <div className="flex flex-wrap items-center gap-3 text-xs">
+                          <span className="rounded bg-gray-100 px-3 py-1 text-[#364153]">{codeLabel}</span>
+                          {missing > 0 && (
+                            <span className="rounded bg-[#ffedd4] px-3 py-1 text-[#ca3500]">{missing} missing</span>
+                          )}
+                        </div>
+                        <div className="mt-2 text-base font-medium text-slate-900">
+                          {incident.subtype ?? "Incident"} — {CATEGORY_LABEL[incident.category] ?? "Background Item"}
+                        </div>
+                        <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+                          <div className="flex items-center justify-between text-xs text-[#4a5565]">
+                            <span>
+                              Required {completed}/{total || "—"} done
+                            </span>
+                            <span className="text-[#101828]">{percent}%</span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-[#d6d6db]">
+                            <div
+                              className="h-2 rounded-full"
+                              style={{
+                                width: `${percent}%`,
+                                background: "linear-gradient(90deg, #ff6900 0%, #f54900 100%)",
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-4 flex justify-end">
+                          <Button
+                            variant="outline"
+                            className="border border-[#bedbff] bg-blue-50 text-[#1447e6]"
+                            onClick={() => handleOpenIncident(incident.id)}
+                          >
+                            Open
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </Card>
           )
         })}
       </div>
+
+      {selectedIncident && (
+        <IncidentDetailInline
+          incident={selectedIncident}
+          slots={detailSlots}
+          files={detailFiles}
+          loading={loadingDetail}
+          onBack={() => setSelectedIncidentId(null)}
+          onRefresh={() => handleOpenIncident(selectedIncident.id)}
+        />
+      )}
 
       <div className="mt-4 flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => router.push("/onboarding/screening")}>
