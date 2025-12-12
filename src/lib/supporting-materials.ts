@@ -97,8 +97,9 @@ export function getSystemFilename(params: {
   return `${appShortId}_${incidentShortId}_${slotCode}_v${paddedVersion}.${ext}`
 }
 
-function ensurePlanRecord(supabase: SupabaseAdmin, applicationId: string) {
-  return supabase
+async function ensurePlanRecord(supabase: SupabaseAdmin, applicationId: string) {
+  // Cast to any to satisfy supabase-js types when inferring table definitions are absent locally.
+  const { data, error } = await (supabase as any)
     .from("supporting_materials_plan")
     .upsert(
       { application_id: applicationId, status: "draft", generated_at: new Date().toISOString() },
@@ -106,6 +107,8 @@ function ensurePlanRecord(supabase: SupabaseAdmin, applicationId: string) {
     )
     .select()
     .single()
+  if (error) throw error
+  return data
 }
 
 // Generate incident requirements based on Screen 4 answers.
