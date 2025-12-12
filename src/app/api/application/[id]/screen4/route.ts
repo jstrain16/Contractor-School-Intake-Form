@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { screen4Schema } from "@/lib/schemas"
@@ -9,18 +9,22 @@ const bodySchema = z.object({
   responses: screen4Schema,
 })
 
-async function assertOwnership(supabase: ReturnType<typeof getSupabaseAdminClient>, applicationId: string, userId: string) {
+async function assertOwnership(
+  supabase: ReturnType<typeof getSupabaseAdminClient>,
+  applicationId: string,
+  userId: string
+) {
   const { data, error } = await supabase.from("contractor_applications").select("id").eq("id", applicationId).eq("user_id", userId).maybeSingle()
   if (error) throw error
   if (!data) return false
   return true
 }
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const { id: applicationId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const applicationId = params.id
     const supabase = getSupabaseAdminClient()
 
     const owns = await assertOwnership(supabase, applicationId, userId)
@@ -34,11 +38,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
+    const { id: applicationId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const applicationId = params.id
     const supabase = getSupabaseAdminClient()
 
     const owns = await assertOwnership(supabase, applicationId, userId)
