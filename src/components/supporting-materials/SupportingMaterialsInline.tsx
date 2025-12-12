@@ -126,6 +126,8 @@ export function SupportingMaterialsInline() {
 
   const handleOpenIncident = async (incidentId: string) => {
     setSelectedIncidentId(incidentId)
+    const existing = incidents.find((i) => i.id === incidentId) || null
+    if (existing) setSelectedIncidentData(existing)
     setView({ type: "detail", incidentId })
     setLoadingDetail(true)
     try {

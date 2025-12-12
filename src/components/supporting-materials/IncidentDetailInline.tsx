@@ -181,6 +181,7 @@ function Label({ children }: { children: React.ReactNode }) {
 
 function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefresh: () => void }) {
   const [form, setForm] = useState({
+    name: incident.subtype ?? "",
     jurisdiction: incident.jurisdiction ?? "",
     agency: incident.agency ?? "",
     court: incident.court ?? "",
@@ -199,6 +200,7 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
 
   useEffect(() => {
     setForm({
+      name: incident.subtype ?? "",
       jurisdiction: incident.jurisdiction ?? "",
       agency: incident.agency ?? "",
       court: incident.court ?? "",
@@ -210,6 +212,7 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
     setSaved(false)
     setError(null)
     lastSaved.current = {
+      name: incident.subtype ?? "",
       jurisdiction: incident.jurisdiction ?? "",
       agency: incident.agency ?? "",
       court: incident.court ?? "",
@@ -245,6 +248,7 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
       form.caseNumber !== lastSaved.current.caseNumber ||
       form.incidentDate !== lastSaved.current.incidentDate ||
       form.resolutionDate !== lastSaved.current.resolutionDate ||
+      form.name !== lastSaved.current.name ||
       form.notes !== lastSaved.current.notes
     if (!changed) return
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -272,6 +276,7 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
           incidentDate: form.incidentDate || null,
           resolutionDate: form.resolutionDate || null,
           notes: form.notes || null,
+          subtype: form.name || null,
         }),
       })
       if (!res.ok) {
@@ -293,6 +298,12 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
         <span>{saving ? "Saving…" : saved ? "Saved" : " "}</span>
         {error && <span className="text-red-600">{error}</span>}
       </div>
+      <InputField
+        label="Incident Name"
+        placeholder="e.g., Misdemeanor (2019) — Salt Lake County"
+        value={form.name}
+        onChange={(v) => setForm((f) => ({ ...f, name: v }))}
+      />
       <div className="grid gap-4 md:grid-cols-2">
         <InputField
           label="Jurisdiction"
