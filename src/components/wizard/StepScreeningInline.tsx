@@ -62,9 +62,9 @@ export function StepScreeningInline() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl text-slate-900">Criminal &amp; Financial History</CardTitle>
+    <Card className="w-full max-w-5xl mx-auto border border-slate-200 shadow-sm">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-[22px] text-[#0c1c3a] font-semibold">Criminal &amp; Financial History</CardTitle>
         <p className="text-sm text-slate-600">
           Answer the screening questions below. If you select “Yes” for any item, we’ll collect supporting materials next.
         </p>
@@ -77,30 +77,38 @@ export function StepScreeningInline() {
             return (
               <div
                 key={q.key}
-                className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-4 md:flex-row md:items-center md:justify-between"
               >
-                <span className="text-sm font-medium text-slate-800">{q.label}</span>
+                <span className="text-base font-medium text-slate-800">{q.label}</span>
                 <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={val ? "default" : "outline"}
+                  <button
+                    type="button"
                     onClick={() => void update(q.key, true)}
+                    className={`h-10 min-w-[64px] rounded-md px-4 text-sm font-semibold transition ${
+                      val
+                        ? "bg-[#0b2145] text-white"
+                        : "bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+                    }`}
                   >
                     Yes
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={!val ? "default" : "outline"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => void update(q.key, false)}
+                    className={`h-10 min-w-[64px] rounded-md px-4 text-sm font-semibold transition ${
+                      !val
+                        ? "bg-[#0b2145] text-white"
+                        : "bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
+                    }`}
                   >
                     No
-                  </Button>
+                  </button>
                 </div>
               </div>
             )
           })}
         </div>
-        <div className="rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-700">
+        <div className="rounded-lg bg-[#f5f8ff] px-4 py-3 text-sm text-slate-700 border border-slate-100">
           If any answer is “Yes,” we’ll guide you to the Supporting Materials section to add incidents, narratives, and
           required uploads. Nothing you’ve already entered will be deleted.
         </div>
