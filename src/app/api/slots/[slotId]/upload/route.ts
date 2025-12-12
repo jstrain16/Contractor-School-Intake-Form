@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
@@ -48,8 +48,9 @@ async function slotOwnership(
   return { applicationId: app.id as string, incidentId: incident.id as string, slotCode: slot.slot_code as string }
 }
 
-export async function POST(req: Request, { params }: { params: { slotId: string } }) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ slotId: string }> }) {
   try {
+    const { slotId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
@@ -57,13 +58,13 @@ export async function POST(req: Request, { params }: { params: { slotId: string 
     const parsed = bodySchema.parse(body)
     const supabase = getSupabaseAdminClient()
 
-    const owned = await slotOwnership(supabase, params.slotId, userId)
+    const owned = await slotOwnership(supabase, slotId, userId)
     if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     const { data: versionRow, error: versionError } = await supabase
       .from("uploaded_files")
       .select("version")
-      .eq("slot_id", params.slotId)
+      .eq("slot_id", slotId)
       .order("version", { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -106,7 +107,7 @@ export async function POST(req: Request, { params }: { params: { slotId: string 
       path: storagePath,
       systemFilename,
       version: nextVersion,
-      slotId: params.slotId,
+      slotId,
     })
   } catch (err) {
     if (err instanceof z.ZodError) {

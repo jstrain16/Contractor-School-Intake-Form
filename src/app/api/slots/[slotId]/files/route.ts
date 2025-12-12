@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 
@@ -32,18 +32,19 @@ async function slotOwnership(
   return !!app
 }
 
-export async function GET(_: Request, { params }: { params: { slotId: string } }) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ slotId: string }> }) {
   try {
+    const { slotId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     const supabase = getSupabaseAdminClient()
-    const owns = await slotOwnership(supabase, params.slotId, userId)
+    const owns = await slotOwnership(supabase, slotId, userId)
     if (!owns) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     const { data, error } = await supabase
       .from("uploaded_files")
       .select("*")
-      .eq("slot_id", params.slotId)
+      .eq("slot_id", slotId)
       .order("version", { ascending: false })
     if (error) {
       console.error("files list error", error)

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
@@ -45,22 +45,23 @@ async function slotOwnership(
   return { applicationId: app.id as string, incidentId: incident.id as string }
 }
 
-export async function POST(req: Request, { params }: { params: { slotId: string } }) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ slotId: string }> }) {
   try {
+    const { slotId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     const body = await req.json()
     const parsed = bodySchema.parse(body)
     const supabase = getSupabaseAdminClient()
 
-    const owned = await slotOwnership(supabase, params.slotId, userId)
+    const owned = await slotOwnership(supabase, slotId, userId)
     if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     // mark prior active as inactive
     const { data: prior } = await supabase
       .from("uploaded_files")
       .select("id")
-      .eq("slot_id", params.slotId)
+      .eq("slot_id", slotId)
       .eq("is_active", true)
     if (prior && prior.length > 0) {
       await supabase
@@ -73,7 +74,7 @@ export async function POST(req: Request, { params }: { params: { slotId: string 
     }
 
     const insertPayload = {
-      slot_id: params.slotId,
+      slot_id: slotId,
       original_filename: parsed.originalFilename,
       system_filename: parsed.systemFilename,
       version: parsed.version,
@@ -105,7 +106,7 @@ export async function POST(req: Request, { params }: { params: { slotId: string 
     await supabase
       .from("required_document_slots")
       .update({ status: "uploaded", updated_at: new Date().toISOString() })
-      .eq("id", params.slotId)
+      .eq("id", slotId)
 
     return NextResponse.json({ file: data })
   } catch (err) {

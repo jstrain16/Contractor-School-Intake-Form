@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 
@@ -8,11 +8,11 @@ async function assertOwnership(supabase: ReturnType<typeof getSupabaseAdminClien
   return !!data
 }
 
-export async function GET(_: Request, { params }: { params: { applicationId: string } }) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ applicationId: string }> }) {
   try {
+    const { applicationId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const applicationId = params.applicationId
     const supabase = getSupabaseAdminClient()
 
     const owns = await assertOwnership(supabase, applicationId, userId)
