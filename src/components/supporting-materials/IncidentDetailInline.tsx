@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
@@ -8,6 +8,13 @@ type Incident = {
   category: string
   subtype?: string | null
   is_active: boolean
+  jurisdiction?: string | null
+  agency?: string | null
+  court?: string | null
+  case_number?: string | null
+  incident_date?: string | null
+  resolution_date?: string | null
+  notes?: string | null
 }
 
 type Slot = {
@@ -23,6 +30,7 @@ type FileRow = {
   version: number
   uploaded_at?: string
   is_active: boolean
+  size?: number
 }
 
 type Props = {
@@ -51,7 +59,7 @@ export function IncidentDetailInline({ incident, slots, files, loading, onBack, 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={onBack} aria-label="Back to incidents">
             ←
@@ -73,21 +81,7 @@ export function IncidentDetailInline({ incident, slots, files, loading, onBack, 
         <div className="border-b border-gray-200 bg-gradient-to-r from-[#f9fafb] to-white px-6 py-4">
           <h3 className="text-[20px] font-semibold text-[#101828]">Incident Information</h3>
         </div>
-        <div className="space-y-4 px-6 py-5">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Jurisdiction" value="Salt Lake County" />
-            <Field label="Agency / Court" value="District Court" muted />
-            <Field label="Case/Reference #" value="2019-CR-12345" />
-            <Field label="Incident Date" value="MM/DD/YYYY" muted />
-            <Field label="Resolution Date" value="" />
-          </div>
-          <div>
-            <Label>Notes</Label>
-            <div className="mt-2 rounded-lg border border-[#d1d5dc] px-4 py-3 text-[16px] text-[rgba(10,10,10,0.5)]">
-              Optional internal notes
-            </div>
-          </div>
-        </div>
+        <IncidentInfoForm incident={incident} onRefresh={onRefresh} />
       </Card>
 
       <Card className="border border-gray-200 bg-white" style={{ boxShadow: "0px 1px 3px rgba(0,0,0,0.1),0px 1px 2px -1px rgba(0,0,0,0.1)" }}>
@@ -185,17 +179,178 @@ function Label({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-[#364153]">{children}</p>
 }
 
-function Field({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefresh: () => void }) {
+  const [form, setForm] = useState({
+    jurisdiction: incident.jurisdiction ?? "",
+    agency: incident.agency ?? "",
+    court: incident.court ?? "",
+    caseNumber: incident.case_number ?? "",
+    incidentDate: incident.incident_date ?? "",
+    resolutionDate: incident.resolution_date ?? "",
+    notes: incident.notes ?? "",
+  })
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [uploadInstead, setUploadInstead] = useState(false)
+  const firstRender = React.useRef(true)
+
+  useEffect(() => {
+    setForm({
+      jurisdiction: incident.jurisdiction ?? "",
+      agency: incident.agency ?? "",
+      court: incident.court ?? "",
+      caseNumber: incident.case_number ?? "",
+      incidentDate: incident.incident_date ?? "",
+      resolutionDate: incident.resolution_date ?? "",
+      notes: incident.notes ?? "",
+    })
+    setSaved(false)
+    setError(null)
+  }, [
+    incident.id,
+    incident.jurisdiction,
+    incident.agency,
+    incident.court,
+    incident.case_number,
+    incident.incident_date,
+    incident.resolution_date,
+    incident.notes,
+  ])
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
+    const timer = setTimeout(() => {
+      void save()
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [form])
+
+  const save = async () => {
+    setSaving(true)
+    setSaved(false)
+    setError(null)
+    try {
+      const res = await fetch(`/api/incidents/${incident.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jurisdiction: form.jurisdiction || null,
+          agency: form.agency || null,
+          court: form.court || null,
+          caseNumber: form.caseNumber || null,
+          incidentDate: form.incidentDate || null,
+          resolutionDate: form.resolutionDate || null,
+          notes: form.notes || null,
+        }),
+      })
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}))
+        throw new Error(j?.detail || j?.error || "Failed to save")
+      }
+      setSaved(true)
+      onRefresh()
+    } catch (err: any) {
+      setError(err?.message || "Failed to save")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4 px-6 py-5">
+      <div className="flex items-center justify-between text-xs text-slate-500">
+        <span>{saving ? "Saving…" : saved ? "Saved" : " "}</span>
+        {error && <span className="text-red-600">{error}</span>}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <InputField
+          label="Jurisdiction"
+          placeholder="Salt Lake County"
+          value={form.jurisdiction}
+          onChange={(v) => setForm((f) => ({ ...f, jurisdiction: v }))}
+        />
+        <InputField
+          label="Agency / Court"
+          placeholder="District Court"
+          value={form.agency || form.court || ""}
+          onChange={(v) => setForm((f) => ({ ...f, agency: v, court: v }))}
+        />
+        <InputField
+          label="Case/Reference #"
+          placeholder="2019-CR-12345"
+          value={form.caseNumber}
+          onChange={(v) => setForm((f) => ({ ...f, caseNumber: v }))}
+        />
+        <InputField
+          label="Incident Date"
+          type="date"
+          value={form.incidentDate ?? ""}
+          onChange={(v) => setForm((f) => ({ ...f, incidentDate: v }))}
+        />
+        <InputField
+          label="Resolution Date"
+          type="date"
+          value={form.resolutionDate ?? ""}
+          onChange={(v) => setForm((f) => ({ ...f, resolutionDate: v }))}
+        />
+      </div>
+      <div>
+        <Label>Notes</Label>
+        <textarea
+          className="mt-2 h-24 w-full rounded-lg border border-[#d1d5dc] px-4 py-3 text-sm text-slate-700"
+          placeholder="Optional internal notes"
+          value={form.notes ?? ""}
+          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+        />
+      </div>
+      <div>
+        <label className="flex items-center gap-2 text-sm text-[#364153]">
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-slate-300"
+            checked={uploadInstead}
+            onChange={(e) => setUploadInstead(e.target.checked)}
+          />
+          Upload an explanation instead
+        </label>
+        <textarea
+          className="mt-3 h-24 w-full rounded-lg border border-[#d1d5dc] px-4 py-3 text-sm text-slate-700"
+          placeholder="Type your explanation here..."
+          value={form.notes ?? ""}
+          onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+        />
+      </div>
+    </div>
+  )
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  type?: string
+}) {
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      <div
-        className={`rounded-lg border border-[#d1d5dc] px-4 py-3 text-[16px] ${
-          muted ? "text-[rgba(10,10,10,0.5)]" : "text-neutral-950"
-        }`}
-      >
-        {value || " "}
-      </div>
+      <input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 w-full rounded-lg border border-[#d1d5dc] px-3 text-sm text-slate-800"
+      />
     </div>
   )
 }
