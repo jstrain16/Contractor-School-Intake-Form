@@ -62,37 +62,56 @@ export function StepScreeningInline() {
   }
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle>Criminal &amp; Financial History Screening</CardTitle>
-        <div className="text-xs text-slate-500">{saving ? "Saving…" : saved ? "Saved" : " "}</div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {questions.map((q) => {
-          const val = responses[q.key] ?? false
-          return (
-            <div key={q.key} className="flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2">
-              <span className="text-sm text-slate-800">{q.label}</span>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant={val ? "default" : "outline"} onClick={() => void update(q.key, true)}>
-                  Yes
-                </Button>
-                <Button size="sm" variant={!val ? "default" : "outline"} onClick={() => void update(q.key, false)}>
-                  No
-                </Button>
-              </div>
-            </div>
-          )
-        })}
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl text-slate-900">Criminal &amp; Financial History</CardTitle>
         <p className="text-sm text-slate-600">
-          If any answer is Yes, you will be directed to Supporting Materials to provide incident details and uploads.
+          Answer the screening questions below. If you select “Yes” for any item, we’ll collect supporting materials next.
         </p>
+        <div className="text-xs text-slate-500">{saving ? "Saving…" : saved ? "Saved" : "\u00A0"}</div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3">
+          {questions.map((q) => {
+            const val = responses[q.key] ?? false
+            return (
+              <div
+                key={q.key}
+                className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between"
+              >
+                <span className="text-sm font-medium text-slate-800">{q.label}</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant={val ? "default" : "outline"}
+                    onClick={() => void update(q.key, true)}
+                  >
+                    Yes
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={!val ? "default" : "outline"}
+                    onClick={() => void update(q.key, false)}
+                  >
+                    No
+                  </Button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        <div className="rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          If any answer is “Yes,” we’ll guide you to the Supporting Materials section to add incidents, narratives, and
+          required uploads. Nothing you’ve already entered will be deleted.
+        </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="outline" onClick={prevStep}>Previous</Button>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => window.open("/supporting-materials", "_blank")}>Open Supporting Materials</Button>
-          <Button onClick={nextStep}>Continue</Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <Button variant="outline" onClick={() => window.open("/supporting-materials", "_blank")}>
+            Open Supporting Materials
+          </Button>
+          <Button onClick={nextStep}>Next Step</Button>
         </div>
       </CardFooter>
     </Card>
