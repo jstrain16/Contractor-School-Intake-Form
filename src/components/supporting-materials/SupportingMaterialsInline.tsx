@@ -59,6 +59,7 @@ export function SupportingMaterialsInline() {
   const [detailFiles, setDetailFiles] = useState<Record<string, FileRow[]>>({})
   const [loadingDetail, setLoadingDetail] = useState(false)
   const [view, setView] = useState<"hub" | { type: "section"; category: string } | { type: "detail"; incidentId: string }>("hub")
+  const [creatingCategory, setCreatingCategory] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -152,25 +153,38 @@ export function SupportingMaterialsInline() {
 
   const handleAddIncident = async (category: string) => {
     if (!applicationId) return
-    const defaultSubtype =
-      category === "BACKGROUND"
-        ? "OTHER"
-        : category === "DISCIPLINE"
-        ? "OTHER"
-        : category === "FINANCIAL"
-        ? "OTHER"
-        : "UNKNOWN"
-    const res = await fetch("/api/incidents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ applicationId, category, subtype: defaultSubtype, source: "user_added" }),
-    })
-    if (res.ok) {
+    setCreatingCategory(category)
+    try {
+      const defaultSubtype =
+        category === "BACKGROUND"
+          ? "OTHER"
+          : category === "DISCIPLINE"
+          ? "OTHER"
+          : category === "FINANCIAL"
+          ? "OTHER"
+          : "UNKNOWN"
+      const res = await fetch("/api/incidents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId, category, subtype: defaultSubtype, source: "user_added" }),
+      })
+      if (!res.ok) {
+        const msg = await res.json().catch(() => ({}))
+        throw new Error(msg?.detail || msg?.error || "Failed to create incident")
+      }
       const json = await res.json().catch(() => ({}))
       await refreshHub()
-      if (json?.incident?.category === category) {
+      const newId = json?.incident?.id as string | undefined
+      if (newId) {
+        await handleOpenIncident(newId)
+      } else if (json?.incident?.category === category) {
         setView({ type: "section", category })
       }
+    } catch (err) {
+      console.error(err)
+      alert("Could not add item. Please try again.")
+    } finally {
+      setCreatingCategory(null)
     }
   }
 
@@ -267,14 +281,15 @@ export function SupportingMaterialsInline() {
     view === "hub" ? (
       hubView
     ) : view.type === "section" ? (
-      <SectionListInline
+        <SectionListInline
         category={view.category}
         categoryLabel={CATEGORY_LABEL[view.category]}
         incidents={incidents.filter((i) => i.category === view.category)}
         slots={slots.filter((s) => incidents.find((i) => i.id === s.incident_id)?.category === view.category)}
         onBack={() => setView("hub")}
-        onOpenIncident={handleOpenIncident}
-        onAddIncident={() => handleAddIncident(view.category)}
+          onOpenIncident={handleOpenIncident}
+          onAddIncident={() => handleAddIncident(view.category)}
+          creating={creatingCategory === view.category}
       />
     ) : selectedIncident ? (
       <IncidentDetailInline
@@ -312,9 +327,10 @@ type SectionListProps = {
   onBack: () => void
   onOpenIncident: (id: string) => void
   onAddIncident: () => void
+  creating: boolean
 }
 
-function SectionListInline({ categoryLabel, incidents, slots, onBack, onOpenIncident, onAddIncident }: SectionListProps) {
+function SectionListInline({ categoryLabel, incidents, slots, onBack, onOpenIncident, onAddIncident, creating }: SectionListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -331,8 +347,9 @@ function SectionListInline({ categoryLabel, incidents, slots, onBack, onOpenInci
         <Button
           onClick={onAddIncident}
           className="bg-gradient-to-r from-[#ff6900] to-[#f54900] text-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]"
+          disabled={creating}
         >
-          Add Item
+          {creating ? "Adding..." : "Add Item"}
         </Button>
       </div>
 
