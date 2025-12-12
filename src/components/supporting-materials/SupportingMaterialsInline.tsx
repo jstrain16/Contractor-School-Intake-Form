@@ -174,10 +174,19 @@ export function SupportingMaterialsInline() {
       }
       const json = await res.json().catch(() => ({}))
       await refreshHub()
-      const newId = json?.incident?.id as string | undefined
+
+      let newId = json?.incident?.id as string | undefined
+      if (!newId) {
+        // fallback: pick most recent incident in category after refresh
+        const catIncidents = incidents.filter((i) => i.category === category)
+        if (catIncidents.length > 0) {
+          newId = catIncidents[catIncidents.length - 1]?.id
+        }
+      }
+
       if (newId) {
         await handleOpenIncident(newId)
-      } else if (json?.incident?.category === category) {
+      } else {
         setView({ type: "section", category })
       }
     } catch (err) {
