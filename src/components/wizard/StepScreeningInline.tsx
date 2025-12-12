@@ -61,65 +61,99 @@ export function StepScreeningInline() {
     setSaved(true)
   }
 
+  const grouped = [
+    {
+      title: "Prior Licensing Items",
+      items: [{ key: "prior_discipline" as const, label: "Have you ever had a professional license denied, suspended, revoked, or placed on probation?" }],
+    },
+    {
+      title: "Background Review Items",
+      items: [
+        { key: "pending_legal_matters" as const, label: "Do you have any pending legal matters?" },
+        { key: "misdemeanor_10yr" as const, label: "Any misdemeanor matters in the last 10 years?" },
+        { key: "felony_ever" as const, label: "Any felony matters at any time?" },
+      ],
+    },
+    {
+      title: "Financial Review Items",
+      items: [{ key: "financial_items_8yr" as const, label: "Any judgments, liens, or child support delinquencies in the last 8 years?" }],
+    },
+    {
+      title: "Bankruptcy Items",
+      items: [{ key: "bankruptcy_7yr" as const, label: "Any bankruptcy filings in the last 7 years?" }],
+    },
+  ]
+
   return (
     <Card className="w-full max-w-5xl mx-auto border border-slate-200 shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-[22px] text-[#0c1c3a] font-semibold">Criminal &amp; Financial History</CardTitle>
-        <p className="text-sm text-slate-600">
-          Answer the screening questions below. If you select “Yes” for any item, we’ll collect supporting materials next.
-        </p>
-        <div className="text-xs text-slate-500">{saving ? "Saving…" : saved ? "Saved" : "\u00A0"}</div>
+      <div className="flex items-center justify-between px-6 pt-5 text-xs text-slate-600">
+        <div className="font-semibold text-slate-800">Background &amp; Financial Review</div>
+        <div>Step 1 of 2</div>
+      </div>
+      <div className="mx-6 mt-2 h-1 rounded-full bg-[#ffe4c5]">
+        <div className="h-1 w-1/2 rounded-full bg-[#f46a00]" />
+      </div>
+      <CardHeader className="pb-3 pt-4">
+        <div className="rounded-lg border border-slate-200 bg-[#f2f7ff] px-4 py-3 text-sm text-slate-700">
+          <div className="font-medium text-slate-800">Please answer the following questions truthfully.</div>
+          <div className="text-xs text-slate-600">
+            If you answer “Yes” to any question, you’ll be able to provide details and upload supporting materials on the next screen.
+          </div>
+          <div className="text-[10px] text-slate-500 mt-1">{saving ? "Saving…" : saved ? "Saved" : "\u00A0"}</div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3">
-          {questions.map((q) => {
-            const val = responses[q.key] ?? false
-            return (
-              <div
-                key={q.key}
-                className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-4 md:flex-row md:items-center md:justify-between"
-              >
-                <span className="text-base font-medium text-slate-800">{q.label}</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void update(q.key, true)}
-                    className={`h-10 min-w-[64px] rounded-md px-4 text-sm font-semibold transition ${
-                      val
-                        ? "bg-[#0b2145] text-white"
-                        : "bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void update(q.key, false)}
-                    className={`h-10 min-w-[64px] rounded-md px-4 text-sm font-semibold transition ${
-                      !val
-                        ? "bg-[#0b2145] text-white"
-                        : "bg-white text-slate-800 border border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    No
-                  </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-        <div className="rounded-lg bg-[#f5f8ff] px-4 py-3 text-sm text-slate-700 border border-slate-100">
-          If any answer is “Yes,” we’ll guide you to the Supporting Materials section to add incidents, narratives, and
-          required uploads. Nothing you’ve already entered will be deleted.
-        </div>
+        {grouped.map((group) => (
+          <div key={group.title} className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+            <div className="text-sm font-semibold text-slate-900 mb-3">{group.title}</div>
+            <div className="space-y-3">
+              {group.items.map((item) => {
+                const val = responses[item.key] ?? false
+                return (
+                  <div key={item.key} className="space-y-2">
+                    <div className="text-sm text-slate-800">{item.label}</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => void update(item.key, false)}
+                        className={`h-10 rounded-md border text-sm font-semibold transition ${
+                          !val
+                            ? "border-[#f46a00] text-[#f46a00] bg-white"
+                            : "border-slate-200 text-slate-800 bg-white hover:bg-slate-50"
+                        }`}
+                      >
+                        No
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void update(item.key, true)}
+                        className={`h-10 rounded-md border text-sm font-semibold transition ${
+                          val
+                            ? "border-[#f46a00] text-[#f46a00] bg-white"
+                            : "border-slate-200 text-slate-800 bg-white hover:bg-slate-50"
+                        }`}
+                      >
+                        Yes
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
       </CardContent>
-      <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="outline" onClick={prevStep}>Previous</Button>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <Button variant="outline" onClick={() => window.open("/supporting-materials", "_blank")}>
+      <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-6 pb-6">
+        <Button variant="outline" onClick={prevStep} className="w-full sm:w-auto">
+          Previous
+        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 w-full sm:w-auto">
+          <Button variant="outline" onClick={() => window.open("/supporting-materials", "_blank")} className="w-full sm:w-auto">
             Open Supporting Materials
           </Button>
-          <Button onClick={nextStep}>Next Step</Button>
+          <Button onClick={nextStep} className="w-full sm:w-auto bg-gradient-to-r from-[#ff6900] to-[#f54900]">
+            Continue to Supporting Materials
+          </Button>
         </div>
       </CardFooter>
     </Card>
