@@ -126,7 +126,6 @@ export function SupportingMaterialsInline() {
 
   const handleOpenIncident = async (incidentId: string) => {
     setSelectedIncidentId(incidentId)
-    setSelectedIncidentData(null)
     setView({ type: "detail", incidentId })
     setLoadingDetail(true)
     try {
