@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
 
@@ -19,15 +19,16 @@ async function incidentOwnedByUser(
   return app ? data.application_id : null
 }
 
-export async function GET(_: Request, { params }: { params: { incidentId: string } }) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ incidentId: string }> }) {
   try {
+    const { incidentId } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     const supabase = getSupabaseAdminClient()
-    const applicationId = await incidentOwnedByUser(supabase, params.incidentId, userId)
+    const applicationId = await incidentOwnedByUser(supabase, incidentId, userId)
     if (!applicationId) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-    const { data, error } = await supabase.from("required_document_slots").select("*").eq("incident_id", params.incidentId)
+    const { data, error } = await supabase.from("required_document_slots").select("*").eq("incident_id", incidentId)
     if (error) {
       console.error("slots fetch error", error)
       return NextResponse.json({ error: "Server error", detail: error.message }, { status: 500 })

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
@@ -27,11 +27,12 @@ async function incidentOwnedByUser(
   return app ? data.application_id : null
 }
 
-export async function PUT(req: Request, { params }: { params: { incidentId: string; type: string } }) {
+export async function PUT(req: NextRequest, ctx: { params: Promise<{ incidentId: string; type: string }> }) {
   try {
+    const { incidentId, type } = await ctx.params
     const { userId } = await clerkAuth()
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const narrativeType = params.type
+    const narrativeType = type
     if (!allowedTypes.includes(narrativeType as (typeof allowedTypes)[number])) {
       return NextResponse.json({ error: "Invalid narrative type" }, { status: 400 })
     }
@@ -40,11 +41,11 @@ export async function PUT(req: Request, { params }: { params: { incidentId: stri
     const parsed = updateSchema.parse(body)
 
     const supabase = getSupabaseAdminClient()
-    const applicationId = await incidentOwnedByUser(supabase, params.incidentId, userId)
+    const applicationId = await incidentOwnedByUser(supabase, incidentId, userId)
     if (!applicationId) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     const payload = {
-      incident_id: params.incidentId,
+      incident_id: incidentId,
       type: narrativeType,
       content: parsed.content,
       autosave_version: parsed.autosaveVersion,
