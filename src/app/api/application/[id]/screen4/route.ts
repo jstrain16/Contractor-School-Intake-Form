@@ -65,7 +65,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       return NextResponse.json({ error: "Server error", detail: error.message }, { status: 500 })
     }
 
-    await recomputeSupportingMaterialsPlan(applicationId, parsed.responses)
+    await recomputeSupportingMaterialsPlan(applicationId, parsed.responses, userId)
 
     return NextResponse.json({ ok: true })
   } catch (err) {

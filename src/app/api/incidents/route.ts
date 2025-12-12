@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
     const owns = await assertOwnership(supabase, parsed.applicationId, userId)
     if (!owns) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
+    const { data: profile } = await supabase.from("user_profiles").select("id").eq("user_id", userId).maybeSingle()
     const payload = {
       application_id: parsed.applicationId,
       category: parsed.category,
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       is_active: true,
       source: parsed.source ?? "user_added",
       source_key: parsed.sourceKey ?? null,
+      user_profile_id: profile?.id ?? null,
     }
 
     const { data, error } = await supabase.from("incidents").insert(payload).select().single()
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    await recomputeSupportingMaterialsPlan(parsed.applicationId, {})
+    await recomputeSupportingMaterialsPlan(parsed.applicationId, {}, userId)
 
     return NextResponse.json({ incident: data })
   } catch (err) {

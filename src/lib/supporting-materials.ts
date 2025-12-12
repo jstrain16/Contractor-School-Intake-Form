@@ -161,7 +161,8 @@ async function ensurePlanRecord(supabase: SupabaseAdmin, applicationId: string) 
 // Generate incident requirements based on Screen 4 answers.
 export async function recomputeSupportingMaterialsPlan(
   applicationId: string,
-  answers: Screen4Responses
+  answers: Screen4Responses,
+  userId?: string
 ) {
   const supabase = getSupabaseAdminClient()
 
@@ -179,6 +180,12 @@ export async function recomputeSupportingMaterialsPlan(
     bankruptcy_last_7_years: yes(answers.bankruptcy_7yr),
   }
 
+  let userProfileId: string | null = null
+  if (userId) {
+    const { data: profile } = await supabase.from("user_profiles").select("id").eq("user_id", userId).maybeSingle()
+    userProfileId = profile?.id ?? null
+  }
+
   const upsertIncident = async (category: string, subtype: string | null, sourceKey: SourceKey) => {
     const { data, error } = await supabase
       .from("incidents")
@@ -190,6 +197,7 @@ export async function recomputeSupportingMaterialsPlan(
           is_active: true,
           source: "questionnaire",
           source_key: sourceKey,
+          user_profile_id: userProfileId,
         },
         { onConflict: "application_id,source,source_key" }
       )
