@@ -36,6 +36,54 @@ export const BANKRUPTCY_SUBTYPE = {
   UNKNOWN: "UNKNOWN",
 } as const
 
+export type SourceKey =
+  | "prior_license_discipline"
+  | "pending_legal_matters"
+  | "misdemeanor_last_10_years"
+  | "felony_any_time"
+  | "financial_judgments_liens_child_support"
+  | "bankruptcy_last_7_years"
+
+const QUESTION_TO_INCIDENT: Record<
+  SourceKey,
+  {
+    category: keyof typeof INCIDENT_CATEGORY
+    subtype: string
+    uiSection: "PRIOR_LICENSING" | "BACKGROUND" | "FINANCIAL" | "BANKRUPTCY"
+  }
+> = {
+  prior_license_discipline: {
+    category: INCIDENT_CATEGORY.DISCIPLINE,
+    subtype: DISCIPLINE_SUBTYPE.OTHER,
+    uiSection: "PRIOR_LICENSING",
+  },
+  pending_legal_matters: {
+    category: INCIDENT_CATEGORY.BACKGROUND,
+    subtype: BACKGROUND_SUBTYPE.PENDING_CASE,
+    uiSection: "BACKGROUND",
+  },
+  misdemeanor_last_10_years: {
+    category: INCIDENT_CATEGORY.BACKGROUND,
+    subtype: BACKGROUND_SUBTYPE.MISDEMEANOR,
+    uiSection: "BACKGROUND",
+  },
+  felony_any_time: {
+    category: INCIDENT_CATEGORY.BACKGROUND,
+    subtype: BACKGROUND_SUBTYPE.FELONY,
+    uiSection: "BACKGROUND",
+  },
+  financial_judgments_liens_child_support: {
+    category: INCIDENT_CATEGORY.FINANCIAL,
+    subtype: FINANCIAL_SUBTYPE.OTHER,
+    uiSection: "FINANCIAL",
+  },
+  bankruptcy_last_7_years: {
+    category: INCIDENT_CATEGORY.BANKRUPTCY,
+    subtype: BANKRUPTCY_SUBTYPE.UNKNOWN,
+    uiSection: "BANKRUPTCY",
+  },
+}
+
 export const SLOT_CODES = {
   POLICE_REPORT: "POLICE_REPORT",
   COURT_RECORDS: "COURT_RECORDS",
@@ -121,14 +169,17 @@ export async function recomputeSupportingMaterialsPlan(
   if (planRes.error) throw planRes.error
 
   const yes = (v?: boolean | null) => v === true
-  const needsBackground = yes(answers.pending_legal_matters) || yes(answers.misdemeanor_10yr) || yes(answers.felony_ever)
-  const needsDiscipline = yes(answers.prior_discipline)
-  const needsFinancial = yes(answers.financial_items_8yr)
-  const needsBankruptcy = yes(answers.bankruptcy_7yr)
 
-  const activeIncidentIds: string[] = []
+  const normalized: Record<SourceKey, boolean> = {
+    prior_license_discipline: yes(answers.prior_discipline),
+    pending_legal_matters: yes(answers.pending_legal_matters),
+    misdemeanor_last_10_years: yes(answers.misdemeanor_10yr),
+    felony_any_time: yes(answers.felony_ever),
+    financial_judgments_liens_child_support: yes(answers.financial_items_8yr),
+    bankruptcy_last_7_years: yes(answers.bankruptcy_7yr),
+  }
 
-  const upsertIncident = async (category: string, subtype?: string | null) => {
+  const upsertIncident = async (category: string, subtype: string | null, sourceKey: SourceKey) => {
     const { data, error } = await supabase
       .from("incidents")
       .upsert(
@@ -137,13 +188,14 @@ export async function recomputeSupportingMaterialsPlan(
           category,
           subtype: subtype ?? null,
           is_active: true,
+          source: "questionnaire",
+          source_key: sourceKey,
         },
-        { onConflict: "application_id,category,subtype" }
+        { onConflict: "application_id,source,source_key" }
       )
       .select()
       .single()
     if (error) throw error
-    activeIncidentIds.push(data.id)
     return data.id as string
   }
 
@@ -162,58 +214,69 @@ export async function recomputeSupportingMaterialsPlan(
     if (error) throw error
   }
 
-  // Background incidents: create generic incident if any background flag is true
-  if (needsBackground) {
-    const incidentId = await upsertIncident(INCIDENT_CATEGORY.BACKGROUND, null)
-    await ensureSlots(incidentId, [
-      SLOT_CODES.POLICE_REPORT,
-      SLOT_CODES.COURT_RECORDS,
-      SLOT_CODES.SUPERVISION_PROOF,
-      SLOT_CODES.PAYMENT_PROOF,
-      SLOT_CODES.RECORDS_UNAVAILABLE_LETTER,
-      SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
-    ])
+  const activeQuestionnaireIds: string[] = []
+
+  for (const [sourceKey, value] of Object.entries(normalized) as [SourceKey, boolean][]) {
+    const template = QUESTION_TO_INCIDENT[sourceKey]
+    if (!template) continue
+
+    if (value) {
+      const incidentId = await upsertIncident(template.category, template.subtype, sourceKey)
+      activeQuestionnaireIds.push(incidentId)
+
+      const slotPreset =
+        template.category === INCIDENT_CATEGORY.BACKGROUND
+          ? [
+              SLOT_CODES.POLICE_REPORT,
+              SLOT_CODES.COURT_RECORDS,
+              SLOT_CODES.SUPERVISION_PROOF,
+              SLOT_CODES.PAYMENT_PROOF,
+              SLOT_CODES.RECORDS_UNAVAILABLE_LETTER,
+              SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
+            ]
+          : template.category === INCIDENT_CATEGORY.DISCIPLINE
+          ? [SLOT_CODES.DISCIPLINARY_ORDER, SLOT_CODES.REINSTATEMENT_LETTER, SLOT_CODES.NARRATIVE_UPLOAD_OPTION]
+          : template.category === INCIDENT_CATEGORY.FINANCIAL
+          ? [
+              SLOT_CODES.LIEN_DOCUMENT,
+              SLOT_CODES.JUDGMENT_DOCUMENT,
+              SLOT_CODES.CHILD_SUPPORT_COMPLIANCE,
+              SLOT_CODES.PAYMENT_PROOF,
+              SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
+            ]
+          : [
+              SLOT_CODES.BANKRUPTCY_PETITION,
+              SLOT_CODES.DISCHARGE_ORDER,
+              SLOT_CODES.DEBT_SCHEDULE_SUMMARY,
+              SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
+            ]
+
+      await ensureSlots(incidentId, slotPreset)
+    } else {
+      // If answered No, archive the questionnaire-sourced incident for this sourceKey
+      await supabase
+        .from("incidents")
+        .update({ is_active: false })
+        .eq("application_id", applicationId)
+        .eq("source", "questionnaire")
+        .eq("source_key", sourceKey)
+    }
   }
 
-  // Discipline
-  if (needsDiscipline) {
-    const incidentId = await upsertIncident(INCIDENT_CATEGORY.DISCIPLINE, null)
-    await ensureSlots(incidentId, [
-      SLOT_CODES.DISCIPLINARY_ORDER,
-      SLOT_CODES.REINSTATEMENT_LETTER,
-      SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
-    ])
-  }
-
-  // Financial
-  if (needsFinancial) {
-    const incidentId = await upsertIncident(INCIDENT_CATEGORY.FINANCIAL, null)
-    await ensureSlots(incidentId, [
-      SLOT_CODES.LIEN_DOCUMENT,
-      SLOT_CODES.JUDGMENT_DOCUMENT,
-      SLOT_CODES.CHILD_SUPPORT_COMPLIANCE,
-      SLOT_CODES.PAYMENT_PROOF,
-      SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
-    ])
-  }
-
-  // Bankruptcy
-  if (needsBankruptcy) {
-    const incidentId = await upsertIncident(INCIDENT_CATEGORY.BANKRUPTCY, null)
-    await ensureSlots(incidentId, [
-      SLOT_CODES.BANKRUPTCY_PETITION,
-      SLOT_CODES.DISCHARGE_ORDER,
-      SLOT_CODES.DEBT_SCHEDULE_SUMMARY,
-      SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
-    ])
-  }
-
-  // Archive incidents that are no longer applicable
-  const { data: existingIncidents } = await supabase.from("incidents").select("id").eq("application_id", applicationId)
-  const toArchive =
-    existingIncidents?.filter((i) => !activeIncidentIds.includes(i.id))?.map((i) => i.id) ?? []
-  if (toArchive.length > 0) {
-    await supabase.from("incidents").update({ is_active: false }).in("id", toArchive)
+  // Ensure only questionnaire-sourced incidents are toggled; leave user_added alone.
+  if (activeQuestionnaireIds.length > 0) {
+    const { data: existingQuestionnaire } = await supabase
+      .from("incidents")
+      .select("id")
+      .eq("application_id", applicationId)
+      .eq("source", "questionnaire")
+    const toArchive =
+      existingQuestionnaire
+        ?.filter((i) => !activeQuestionnaireIds.includes(i.id))
+        ?.map((i) => i.id) ?? []
+    if (toArchive.length > 0) {
+      await supabase.from("incidents").update({ is_active: false }).in("id", toArchive)
+    }
   }
 
   await supabase

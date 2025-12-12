@@ -58,7 +58,6 @@ export function SupportingMaterialsInline() {
   const [detailSlots, setDetailSlots] = useState<Slot[]>([])
   const [detailFiles, setDetailFiles] = useState<Record<string, FileRow[]>>({})
   const [loadingDetail, setLoadingDetail] = useState(false)
-  const [syncingIncidents, setSyncingIncidents] = useState(false)
   const [view, setView] = useState<"hub" | { type: "section"; category: string } | { type: "detail"; incidentId: string }>("hub")
   const router = useRouter()
 
@@ -79,8 +78,7 @@ export function SupportingMaterialsInline() {
           return hubJson.incidents ?? []
         }
 
-        const initialIncidents = await refreshData()
-        await ensureIncidentsFromScreening(appJson.applicationId, initialIncidents, refreshData)
+        await refreshData()
       } catch (err) {
         console.error(err)
       } finally {
@@ -175,56 +173,6 @@ export function SupportingMaterialsInline() {
 
   const selectedIncident = incidents.find((i) => i.id === selectedIncidentId) || null
 
-  async function ensureIncidentsFromScreening(
-    appId: string,
-    currentIncidents: Incident[],
-    refreshData: () => Promise<Incident[]>
-  ) {
-    setSyncingIncidents(true)
-    try {
-      const screenRes = await fetch(`/api/application/${appId}/screen4`, { cache: "no-store" })
-      if (!screenRes.ok) return
-      const screenJson = await screenRes.json()
-      const responses = screenJson.responses ?? {}
-
-      const needsBackground =
-        responses.pending_legal_matters === true ||
-        responses.misdemeanor_10yr === true ||
-        responses.felony_ever === true
-      const needsDiscipline = responses.prior_discipline === true
-      const needsFinancial = responses.financial_items_8yr === true
-      const needsBankruptcy = responses.bankruptcy_7yr === true
-
-      const requiredCategories = [
-        needsBackground ? "BACKGROUND" : null,
-        needsDiscipline ? "DISCIPLINE" : null,
-        needsFinancial ? "FINANCIAL" : null,
-        needsBankruptcy ? "BANKRUPTCY" : null,
-      ].filter(Boolean) as string[]
-
-      const hasCategory = (cat: string) => currentIncidents.some((i) => i.category === cat && i.is_active !== false)
-
-      let created = false
-      for (const cat of requiredCategories) {
-        if (hasCategory(cat)) continue
-        await fetch("/api/incidents", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ applicationId: appId, category: cat }),
-        })
-        created = true
-      }
-
-      if (created) {
-        await refreshData()
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setSyncingIncidents(false)
-    }
-  }
-
   const hubView = (
     <div className="space-y-4">
       <header className="flex items-start justify-between">
@@ -252,7 +200,6 @@ export function SupportingMaterialsInline() {
             <span className="flex size-5 items-center justify-center rounded-full bg-white text-[#f54900]">+</span>
             <span className="text-sm font-semibold leading-none">Add Background Review Item</span>
           </button>
-          {syncingIncidents && <span className="text-xs text-slate-500">Syncing incidents from screening…</span>}
         </div>
       </div>
 

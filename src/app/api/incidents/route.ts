@@ -14,6 +14,8 @@ const createSchema = z.object({
   caseNumber: z.string().nullable().optional(),
   incidentDate: z.string().nullable().optional(),
   resolutionDate: z.string().nullable().optional(),
+  source: z.enum(["user_added", "questionnaire"]).optional(),
+  sourceKey: z.string().nullable().optional(),
 })
 
 async function assertOwnership(supabase: ReturnType<typeof getSupabaseAdminClient>, applicationId: string, userId: string) {
@@ -44,6 +46,8 @@ export async function POST(req: NextRequest) {
       incident_date: parsed.incidentDate ?? null,
       resolution_date: parsed.resolutionDate ?? null,
       is_active: true,
+      source: parsed.source ?? "user_added",
+      source_key: parsed.sourceKey ?? null,
     }
 
     const { data, error } = await supabase.from("incidents").insert(payload).select().single()
