@@ -175,7 +175,10 @@ export function SupportingMaterialsInline() {
         body: JSON.stringify({ applicationId, category, subtype: defaultSubtype, source: "user_added" }),
       })
       if (!res.ok) {
-        const msg = await res.json().catch(() => ({}))
+        const msg = await res.json().catch(async () => {
+          const text = await res.text().catch(() => "")
+          return { error: text }
+        })
         throw new Error(msg?.detail || msg?.error || "Failed to create incident")
       }
       const json = await res.json().catch(() => ({}))
