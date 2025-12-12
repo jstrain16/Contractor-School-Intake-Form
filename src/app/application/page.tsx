@@ -17,6 +17,7 @@ import { StepClass } from "@/components/wizard/StepClass"
 import { StepScreeningInline } from "@/components/wizard/StepScreeningInline"
 import { StepAssistanceInline } from "@/components/wizard/StepAssistanceInline"
 import { StepPlaceholder } from "@/components/wizard/StepPlaceholder"
+import { SupportingMaterialsInline } from "@/components/supporting-materials/SupportingMaterialsInline"
 import { fetchWizardData, saveWizardData } from "@/lib/wizard-api"
 
 export default function WizardPage() {
@@ -178,23 +179,24 @@ export default function WizardPage() {
   if (loadingServerData) return <div className="p-8 text-center">Loading your saved data...</div>
 
   const steps: { component: React.ComponentType<any>; label: string; props?: Record<string, unknown> }[] = [
-    { component: Step0, label: "Account" }, // Phase 1
-    { component: Step0License, label: "Licenses" }, // Phase 2
-    { component: StepClass, label: "Class" }, // Phase 3
-    { component: StepScreeningInline, label: "Screening" }, // Phase 4
-    { component: StepAssistanceInline, label: "Assistance" }, // Phase 5
-    { component: Step2, label: "Business" }, // Phase 6
-    { component: StepPlaceholder, label: "FEIN", props: { title: "FEIN Status", description: "Upload or request CP 575; instructions forthcoming." } }, // Phase 7
-    { component: StepPlaceholder, label: "Bank", props: { title: "Business Bank Account", description: "Upload voided check or bank letter; instructions forthcoming." } }, // Phase 8
-    { component: StepPlaceholder, label: "Owners", props: { title: "Owners", description: "Collect owner info and ensure 100% ownership; coming soon." } }, // Phase 9
-    { component: Step3, label: "Workers Comp" }, // Phase 10
-    { component: StepPlaceholder, label: "Qualifier", props: { title: "Qualifier Identification", description: "Qualifier details and affidavit upload; coming soon." } }, // Phase 11
-    { component: StepPlaceholder, label: "Insurance Prep", props: { title: "Insurance Prep", description: "Notify insurance partner; COI upload placeholder." } }, // Phase 12
-    { component: StepPlaceholder, label: "Waiver Prep", props: { title: "Waiver Prep", description: "Workers comp waiver prep checklist." } }, // Phase 13
-    { component: StepPlaceholder, label: "Class Complete", props: { title: "Class Completion", description: "Track class completion status." } }, // Phase 14
-    { component: Step5, label: "Exam" }, // Phase 15
-    { component: StepPlaceholder, label: "Insurance Active", props: { title: "Insurance Activation", description: "Mark insurance active; COI upload by staff." } }, // Phase 16
-    { component: StepPlaceholder, label: "Waiver/Submit", props: { title: "Waiver & Submission", description: "Waiver upload, final assembly, review, submission tracking." } }, // Phase 17
+    { component: Step0, label: "Account" },
+    { component: Step0License, label: "Licenses" },
+    { component: StepClass, label: "Class" },
+    { component: StepScreeningInline, label: "Screening" },
+    { component: SupportingMaterialsInline, label: "Supporting Materials" },
+    { component: StepAssistanceInline, label: "Assistance" },
+    { component: Step2, label: "Business" },
+    { component: StepPlaceholder, label: "FEIN", props: { title: "FEIN Status", description: "Upload or request CP 575; instructions forthcoming." } },
+    { component: StepPlaceholder, label: "Bank", props: { title: "Business Bank Account", description: "Upload voided check or bank letter; instructions forthcoming." } },
+    { component: StepPlaceholder, label: "Owners", props: { title: "Owners", description: "Collect owner info and ensure 100% ownership; coming soon." } },
+    { component: Step3, label: "Workers Comp" },
+    { component: StepPlaceholder, label: "Qualifier", props: { title: "Qualifier Identification", description: "Qualifier details and affidavit upload; coming soon." } },
+    { component: StepPlaceholder, label: "Insurance Prep", props: { title: "Insurance Prep", description: "Notify insurance partner; COI upload placeholder." } },
+    { component: StepPlaceholder, label: "Waiver Prep", props: { title: "Waiver Prep", description: "Workers comp waiver prep checklist." } },
+    { component: StepPlaceholder, label: "Class Complete", props: { title: "Class Completion", description: "Track class completion status." } },
+    { component: Step5, label: "Exam" },
+    { component: StepPlaceholder, label: "Insurance Active", props: { title: "Insurance Activation", description: "Mark insurance active; COI upload by staff." } },
+    { component: StepPlaceholder, label: "Waiver/Submit", props: { title: "Waiver & Submission", description: "Waiver upload, final assembly, review, submission tracking." } },
   ]
 
   const CurrentComponent = steps[currentStep]?.component || Step0
