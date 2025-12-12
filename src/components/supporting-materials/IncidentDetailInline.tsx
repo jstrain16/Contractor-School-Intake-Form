@@ -194,6 +194,8 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
   const [error, setError] = useState<string | null>(null)
   const [uploadInstead, setUploadInstead] = useState(false)
   const firstRender = React.useRef(true)
+  const lastSaved = React.useRef(form)
+  const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     setForm({
@@ -207,6 +209,19 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
     })
     setSaved(false)
     setError(null)
+    lastSaved.current = {
+      jurisdiction: incident.jurisdiction ?? "",
+      agency: incident.agency ?? "",
+      court: incident.court ?? "",
+      caseNumber: incident.case_number ?? "",
+      incidentDate: incident.incident_date ?? "",
+      resolutionDate: incident.resolution_date ?? "",
+      notes: incident.notes ?? "",
+    }
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
   }, [
     incident.id,
     incident.jurisdiction,
@@ -223,10 +238,22 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
       firstRender.current = false
       return
     }
-    const timer = setTimeout(() => {
+    const changed =
+      form.jurisdiction !== lastSaved.current.jurisdiction ||
+      form.agency !== lastSaved.current.agency ||
+      form.court !== lastSaved.current.court ||
+      form.caseNumber !== lastSaved.current.caseNumber ||
+      form.incidentDate !== lastSaved.current.incidentDate ||
+      form.resolutionDate !== lastSaved.current.resolutionDate ||
+      form.notes !== lastSaved.current.notes
+    if (!changed) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
       void save()
     }, 600)
-    return () => clearTimeout(timer)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [form])
 
   const save = async () => {
@@ -252,6 +279,7 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
         throw new Error(j?.detail || j?.error || "Failed to save")
       }
       setSaved(true)
+      lastSaved.current = { ...form }
       onRefresh()
     } catch (err: any) {
       setError(err?.message || "Failed to save")
