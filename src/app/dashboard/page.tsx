@@ -35,6 +35,7 @@ export default function DashboardPage() {
       return
     }
     if (isAdmin) {
+      setLoading(false)
       router.replace("/admin")
       return
     }
