@@ -11,6 +11,7 @@ const updateSchema = z.object({
   incidentDate: z.string().nullable().optional(),
   resolutionDate: z.string().nullable().optional(),
   subtype: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
 })
 
 async function incidentOwnedByUser(
@@ -55,6 +56,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ incidentI
       incident_date: parsed.incidentDate ?? null,
       resolution_date: parsed.resolutionDate ?? null,
       subtype: parsed.subtype ?? null,
+      notes: parsed.notes ?? null,
       updated_at: new Date().toISOString(),
     }
 
