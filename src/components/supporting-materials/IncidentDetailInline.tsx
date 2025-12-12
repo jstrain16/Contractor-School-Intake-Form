@@ -280,7 +280,6 @@ function IncidentInfoForm({ incident, onRefresh }: { incident: Incident; onRefre
       }
       setSaved(true)
       lastSaved.current = { ...form }
-      onRefresh()
     } catch (err: any) {
       setError(err?.message || "Failed to save")
     } finally {
