@@ -152,12 +152,26 @@ export function SupportingMaterialsInline() {
 
   const handleAddIncident = async (category: string) => {
     if (!applicationId) return
-    await fetch("/api/incidents", {
+    const defaultSubtype =
+      category === "BACKGROUND"
+        ? "OTHER"
+        : category === "DISCIPLINE"
+        ? "OTHER"
+        : category === "FINANCIAL"
+        ? "OTHER"
+        : "UNKNOWN"
+    const res = await fetch("/api/incidents", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ applicationId, category }),
+      body: JSON.stringify({ applicationId, category, subtype: defaultSubtype, source: "user_added" }),
     })
-    await refreshHub()
+    if (res.ok) {
+      const json = await res.json().catch(() => ({}))
+      await refreshHub()
+      if (json?.incident?.category === category) {
+        setView({ type: "section", category })
+      }
+    }
   }
 
   const refreshHub = async () => {

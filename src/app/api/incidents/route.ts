@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { z } from "zod"
 import { getSupabaseAdminClient } from "@/lib/supabase-admin"
-import { INCIDENT_CATEGORY, recomputeSupportingMaterialsPlan } from "@/lib/supporting-materials"
+import { INCIDENT_CATEGORY, SLOT_CODES, recomputeSupportingMaterialsPlan } from "@/lib/supporting-materials"
 
 const createSchema = z.object({
   applicationId: z.string().uuid(),
@@ -54,6 +54,47 @@ export async function POST(req: NextRequest) {
     if (error) {
       console.error("incident insert error", error)
       return NextResponse.json({ error: "Server error", detail: error.message }, { status: 500 })
+    }
+
+    const slotPreset =
+      parsed.category === INCIDENT_CATEGORY.BACKGROUND
+        ? [
+            SLOT_CODES.POLICE_REPORT,
+            SLOT_CODES.COURT_RECORDS,
+            SLOT_CODES.SUPERVISION_PROOF,
+            SLOT_CODES.PAYMENT_PROOF,
+            SLOT_CODES.RECORDS_UNAVAILABLE_LETTER,
+            SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
+          ]
+        : parsed.category === INCIDENT_CATEGORY.DISCIPLINE
+        ? [SLOT_CODES.DISCIPLINARY_ORDER, SLOT_CODES.REINSTATEMENT_LETTER, SLOT_CODES.NARRATIVE_UPLOAD_OPTION]
+        : parsed.category === INCIDENT_CATEGORY.FINANCIAL
+        ? [
+            SLOT_CODES.LIEN_DOCUMENT,
+            SLOT_CODES.JUDGMENT_DOCUMENT,
+            SLOT_CODES.CHILD_SUPPORT_COMPLIANCE,
+            SLOT_CODES.PAYMENT_PROOF,
+            SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
+          ]
+        : [
+            SLOT_CODES.BANKRUPTCY_PETITION,
+            SLOT_CODES.DISCHARGE_ORDER,
+            SLOT_CODES.DEBT_SCHEDULE_SUMMARY,
+            SLOT_CODES.NARRATIVE_UPLOAD_OPTION,
+          ]
+
+    if (slotPreset.length > 0) {
+      const rows = slotPreset.map((slot) => ({
+        incident_id: data.id,
+        slot_code: slot,
+        required: true,
+        status: "missing",
+        updated_at: new Date().toISOString(),
+      }))
+      const slotInsert = await supabase.from("required_document_slots").upsert(rows, { onConflict: "incident_id,slot_code" })
+      if (slotInsert.error) {
+        console.error("slot upsert error", slotInsert.error)
+      }
     }
 
     await recomputeSupportingMaterialsPlan(parsed.applicationId, {})
