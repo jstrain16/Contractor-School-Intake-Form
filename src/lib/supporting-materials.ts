@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js"
 import { getSupabaseAdminClient } from "./supabase-admin"
 
 export const INCIDENT_CATEGORY = {
@@ -69,7 +68,7 @@ type Screen4Responses = {
   bankruptcy_7yr?: boolean | null
 }
 
-type SupabaseAdmin = ReturnType<typeof createClient>
+type SupabaseAdmin = ReturnType<typeof getSupabaseAdminClient>
 
 export function getStoragePath(params: {
   userId: string
