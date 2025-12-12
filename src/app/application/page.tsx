@@ -249,6 +249,15 @@ export default function WizardPage() {
               )
             })}
           </div>
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => router.push("/supporting-materials")}
+              className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+            >
+              Go to Supporting Materials
+            </button>
+          </div>
         </div>
 
         {/* Form container */}

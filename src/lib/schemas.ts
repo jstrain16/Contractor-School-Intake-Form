@@ -164,3 +164,96 @@ export type Step5FormValues = z.input<typeof step5Schema>
 export type Step6FormValues = z.input<typeof step6Schema>
 export type Step7FormValues = z.input<typeof step7Schema>
 
+// Phase 4 supporting materials
+export const screen4Schema = z.object({
+  prior_discipline: z.boolean().default(false),
+  pending_legal_matters: z.boolean().default(false),
+  misdemeanor_10yr: z.boolean().default(false),
+  felony_ever: z.boolean().default(false),
+  financial_items_8yr: z.boolean().default(false),
+  bankruptcy_7yr: z.boolean().default(false),
+})
+
+export const incidentSchema = z.object({
+  id: z.string().uuid(),
+  application_id: z.string().uuid(),
+  category: z.enum(["BACKGROUND", "DISCIPLINE", "FINANCIAL", "BANKRUPTCY"]),
+  subtype: z
+    .enum([
+      "PENDING_CASE",
+      "MISDEMEANOR",
+      "FELONY",
+      "OTHER",
+      "DENIAL",
+      "SUSPENSION",
+      "REVOCATION",
+      "PROBATION",
+      "LIEN",
+      "JUDGMENT",
+      "CHILD_SUPPORT",
+      "CH7",
+      "CH11",
+      "CH13",
+      "UNKNOWN",
+    ])
+    .nullable()
+    .optional(),
+  jurisdiction: z.string().nullable().optional(),
+  agency: z.string().nullable().optional(),
+  court: z.string().nullable().optional(),
+  case_number: z.string().nullable().optional(),
+  incident_date: z.string().nullable().optional(),
+  resolution_date: z.string().nullable().optional(),
+  is_active: z.boolean().default(true),
+})
+
+export const narrativeSchema = z.object({
+  id: z.string().uuid(),
+  incident_id: z.string().uuid(),
+  type: z.enum(["PERSONAL_STATEMENT", "CAUSE_AND_RECOVERY"]),
+  content: z.string().nullable().optional(),
+  autosave_version: z.number().default(1),
+})
+
+export const slotSchema = z.object({
+  id: z.string().uuid(),
+  incident_id: z.string().uuid(),
+  slot_code: z.enum([
+    "POLICE_REPORT",
+    "COURT_RECORDS",
+    "SUPERVISION_PROOF",
+    "PAYMENT_PROOF",
+    "RECORDS_UNAVAILABLE_LETTER",
+    "DISCIPLINARY_ORDER",
+    "REINSTATEMENT_LETTER",
+    "LIEN_DOCUMENT",
+    "JUDGMENT_DOCUMENT",
+    "CHILD_SUPPORT_COMPLIANCE",
+    "BANKRUPTCY_PETITION",
+    "DISCHARGE_ORDER",
+    "DEBT_SCHEDULE_SUMMARY",
+    "SUPPORTING_DOCUMENT",
+    "NARRATIVE_UPLOAD_OPTION",
+  ]),
+  required: z.boolean().default(true),
+  status: z.enum(["missing", "uploaded", "waived"]).default("missing"),
+  waive_reason: z.string().nullable().optional(),
+})
+
+export const uploadedFileSchema = z.object({
+  id: z.string().uuid(),
+  slot_id: z.string().uuid(),
+  original_filename: z.string(),
+  system_filename: z.string(),
+  version: z.number(),
+  storage_path: z.string(),
+  mime_type: z.string().nullable().optional(),
+  size: z.number().nullable().optional(),
+  is_active: z.boolean(),
+  replaced_by_file_id: z.string().uuid().nullable().optional(),
+  uploaded_at: z.string().optional(),
+  uploaded_by_user_id: z.string().nullable().optional(),
+})
+
+export type Screen4Data = z.infer<typeof screen4Schema>
+
