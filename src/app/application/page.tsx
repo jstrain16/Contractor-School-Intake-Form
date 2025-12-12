@@ -198,6 +198,7 @@ export default function WizardPage() {
   ]
 
   const CurrentComponent = steps[currentStep]?.component || Step0
+  const currentProps = steps[currentStep]?.props || {}
 
   return (
     <div className="min-h-screen bg-[#f7f8fb] text-slate-900">
@@ -279,7 +280,7 @@ export default function WizardPage() {
             <p className="text-sm text-slate-600">Please provide your basic contact information</p>
           </div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <CurrentComponent />
+            <CurrentComponent {...currentProps} />
           </div>
         </div>
 
