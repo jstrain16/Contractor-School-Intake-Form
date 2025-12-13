@@ -26,19 +26,37 @@ export default function ScreeningPage() {
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/application/current", { credentials: "include" })
-      const json = await res.json()
-      if (!json?.applicationId) return
-      setApplicationId(json.applicationId)
+      try {
+        setLoading(true)
+        setError(null)
+        const res = await fetch("/api/application/current", { credentials: "include" })
+        if (!res.ok) {
+          setError("Please sign in to continue.")
+          return
+        }
+        const json = await res.json()
+        if (!json?.applicationId) {
+          setError("No application found. Please start your application.")
+          return
+        }
+        setApplicationId(json.applicationId)
 
-      const screenRes = await fetch(`/api/application/${json.applicationId}/screen4`)
-      const screenJson = await screenRes.json()
-      if (screenJson?.responses) {
-        const parsed = screen4Schema.parse(screenJson.responses)
-        setResponses(parsed)
+        const screenRes = await fetch(`/api/application/${json.applicationId}/screen4`)
+        const screenJson = await screenRes.json()
+        if (screenJson?.responses) {
+          const parsed = screen4Schema.parse(screenJson.responses)
+          setResponses(parsed)
+        }
+      } catch (err) {
+        console.error(err)
+        setError("Could not load your screening questions.")
+      } finally {
+        setLoading(false)
       }
     }
     load()
@@ -68,6 +86,10 @@ export default function ScreeningPage() {
           <h1 className="text-lg font-semibold">Background & Financial Questionnaire</h1>
           <p className="text-sm text-slate-600">Answers autosave and generate your Supporting Materials plan.</p>
         </div>
+
+        {loading && <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">Loading account…</div>}
+        {error && <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+        {!loading && !error && (
         <Card>
           <CardHeader>
             <CardTitle>Screen 4</CardTitle>
@@ -100,6 +122,7 @@ export default function ScreeningPage() {
             })}
           </CardContent>
         </Card>
+        )}
       </main>
     </div>
   )
