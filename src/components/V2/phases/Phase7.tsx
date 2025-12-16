@@ -147,7 +147,7 @@ export function Phase7({
                 </label>
                 {formData.qualifierAffidavit && (
                   <span className="text-sm text-green-600">
-                    ✓ {formData.qualifierAffidavit.name}
+                    ✓ {formData.qualifierAffidavit.originalName}
                   </span>
                 )}
               </div>

@@ -55,6 +55,15 @@ export interface Incident {
   isComplete: boolean;
 }
 
+export interface AttachmentMeta {
+  id: string;
+  bucket: string;
+  path: string;
+  originalName: string;
+  fileType?: string;
+  uploadedAt?: string;
+}
+
 export interface FormData {
   // Phase 1: User Authentication
   firstName: string;
@@ -106,10 +115,10 @@ export interface FormData {
   bankName: string;
   accountNumber: string;
   routingNumber: string;
-  businessDoc?: File | null;
-  feinDoc?: File | null;
+  businessDoc?: AttachmentMeta | null;
+  feinDoc?: AttachmentMeta | null;
   bankAccountStatus?: string;
-  bankDoc?: File | null;
+  bankDoc?: AttachmentMeta | null;
   
   // Phase 7-17 handled by Phases7to17 component
   owners: Owner[];
@@ -128,7 +137,7 @@ export interface FormData {
   qualifierLicense: string;
   qualifierIsApplicant?: boolean;
   qualifierInfo?: string;
-  qualifierAffidavit?: File | null;
+  qualifierAffidavit?: AttachmentMeta | null;
   bondProvider: string;
   bondAmount: string;
   dcplApplicationNumber: string;

@@ -275,7 +275,7 @@ export function Phase6({
                       </label>
                       {formData.businessDoc && (
                         <span className="text-sm text-green-600">
-                          ✓ {formData.businessDoc.name}
+                          ✓ {formData.businessDoc.originalName}
                         </span>
                       )}
                     </div>
@@ -348,7 +348,7 @@ export function Phase6({
                       </label>
                       {formData.feinDoc && (
                         <span className="text-sm text-green-600">
-                          ✓ {formData.feinDoc.name}
+                          ✓ {formData.feinDoc.originalName}
                         </span>
                       )}
                     </div>
@@ -413,7 +413,7 @@ export function Phase6({
                       </label>
                       {formData.bankDoc && (
                         <span className="text-sm text-green-600">
-                          ✓ {formData.bankDoc.name}
+                          ✓ {formData.bankDoc.originalName}
                         </span>
                       )}
                     </div>

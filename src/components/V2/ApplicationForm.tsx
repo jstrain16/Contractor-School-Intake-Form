@@ -80,11 +80,11 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
     // Phase 1: User Authentication
-    firstName: 'Matt',
-    lastName: 'Armstrong',
-    phone: '8013814416',
-    email: 'jdkarmstrong@gmail.com',
-    clerkUserId: 'clerk_user_12345',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    email: '',
+    clerkUserId: '',
     
     // Phase 2: License Type
     licenseType: '',
@@ -128,11 +128,11 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     accountNumber: '',
     routingNumber: '',
     feinNumber: '',
-    businessDoc: null as File | null,
+    businessDoc: null,
     feinStatus: '',
-    feinDoc: null as File | null,
+    feinDoc: null,
     bankAccountStatus: '',
-    bankDoc: null as File | null,
+    bankDoc: null,
     owners: [] as Owner[],
     hasEmployees: '',
     needsWorkersComp: false,
@@ -146,11 +146,11 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     qualifierName: '',
     qualifierLicense: '',
     qualifierInfo: '',
-    qualifierAffidavit: null as File | null,
+    qualifierAffidavit: null,
     
     // Phase 8 & 9: Insurance & WC Waiver
     insuranceNotified: false,
-    insuranceCOI: null as File | null,
+    insuranceCOI: null,
     insuranceQuoteReceived: false,
     insurancePaid: false,
     insuranceAmount: '',
@@ -163,16 +163,16 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     
     // Phase 11: Exam (conditional)
     examStatus: '',
-    examPassLetter: null as File | null,
+    examPassLetter: null,
     examPassedDate: '',
     
     // Phase 12: Insurance Activation
     insuranceActive: false,
-    certificateOfInsurance: null as File | null,
+    certificateOfInsurance: null,
     
     // Phase 13: WC Waiver Submission
     wcWaiverSubmitted: false,
-    wcWaiverDoc: null as File | null,
+    wcWaiverDoc: null,
     
     // Phase 14: DOPL Assembly
     doplApplicationReady: false,
@@ -209,12 +209,13 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
         const json = await res.json();
         if (!active) return;
         setApplicationId(json.applicationId ?? null);
-        if (json.data?.formData) {
-          setFormData((prev) => ({ ...prev, ...json.data.formData }));
+        const savedData = json.data ?? {};
+        if (savedData.formData) {
+          setFormData((prev) => ({ ...prev, ...savedData.formData }));
         }
-        const savedCompleted = Array.isArray(json.data?.completedPhases) ? json.data.completedPhases : null;
+        const savedCompleted = Array.isArray(savedData.completedPhases) ? savedData.completedPhases : null;
         if (savedCompleted) setCompletedPhases(savedCompleted);
-        const savedActive = typeof json.data?.active_phase === 'number' ? json.data.active_phase : null;
+        const savedActive = typeof savedData.active_phase === 'number' ? savedData.active_phase : null;
         if (savedActive) setCurrentPhase(savedActive);
       } catch (err) {
         console.error(err);
@@ -456,12 +457,47 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     sum + (parseFloat(owner.ownership) || 0), 0
   );
 
-  // File upload handler
-  const handleFileUpload = (field: string, file: File | null) => {
-    setFormData({
-      ...formData,
-      [field]: file
-    });
+  // File upload handler to Supabase via API
+  const handleFileUpload = async (field: string, file: File | null) => {
+    if (!file || !applicationId) {
+      console.warn("Missing file or applicationId for upload");
+      return;
+    }
+
+    const step = field === "qualifierAffidavit" ? 7 : 6;
+    const form = new FormData();
+    form.append("file", file);
+    form.append("applicationId", applicationId);
+    form.append("step", String(step));
+    form.append("fileType", field);
+
+    try {
+      const res = await fetch("/api/upload-attachment", {
+        method: "POST",
+        body: form,
+        credentials: "include",
+      });
+      if (!res.ok) {
+        console.error("upload failed", await res.text());
+        return;
+      }
+      const json = await res.json();
+      const attachment = json.attachment;
+      if (!attachment?.id) return;
+      setFormData((prev) => ({
+        ...prev,
+        [field]: {
+          id: attachment.id,
+          bucket: attachment.bucket,
+          path: attachment.path,
+          originalName: attachment.metadata?.originalName || file.name,
+          fileType: attachment.file_type,
+          uploadedAt: attachment.created_at || new Date().toISOString(),
+        },
+      }));
+    } catch (err) {
+      console.error("upload error", err);
+    }
   };
 
   const getPhaseStatus = (phaseId: number) => {
