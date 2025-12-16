@@ -133,7 +133,7 @@ export function Phase4({
                 </Label>
                 <RadioGroup
                   value={formData.priorDiscipline}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setFormData({ ...formData, priorDiscipline: value })
                   }
                   className="flex gap-6 mt-3"
@@ -159,7 +159,7 @@ export function Phase4({
                 </Label>
                 <RadioGroup
                   value={formData.pendingCharges}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setFormData({ ...formData, pendingCharges: value })
                   }
                   className="flex gap-6 mt-3"
@@ -185,7 +185,7 @@ export function Phase4({
                 </Label>
                 <RadioGroup
                   value={formData.misdemeanors}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setFormData({ ...formData, misdemeanors: value })
                   }
                   className="flex gap-6 mt-3"
@@ -211,7 +211,7 @@ export function Phase4({
                 </Label>
                 <RadioGroup
                   value={formData.felonies}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setFormData({ ...formData, felonies: value })
                   }
                   className="flex gap-6 mt-3"
@@ -237,7 +237,7 @@ export function Phase4({
                 </Label>
                 <RadioGroup
                   value={formData.judgments}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setFormData({ ...formData, judgments: value })
                   }
                   className="flex gap-6 mt-3"
@@ -263,7 +263,7 @@ export function Phase4({
                 </Label>
                 <RadioGroup
                   value={formData.bankruptcy}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setFormData({ ...formData, bankruptcy: value })
                   }
                   className="flex gap-6 mt-3"

@@ -155,7 +155,7 @@ export function Phase5({
                   <Checkbox
                     id="assistancePayment"
                     checked={formData.assistancePaymentComplete}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked: boolean) =>
                       setFormData({
                         ...formData,
                         assistancePaymentComplete: checked as boolean

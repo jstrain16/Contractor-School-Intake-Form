@@ -180,7 +180,7 @@ export function Phase3({
                       <Checkbox
                         id="classPayment"
                         checked={formData.classPaymentComplete}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={(checked: boolean) =>
                           setFormData({
                             ...formData,
                             classPaymentComplete: checked as boolean

@@ -152,7 +152,7 @@ export function Phase6({
                   <Label htmlFor="business-status">Entity Formation Status *</Label>
                   <Select
                     value={formData.businessStatus}
-                    onValueChange={(value) => setFormData({ ...formData, businessStatus: value })}
+                    onValueChange={(value: string) => setFormData({ ...formData, businessStatus: value })}
                   >
                     <SelectTrigger id="business-status">
                       <SelectValue placeholder="Select status" />
@@ -198,7 +198,7 @@ export function Phase6({
                   <Label htmlFor="business-type">Entity Type *</Label>
                   <Select
                     value={formData.businessType}
-                    onValueChange={(value) => setFormData({ ...formData, businessType: value })}
+                    onValueChange={(value: string) => setFormData({ ...formData, businessType: value })}
                   >
                     <SelectTrigger id="business-type">
                       <SelectValue placeholder="Select entity type" />
@@ -293,7 +293,7 @@ export function Phase6({
                   <Label htmlFor="fein-status">FEIN Status *</Label>
                   <Select
                     value={formData.feinStatus}
-                    onValueChange={(value) => setFormData({ ...formData, feinStatus: value })}
+                    onValueChange={(value: string) => setFormData({ ...formData, feinStatus: value })}
                   >
                     <SelectTrigger id="fein-status">
                       <SelectValue placeholder="Select status" />
@@ -366,7 +366,7 @@ export function Phase6({
                   <Label htmlFor="bank-status">Bank Account Status *</Label>
                   <Select
                     value={formData.bankAccountStatus}
-                    onValueChange={(value) => setFormData({ ...formData, bankAccountStatus: value })}
+                    onValueChange={(value: string) => setFormData({ ...formData, bankAccountStatus: value })}
                   >
                     <SelectTrigger id="bank-status">
                       <SelectValue placeholder="Select status" />
@@ -517,7 +517,7 @@ export function Phase6({
                         <Label className="text-sm">Citizenship Status</Label>
                         <Select
                           value={owner.citizenship}
-                          onValueChange={(value) => updateOwner(owner.id, 'citizenship', value)}
+                          onValueChange={(value: string) => updateOwner(owner.id, 'citizenship', value)}
                         >
                           <SelectTrigger className="bg-white">
                             <SelectValue placeholder="Select status" />
@@ -590,7 +590,7 @@ export function Phase6({
                   <Label>Will you have employees? *</Label>
                   <RadioGroup
                     value={formData.hasEmployees}
-                    onValueChange={(value) => {
+                    onValueChange={(value: string) => {
                       const needsWC = value === 'yes';
                       setFormData({ 
                         ...formData, 

@@ -68,7 +68,7 @@ export function Phase7({
               <Label>Is the applicant the qualifier?</Label>
               <RadioGroup
                 value={formData.qualifierIsApplicant ? 'yes' : 'no'}
-                onValueChange={(value) =>
+              onValueChange={(value: string) =>
                   setFormData({ ...formData, qualifierIsApplicant: value === 'yes' })
                 }
                 className="space-y-3"

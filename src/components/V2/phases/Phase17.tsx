@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, ChevronDown, ChevronUp, PartyPopper, Info, ExternalLink } from 'lucide-react';
+import { CheckCircle, Clock, ChevronDown, ChevronUp, PartyPopper, Info, ExternalLink, ArrowRight } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { PhaseComponentProps } from '../types/ApplicationTypes';

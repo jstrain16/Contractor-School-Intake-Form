@@ -38,6 +38,7 @@ import { Phase15 } from './phases/Phase15';
 import { Phase16 } from './phases/Phase16';
 import { Phase17 } from './phases/Phase17';
 import logoImage from 'figma:asset/414fa9992179aa5ea488b45fcd1c60891fa1bfd6.png';
+import { FormData as AppFormData } from './types/ApplicationTypes';
 
 interface ApplicationFormProps {
   onBack: () => void;
@@ -73,7 +74,7 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
   const [supportingMaterialsComplete, setSupportingMaterialsComplete] = useState(false);
 
   // Form data state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AppFormData>({
     // Phase 1: User Authentication
     firstName: 'Matt',
     lastName: 'Armstrong',
@@ -116,6 +117,13 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     businessCity: '',
     businessState: 'UT',
     businessZip: '',
+    businessPhone: '',
+    businessEmail: '',
+    bankingStatus: '',
+    bankName: '',
+    accountNumber: '',
+    routingNumber: '',
+    feinNumber: '',
     businessDoc: null as File | null,
     feinStatus: '',
     feinDoc: null as File | null,
@@ -124,10 +132,15 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     owners: [] as Owner[],
     hasEmployees: '',
     needsWorkersComp: false,
+    workersCompStatus: '',
+    wcProvider: '',
+    wcPolicyNumber: '',
+    wcExemptionReason: '',
     
     // Phase 7: Qualifier
     qualifierIsApplicant: true,
     qualifierName: '',
+    qualifierLicense: '',
     qualifierInfo: '',
     qualifierAffidavit: null as File | null,
     
@@ -142,6 +155,7 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     // Phase 10: Class Completion
     classCompleted: false,
     classCompletedDate: '',
+    educationComplete: false,
     
     // Phase 11: Exam (conditional)
     examStatus: '',
@@ -158,6 +172,12 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     
     // Phase 14: DOPL Assembly
     doplApplicationReady: false,
+    liabilityProvider: '',
+    liabilityPolicyNumber: '',
+    liabilityCoverage: '',
+    bondProvider: '',
+    bondAmount: '',
+    experienceYears: '',
     
     // Phase 15: Review
     salesforceCaseId: '',
@@ -167,6 +187,8 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     // Phase 16: Submission
     doplSubmissionStatus: '',
     doplSubmissionDate: '',
+    dcplApplicationNumber: '',
+    dcplSubmissionDate: '',
     
     // Phase 17: Tracking
     estimatedApprovalMin: '',
@@ -644,7 +666,11 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
           {/* Logo and Progress Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <ImageWithFallback src={logoImage} alt="Contractors School" className="h-10 w-auto" />
+              <ImageWithFallback
+                src={typeof logoImage === 'string' ? logoImage : (logoImage as any).src}
+                alt="Contractors School"
+                className="h-10 w-auto"
+              />
               <div>
                 <h2 className="text-gray-900">Application Progress</h2>
               </div>
@@ -892,7 +918,7 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
                       <Label>Incident Category *</Label>
                       <Select
                         value=""
-                        onValueChange={(categorySubtype) => {
+                        onValueChange={(categorySubtype: string) => {
                           const [category, subtype] = categorySubtype.split('|');
                           // Map old type to category for backwards compatibility
                           let mappedType = '';

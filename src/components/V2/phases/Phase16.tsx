@@ -107,7 +107,10 @@ export function Phase16({
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="w-4 h-4 text-green-600" />
                           <span className="text-green-700">
-                            Submitted: {new Date(formData.doplSubmissionDate).toLocaleDateString()}
+                            Submitted:{' '}
+                            {formData.doplSubmissionDate
+                              ? new Date(formData.doplSubmissionDate).toLocaleDateString()
+                              : 'Pending date'}
                           </span>
                         </div>
                       </div>
@@ -119,7 +122,7 @@ export function Phase16({
                       </p>
                       <RadioGroup
                         value={formData.doplSubmissionStatus}
-                        onValueChange={(value) =>
+                        onValueChange={(value: string) =>
                           setFormData({ ...formData, doplSubmissionStatus: value })
                         }
                         className="space-y-2"

@@ -38,6 +38,9 @@ export interface Incident {
   jurisdiction: string;
   caseNumber: string;
   outcome: string;
+  documentSlots?: any[];
+  narrative?: string;
+  narrativeSaveStatus?: string;
   documents: {
     BACKGROUND: IncidentDocument[];
     DISCIPLINE: IncidentDocument[];
@@ -103,10 +106,16 @@ export interface FormData {
   bankName: string;
   accountNumber: string;
   routingNumber: string;
+  businessDoc?: File | null;
+  feinDoc?: File | null;
+  bankAccountStatus?: string;
+  bankDoc?: File | null;
   
   // Phase 7-17 handled by Phases7to17 component
   owners: Owner[];
   workersCompStatus: string;
+  hasEmployees?: string;
+  needsWorkersComp?: boolean;
   wcProvider: string;
   wcPolicyNumber: string;
   wcExemptionReason: string;
@@ -117,10 +126,36 @@ export interface FormData {
   experienceYears: string;
   qualifierName: string;
   qualifierLicense: string;
+  qualifierIsApplicant?: boolean;
+  qualifierInfo?: string;
+  qualifierAffidavit?: File | null;
   bondProvider: string;
   bondAmount: string;
   dcplApplicationNumber: string;
   dcplSubmissionDate: string;
+  insuranceNotified?: boolean;
+  insuranceCOI?: File | null;
+  insuranceQuoteReceived?: boolean;
+  insurancePaid?: boolean;
+  insuranceAmount?: string;
+  wcWaiverDocs?: string[];
+  classCompleted?: boolean;
+  classCompletedDate?: string;
+  examStatus?: string;
+  examPassLetter?: File | null;
+  examPassedDate?: string;
+  insuranceActive?: boolean;
+  certificateOfInsurance?: File | null;
+  wcWaiverSubmitted?: boolean;
+  wcWaiverDoc?: File | null;
+  doplApplicationReady?: boolean;
+  salesforceCaseId?: string;
+  assignedStaff?: string;
+  staffReviewComplete?: boolean;
+  doplSubmissionStatus?: string;
+  doplSubmissionDate?: string;
+  estimatedApprovalMin?: string;
+  estimatedApprovalMax?: string;
 }
 
 export interface PhaseComponentProps {

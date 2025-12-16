@@ -782,7 +782,7 @@ export function SupportingMaterialsWorkflow({
               <Label>Type / Subtype</Label>
               <Select
                 value={selectedIncident.subtype}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   updateIncident(selectedIncident.id, { subtype: value })
                 }
               >
