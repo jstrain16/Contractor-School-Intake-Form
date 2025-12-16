@@ -7,7 +7,7 @@ import { CheckCircle2, Circle, GraduationCap, HelpCircle, ArrowRight } from "luc
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { fetchWizardData } from "@/lib/wizard-api"
-import { buildStatus } from "@/lib/progress"
+import { buildStatus, PHASE_LABELS } from "@/lib/progress"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -129,7 +129,11 @@ export default function DashboardPage() {
                 : "text-slate-600 bg-slate-100"
             const barColor = isComplete ? "bg-green-500" : isStarted ? "bg-orange-400" : "bg-slate-300"
             const barWidth = isComplete ? "100%" : isStarted ? "50%" : "0%"
-            const go = () => router.push("/application")
+            const phaseId = PHASE_LABELS.indexOf(item.label) + 1
+            const go = () => {
+              const target = phaseId > 0 ? `/application?phase=${phaseId}` : "/application"
+              router.push(target)
+            }
             return (
               <button
                 key={item.label}

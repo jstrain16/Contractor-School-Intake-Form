@@ -43,6 +43,7 @@ import { FormData as AppFormData } from './types/ApplicationTypes';
 
 interface ApplicationFormProps {
   onBack: () => void;
+  initialPhase?: number;
 }
 
 interface Owner {
@@ -67,11 +68,12 @@ interface ClassOption {
   description: string;
 }
 
-export function ApplicationForm({ onBack }: ApplicationFormProps) {
+export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) {
   const { user } = useUser();
-  const [currentPhase, setCurrentPhase] = useState(1);
+  const startingPhase = initialPhase && initialPhase > 0 ? initialPhase : 1;
+  const [currentPhase, setCurrentPhase] = useState(startingPhase);
   const [completedPhases, setCompletedPhases] = useState<number[]>([1]); // Phase 1 complete by default (Clerk authentication)
-  const [expandedSections, setExpandedSections] = useState<number[]>([1]);
+  const [expandedSections, setExpandedSections] = useState<number[]>([startingPhase]);
   const [showSupportingMaterials, setShowSupportingMaterials] = useState(false);
   const [supportingMaterialsComplete, setSupportingMaterialsComplete] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -241,7 +243,9 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
         const savedCompleted = Array.isArray(savedData.completedPhases) ? savedData.completedPhases : null;
         if (savedCompleted) setCompletedPhases(savedCompleted);
         const savedActive = typeof savedData.active_phase === 'number' ? savedData.active_phase : null;
-        if (savedActive) setCurrentPhase(savedActive);
+        const targetPhase = initialPhase && initialPhase > 0 ? initialPhase : savedActive || currentPhase || 1;
+        setCurrentPhase(targetPhase);
+        setExpandedSections([targetPhase]);
       } catch (err) {
         console.error(err);
       } finally {

@@ -1,9 +1,12 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ApplicationForm } from "@/components/V2/ApplicationForm"
 
 export default function ApplicationPage() {
   const router = useRouter()
-  return <ApplicationForm onBack={() => router.push("/dashboard")} />
+  const searchParams = useSearchParams()
+  const phaseParam = searchParams?.get("phase")
+  const initialPhase = phaseParam ? Number(phaseParam) : undefined
+  return <ApplicationForm initialPhase={initialPhase} onBack={() => router.push("/dashboard")} />
 }
