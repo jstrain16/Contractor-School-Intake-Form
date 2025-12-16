@@ -101,7 +101,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[#dbe9ff] bg-white shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=1600&q=80"
+                src="/images/contractor-site.jpg"
                 alt="Dashboard preview"
                 className="h-full w-full object-cover"
               />
