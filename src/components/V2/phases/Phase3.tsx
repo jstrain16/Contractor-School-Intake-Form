@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { CheckCircle, Calendar, ChevronDown, ChevronUp, ArrowRight, Info } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { PhaseComponentProps, ClassOption } from '../types/ApplicationTypes';
+import { LoaderThree } from '@/components/ui/loader';
 
 export function Phase3({ 
   formData, 
@@ -12,8 +14,49 @@ export function Phase3({
   toggleSection 
 }: PhaseComponentProps) {
   const phaseId = 3;
+  const [classes, setClasses] = useState<ClassOption[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/woocommerce/products');
+        if (!res.ok) throw new Error('Failed to fetch classes');
+        const products = await res.json();
+        
+        // Map WooCommerce products to ClassOption
+        const mapped: ClassOption[] = products.map((p: any) => {
+            // Try to find attributes - case insensitive check
+            const getAttr = (name: string) => 
+              p.attributes?.find((a: any) => a.name.toLowerCase() === name.toLowerCase())?.options?.[0];
+
+            return {
+                id: String(p.id),
+                description: p.name,
+                price: parseFloat(p.price || '0'),
+                seatsAvailable: p.stock_quantity ?? 20, // Default if not managed
+                date: getAttr('date') || new Date().toISOString(), 
+                time: getAttr('time') || '9:00 AM - 5:00 PM',
+                location: getAttr('location') || 'Online / TBD'
+            };
+        });
+        setClasses(mapped);
+      } catch (err) {
+        console.error(err);
+        setError('Could not load live classes.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    // Only fetch if we are expanding this section or it's active, to save requests? 
+    // Or just fetch on mount. Fetching on mount is simpler for now.
+    fetchClasses();
+  }, []);
   
-  // Mock class data from WooCommerce
+  // Mock class data from WooCommerce (Fallback)
   const mockClasses: ClassOption[] = [
     {
       id: '1',
@@ -43,6 +86,9 @@ export function Phase3({
       description: 'Specialty Contractor - 25 Hour Course'
     }
   ];
+
+  const displayClasses = classes.length > 0 ? classes : mockClasses;
+
   
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -104,7 +150,10 @@ export function Phase3({
               </p>
 
               <div className="space-y-3">
-                {mockClasses.map((classOption) => (
+                {loading ? (
+                  <div className="py-8"><LoaderThree /></div>
+                ) : (
+                  displayClasses.map((classOption) => (
                   <div
                     key={classOption.id}
                     className={`border rounded-lg p-4 cursor-pointer transition-all ${
@@ -159,7 +208,7 @@ export function Phase3({
                       </div>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
 
               {formData.selectedClass && (
@@ -171,7 +220,7 @@ export function Phase3({
                       <span className="text-gray-900">
                         $
                         {
-                          mockClasses.find((c) => c.id === formData.selectedClass)
+                          displayClasses.find((c) => c.id === formData.selectedClass)
                             ?.price
                         }
                       </span>
