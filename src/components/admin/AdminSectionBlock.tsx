@@ -4,11 +4,9 @@ import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ClipboardCheck } from "lucide-react"
 
-type SectionKey = "step0" | "step1" | "step2" | "step3" | "step4" | "step5" | "step6" | "step7"
-
 type Props = {
   label: string
-  sectionKey: SectionKey
+  sectionKey: string
   applicationId: string
   data?: Record<string, unknown> | null
   children: React.ReactNode

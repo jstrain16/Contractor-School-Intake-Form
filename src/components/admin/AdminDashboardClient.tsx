@@ -26,7 +26,6 @@ import {
   DollarSign,
   Send,
 } from "lucide-react"
-import type { WizardData } from "@/lib/schemas"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
 import { ReminderActions } from "@/components/admin/ReminderActions"
 import { AttachmentList } from "@/components/admin/AttachmentList"
@@ -47,6 +46,8 @@ type ApplicationRow = {
 function InlineSectionEditor({
   applicationId,
   sectionKey,
+  phaseId,
+  completed,
   data,
   editingSection,
   setEditingSection,
@@ -57,9 +58,12 @@ function InlineSectionEditor({
   savedSection,
   setSavedSection,
   onSaved,
+  attachmentMap,
 }: {
   applicationId: string
   sectionKey: string
+  phaseId?: number
+  completed?: boolean
   data?: Record<string, unknown>
   editingSection: string | null
   setEditingSection: (k: string | null) => void
@@ -70,10 +74,12 @@ function InlineSectionEditor({
   savedSection: string | null
   setSavedSection: (k: string | null) => void
   onSaved: (updated: Record<string, unknown>) => void
+  attachmentMap: Map<string, string>
 }) {
   const editing = editingSection === sectionKey
   const saving = savingSection === sectionKey
   const saved = savedSection === sectionKey
+  const [markComplete, setMarkComplete] = useState<boolean>(Boolean(completed))
 
   const handleSave = async () => {
     setSavingSection(sectionKey)
@@ -82,7 +88,13 @@ function InlineSectionEditor({
       const res = await fetch("/api/admin/application", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId, sectionKey, data: editFormData }),
+        body: JSON.stringify({
+          applicationId,
+          sectionKey,
+          data: editFormData,
+          phaseId,
+          markComplete,
+        }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
@@ -100,7 +112,18 @@ function InlineSectionEditor({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3 flex-wrap">
+      {typeof phaseId === "number" && (
+        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+          <input
+            type="checkbox"
+            checked={markComplete}
+            onChange={(e) => setMarkComplete(e.target.checked)}
+            className="h-4 w-4"
+          />
+          Mark phase complete
+        </label>
+      )}
       <Button
         size="sm"
         variant={editing ? "default" : "outline"}
@@ -177,9 +200,48 @@ function formatKey(key: string) {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+async function uploadAdminAttachment({
+  file,
+  applicationId,
+  sectionKey,
+  fieldKey,
+}: {
+  file: File
+  applicationId: string
+  sectionKey: string
+  fieldKey: string
+}) {
+  const form = new FormData()
+  form.append("file", file)
+  form.append("applicationId", applicationId)
+  form.append("fileType", `${sectionKey}.${fieldKey}`)
+  form.append("phaseKey", sectionKey)
+  form.append("fieldKey", fieldKey)
+  const res = await fetch("/api/admin/application/upload", {
+    method: "POST",
+    body: form,
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.error || "Upload failed")
+  }
+  const json = await res.json()
+  return json.attachment as {
+    id: string
+    bucket: string
+    path: string
+    originalName: string
+    fileType?: string
+    uploadedAt?: string
+  }
+}
+
 function renderEditableSection(
   data: Record<string, unknown>,
-  onChange: (next: Record<string, unknown>) => void
+  onChange: (next: Record<string, unknown>) => void,
+  attachmentMap: Map<string, string>,
+  applicationId: string,
+  sectionKey: string
 ) {
   const entries = Object.entries(data || {})
   if (entries.length === 0) return <div className="text-slate-600 text-sm">No fields to edit.</div>
@@ -221,6 +283,40 @@ function renderEditableSection(
           )
         }
         if (typeof value === "object" && value !== null) {
+          const valObj = value as Record<string, unknown>
+          const isAttachment = "path" in valObj || "bucket" in valObj || "id" in valObj
+          if (isAttachment) {
+            const attId = typeof valObj.id === "string" ? valObj.id : undefined
+            const signedUrl = attId ? attachmentMap.get(attId) : undefined
+            return (
+              <div key={key} className="space-y-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                <div className="text-sm font-medium text-slate-800">{formatKey(key)}</div>
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  {signedUrl ? (
+                    <a href={signedUrl} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">
+                      Download
+                    </a>
+                  ) : (
+                    <span className="text-slate-500">No download</span>
+                  )}
+                  {valObj.path ? <span className="text-slate-400 truncate">{String(valObj.path)}</span> : null}
+                </div>
+                <input
+                  type="file"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    try {
+                      const att = await uploadAdminAttachment({ file, applicationId, sectionKey, fieldKey: key })
+                      updateValue(key, att)
+                    } catch (err) {
+                      console.error(err)
+                    }
+                  }}
+                />
+              </div>
+            )
+          }
           return (
             <div key={key} className="space-y-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
               <div className="text-sm font-medium text-slate-800">{formatKey(key)}</div>
@@ -318,6 +414,15 @@ export function AdminDashboardClient({
   const [emailDraft, setEmailDraft] = useState<string>("")
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [assignOpen, setAssignOpen] = useState(false)
+  const attachmentMap = useMemo(() => {
+    const m = new Map<string, string>()
+    rows.forEach((r) => {
+      r.attachments?.forEach((a) => {
+        if (a.id) m.set(a.id, a.signedUrl ?? "")
+      })
+    })
+    return m
+  }, [rows])
   const [assigning, setAssigning] = useState(false)
   const [admins, setAdmins] = useState<{ id: string; name: string; email: string | null; role?: string }[]>([])
   const [loadingAdmins, setLoadingAdmins] = useState(false)
@@ -859,6 +964,8 @@ export function AdminDashboardClient({
                       <InlineSectionEditor
                         applicationId={selected.app.id}
                         sectionKey={section.key}
+                        phaseId={section.id}
+                        completed={completed}
                         data={selected.app.data?.[section.key] as Record<string, unknown>}
                         editingSection={editingSection}
                         setEditingSection={setEditingSection}
@@ -868,6 +975,7 @@ export function AdminDashboardClient({
                         setSavingSection={setSavingSection}
                         savedSection={savedSection}
                         setSavedSection={setSavedSection}
+                        attachmentMap={attachmentMap}
                         onSaved={async (updated) => {
                           setSelected((prev) =>
                             prev
@@ -904,7 +1012,7 @@ export function AdminDashboardClient({
                       simple
                         >
                       {editingSection === section.key ? (
-                        renderEditableSection(editFormData, setEditFormData)
+                        renderEditableSection(editFormData, setEditFormData, attachmentMap, selected.app.id, section.key)
                       ) : (
                         renderSectionContent((selected.app.data?.[section.key] as Record<string, unknown>) || {})
                       )}
