@@ -5,6 +5,7 @@ import {
   Users, CreditCard, BookOpen, Award, TrendingUp, Info, FileX, Trash2
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -67,6 +68,7 @@ interface ClassOption {
 }
 
 export function ApplicationForm({ onBack }: ApplicationFormProps) {
+  const { user } = useUser();
   const [currentPhase, setCurrentPhase] = useState(1);
   const [completedPhases, setCompletedPhases] = useState<number[]>([1]); // Phase 1 complete by default (Clerk authentication)
   const [expandedSections, setExpandedSections] = useState<number[]>([1]);
@@ -225,6 +227,27 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
       active = false;
     };
   }, []);
+
+  // Hydrate phase 1 fields from Clerk user (and ensure clerkUserId matches)
+  useEffect(() => {
+    if (!user) return;
+    const emailFromClerk = user.primaryEmailAddress?.emailAddress ?? '';
+    const phoneFromClerk = user.primaryPhoneNumber?.phoneNumber ?? '';
+    const firstFromClerk = user.firstName ?? '';
+    const lastFromClerk = user.lastName ?? '';
+
+    setFormData((prev) => {
+      const isDifferentUser = prev.clerkUserId && prev.clerkUserId !== user.id;
+      return {
+        ...prev,
+        clerkUserId: user.id,
+        firstName: isDifferentUser || !prev.firstName ? firstFromClerk : prev.firstName,
+        lastName: isDifferentUser || !prev.lastName ? lastFromClerk : prev.lastName,
+        email: isDifferentUser || !prev.email ? emailFromClerk : prev.email,
+        phone: isDifferentUser || !prev.phone ? phoneFromClerk : prev.phone,
+      };
+    });
+  }, [user]);
 
   // Auto-save on changes
   useEffect(() => {
