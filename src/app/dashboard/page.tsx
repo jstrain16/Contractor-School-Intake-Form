@@ -7,13 +7,12 @@ import { CheckCircle2, Circle, GraduationCap, HelpCircle, ArrowRight } from "luc
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { fetchWizardData } from "@/lib/wizard-api"
-import { WizardData } from "@/lib/schemas"
 import { buildStatus } from "@/lib/progress"
 
 export default function DashboardPage() {
   const router = useRouter()
   const { isLoaded, isSignedIn, user } = useUser()
-  const [wizardData, setWizardData] = useState<Partial<WizardData> | null>(null)
+  const [wizardData, setWizardData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const userKey = user?.id ?? "anonymous"
@@ -45,7 +44,7 @@ export default function DashboardPage() {
     const load = async () => {
       try {
         const res = await fetchWizardData()
-        setWizardData((res.data || null) as Partial<WizardData> | null)
+        setWizardData(res.data || null)
       } catch (err) {
         console.error(err)
         setError("Could not load your dashboard data.")
@@ -60,11 +59,11 @@ export default function DashboardPage() {
   const progressPct = statusList.progress
   const nextUp = statusList.nextUp
   const businessItems = useMemo(
-    () => statusList.items.filter((i) => ["Entity", "Business Bank Account", "General Liability", "Workers Compensation"].includes(i.label)),
+    () => statusList.items.filter((i) => ["Business Setup", "Insurance Prep", "WC Waiver Prep"].includes(i.label)),
     [statusList.items]
   )
-  const businessTotal = businessItems.reduce((sum, i) => sum + i.weight, 0)
-  const businessCompleted = businessItems.filter((i) => i.done).reduce((sum, i) => sum + i.weight, 0)
+  const businessTotal = businessItems.length
+  const businessCompleted = businessItems.filter((i) => i.done).length
   const businessProgress = businessTotal > 0 ? Math.round((businessCompleted / businessTotal) * 100) : 0
   const businessStarted = businessItems.some((i) => i.started)
   const businessDone = businessItems.every((i) => i.done)
@@ -130,32 +129,7 @@ export default function DashboardPage() {
                 : "text-slate-600 bg-slate-100"
             const barColor = isComplete ? "bg-green-500" : isStarted ? "bg-orange-400" : "bg-slate-300"
             const barWidth = isComplete ? "100%" : isStarted ? "50%" : "0%"
-            const targetSection = (() => {
-              switch (item.label) {
-                case "Education":
-                  return "step1"
-                case "Entity":
-                  return "step2"
-                case "Business Bank Account":
-                  return "step2"
-                case "General Liability":
-                  return "step3"
-                case "Workers Compensation":
-                  return "step3"
-                case "Experience / Qualifier":
-                  return "step4"
-                case "Business & Law Exam":
-                  return "step5"
-                case "DOPL Application":
-                  return "step6"
-                default:
-                  return null
-              }
-            })()
-            const go = () => {
-              const path = targetSection ? `/application?section=${targetSection}` : "/application"
-              router.push(path)
-            }
+            const go = () => router.push("/application")
             return (
               <button
                 key={item.label}

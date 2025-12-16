@@ -1,25 +1,23 @@
-import { WizardData } from "@/lib/schemas"
-
-// Simplified weight map for 17 phases; adjust as fidelity increases.
-export const PROGRESS_WEIGHTS = {
-  phase1: 5,
-  phase2: 5,
-  phase3: 5,
-  phase4: 10,
-  phase5: 5,
-  phase6: 5,
-  phase7: 5,
-  phase8: 5,
-  phase9: 10,
-  phase10: 10,
-  phase11: 5,
-  phase12: 5,
-  phase13: 5,
-  phase14: 5,
-  phase15: 5,
-  phase16: 5,
-  phase17: 5,
-}
+// V2 progress helper driven by phase completion in contractor_applications.data
+export const PHASE_LABELS = [
+  "Authentication",
+  "License Type",
+  "Class Booking",
+  "Screening",
+  "Assistance",
+  "Business Setup",
+  "Qualifier",
+  "Insurance Prep",
+  "WC Waiver Prep",
+  "Class Complete",
+  "Exam",
+  "Insurance Active",
+  "WC Submit",
+  "DOPL Assembly",
+  "Review",
+  "Submission",
+  "Tracking",
+]
 
 export type StatusItem = {
   label: string
@@ -39,35 +37,27 @@ export type MissingStep = {
   hint: string
 }
 
-export function buildStatus(_data: Partial<WizardData> | null | undefined): StatusSummary {
-  // Placeholder: treat each phase as equal weight completion gates based on minimal fields.
-  // TODO: refine completion criteria per phase.
-  const items: StatusItem[] = [
-    { label: "Account", started: true, done: false, weight: PROGRESS_WEIGHTS.phase1 },
-    { label: "Licenses", started: true, done: false, weight: PROGRESS_WEIGHTS.phase2 },
-    { label: "Class", started: true, done: false, weight: PROGRESS_WEIGHTS.phase3 },
-    { label: "Screening", started: true, done: false, weight: PROGRESS_WEIGHTS.phase4 },
-    { label: "Assistance", started: true, done: false, weight: PROGRESS_WEIGHTS.phase5 },
-    { label: "Business", started: true, done: false, weight: PROGRESS_WEIGHTS.phase6 },
-    { label: "FEIN", started: false, done: false, weight: PROGRESS_WEIGHTS.phase7 },
-    { label: "Bank", started: false, done: false, weight: PROGRESS_WEIGHTS.phase8 },
-    { label: "Owners", started: false, done: false, weight: PROGRESS_WEIGHTS.phase9 },
-    { label: "Workers Comp", started: false, done: false, weight: PROGRESS_WEIGHTS.phase10 },
-    { label: "Qualifier", started: false, done: false, weight: PROGRESS_WEIGHTS.phase11 },
-    { label: "Insurance Prep", started: false, done: false, weight: PROGRESS_WEIGHTS.phase12 },
-    { label: "Waiver Prep", started: false, done: false, weight: PROGRESS_WEIGHTS.phase13 },
-    { label: "Class Complete", started: false, done: false, weight: PROGRESS_WEIGHTS.phase14 },
-    { label: "Exam", started: false, done: false, weight: PROGRESS_WEIGHTS.phase15 },
-    { label: "Insurance Active", started: false, done: false, weight: PROGRESS_WEIGHTS.phase16 },
-    { label: "Waiver/Submit", started: false, done: false, weight: PROGRESS_WEIGHTS.phase17 },
-  ]
-  const rawTotal = items.reduce((sum, item) => sum + item.weight, 0)
-  const rawCompleted = items.filter((i) => i.done).reduce((sum, item) => sum + item.weight, 0)
-  const progress = rawTotal > 0 ? Math.round((rawCompleted / rawTotal) * 100) : 0
+export function buildStatus(data: any): StatusSummary {
+  const completed = Array.isArray(data?.completedPhases) ? data.completedPhases : []
+  const activePhase = typeof data?.active_phase === "number" ? data.active_phase : 1
+  const items: StatusItem[] = PHASE_LABELS.map((label, idx) => {
+    const phaseId = idx + 1
+    const done = completed.includes(phaseId)
+    const started = done || activePhase >= phaseId
+    return {
+      label,
+      done,
+      started,
+      weight: 1,
+    }
+  })
+  const rawTotal = items.length
+  const rawCompleted = items.filter((i) => i.done).length
+  const progress = data?.progress ?? (rawTotal > 0 ? Math.round((rawCompleted / rawTotal) * 100) : 0)
   return { items, progress, nextUp: items.find((s) => !s.done)?.label ?? "Review & Submit" }
 }
 
-export function getMissingSteps(data: Partial<WizardData> | null | undefined): MissingStep[] {
+export function getMissingSteps(data: any): MissingStep[] {
   const d = buildStatus(data)
   return d.items
     .filter((i) => !i.done)

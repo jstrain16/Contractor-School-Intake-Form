@@ -905,7 +905,7 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-white" />
+              <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="text-gray-900">CONTRACTORS SCHOOL</div>
@@ -945,11 +945,9 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
           {/* Logo and Progress Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <ImageWithFallback
-                src={typeof logoImage === 'string' ? logoImage : (logoImage as any).src}
-                alt="Contractors School"
-                className="h-10 w-auto"
-              />
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
               <div>
                 <h2 className="text-gray-900">Application Progress</h2>
               </div>
