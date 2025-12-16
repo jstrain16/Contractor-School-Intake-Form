@@ -23,6 +23,8 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  DollarSign,
+  Send,
 } from "lucide-react"
 import type { WizardData } from "@/lib/schemas"
 import { AdminSectionBlock } from "@/components/admin/AdminSectionBlock"
@@ -34,7 +36,7 @@ import { useState as useReactState } from "react"
 type ApplicationRow = {
   id: string
   user_id: string
-  data: WizardData | null
+  data: any | null
   updated_at: string | null
   created_at: string | null
   primary_trade: string | null
@@ -57,7 +59,7 @@ function InlineSectionEditor({
   onSaved,
 }: {
   applicationId: string
-  sectionKey: keyof WizardData
+  sectionKey: string
   data?: Record<string, unknown>
   editingSection: string | null
   setEditingSection: (k: string | null) => void
@@ -160,13 +162,11 @@ function statusChip(kind: StatusKind) {
   return map[kind]
 }
 
-function getName(profile?: ProfileRow, data?: WizardData | null) {
-  const step0 = data?.step0
-  const nameParts = [profile?.first_name ?? step0?.firstName ?? "", profile?.last_name ?? step0?.lastName ?? ""].filter(
-    Boolean
-  )
-  const name = nameParts.join(" ") || profile?.email || step0?.email || "Unknown user"
-  const email = profile?.email ?? step0?.email ?? "No email"
+function getName(profile?: ProfileRow, data?: any | null) {
+  const phase1 = data?.phase1 || data?.formData || {}
+  const nameParts = [profile?.first_name ?? phase1.firstName ?? "", profile?.last_name ?? phase1.lastName ?? ""].filter(Boolean)
+  const name = nameParts.join(" ") || profile?.email || phase1.email || "Unknown user"
+  const email = profile?.email ?? phase1.email ?? "No email"
   return { name, email }
 }
 
@@ -807,36 +807,34 @@ export function AdminDashboardClient({
             {/* Steps list */}
             <div className="space-y-2 bg-white px-4 py-5 max-h-[70vh] overflow-y-auto">
               {[
-                { key: "step0", label: "License Setup & Basic Info", desc: "Complete your profile and license details", color: "text-blue-600", bg: "bg-blue-50" },
-                { key: "step1", label: "Pre-Licensure / Education", desc: "Upload course completion or exemptions", color: "text-purple-600", bg: "bg-purple-50" },
-                { key: "step2", label: "Business Entity, FEIN & Banking", desc: "Business structure and tax information", color: "text-green-600", bg: "bg-green-50" },
-                { key: "step3", label: "Insurance", desc: "General liability and workers comp coverage", color: "text-slate-600", bg: "bg-slate-100" },
-                { key: "step4", label: "Experience & Qualifier", desc: "Document qualifier experience if required", color: "text-amber-600", bg: "bg-amber-50" },
-                { key: "step5", label: "Exams (Business & Law)", desc: "Pass the Business & Law exam or provide specialty proof", color: "text-pink-600", bg: "bg-pink-50" },
-              ].map((section, idx) => {
-                // determine status icon
-                const sectionData = selected.app.data?.[section.key as keyof WizardData]
+                { key: "phase1", label: "Authentication", desc: "User info and contact", color: "text-blue-600", bg: "bg-blue-50", icon: User, id: 1 },
+                { key: "phase2", label: "License Type", desc: "License classification", color: "text-emerald-600", bg: "bg-emerald-50", icon: ClipboardCheck, id: 2 },
+                { key: "phase3", label: "Class Booking", desc: "Select and pay for class", color: "text-indigo-600", bg: "bg-indigo-50", icon: GraduationCap, id: 3 },
+                { key: "phase4", label: "Screening", desc: "Criminal & financial screening", color: "text-amber-600", bg: "bg-amber-50", icon: Shield, id: 4 },
+                { key: "phase5", label: "Assistance", desc: "Support package", color: "text-pink-600", bg: "bg-pink-50", icon: DollarSign, id: 5 },
+                { key: "phase6", label: "Business Setup", desc: "Entity, FEIN, banking", color: "text-green-600", bg: "bg-green-50", icon: Building2, id: 6 },
+                { key: "phase7", label: "Qualifier", desc: "Qualifier details", color: "text-slate-600", bg: "bg-slate-100", icon: Briefcase, id: 7 },
+                { key: "phase8", label: "Insurance Prep", desc: "Insurance setup", color: "text-purple-600", bg: "bg-purple-50", icon: Shield, id: 8 },
+                { key: "phase9", label: "WC Waiver Prep", desc: "Workers comp waiver", color: "text-rose-600", bg: "bg-rose-50", icon: ClipboardList, id: 9 },
+                { key: "phase10", label: "Class Complete", desc: "Attendance verified", color: "text-sky-600", bg: "bg-sky-50", icon: BadgeCheck, id: 10 },
+                { key: "phase11", label: "Exam", desc: "Exam status", color: "text-lime-600", bg: "bg-lime-50", icon: FileText, id: 11 },
+                { key: "phase12", label: "Insurance Active", desc: "Coverage activation", color: "text-cyan-600", bg: "bg-cyan-50", icon: Shield, id: 12 },
+                { key: "phase13", label: "WC Submit", desc: "Waiver submission", color: "text-orange-600", bg: "bg-orange-50", icon: ClipboardCheck, id: 13 },
+                { key: "phase14", label: "DOPL Assembly", desc: "Application package", color: "text-slate-700", bg: "bg-slate-100", icon: FileText, id: 14 },
+                { key: "phase15", label: "Review", desc: "Staff review", color: "text-teal-600", bg: "bg-teal-50", icon: CheckCircle, id: 15 },
+                { key: "phase16", label: "Submission", desc: "Submit to DOPL", color: "text-fuchsia-600", bg: "bg-fuchsia-50", icon: Send, id: 16 },
+                { key: "phase17", label: "Tracking", desc: "Status updates", color: "text-gray-700", bg: "bg-gray-100", icon: Clock, id: 17 },
+              ].map((section) => {
+                const completed = Array.isArray(selected.app.data?.completedPhases)
+                  ? (selected.app.data?.completedPhases as number[]).includes(section.id)
+                  : false
+                const activePhase = typeof selected.app.data?.active_phase === "number" ? selected.app.data.active_phase : 1
+                const started = completed || activePhase >= section.id
+                const sectionData = selected.app.data?.[section.key]
                 const hasData = sectionData && Object.keys(sectionData as Record<string, unknown>).length > 0
-                const isPending = section.key === "step3" && !hasData
                 const StatusIcon = () =>
-                  isPending ? <Clock className="h-4 w-4 text-orange-500" /> : <CheckCircle className="h-4 w-4 text-green-600" />
-                const Icon = (() => {
-                  switch (section.key) {
-                    case "step0":
-                      return ClipboardList
-                    case "step1":
-                      return GraduationCap
-                    case "step2":
-                      return Building2
-                    case "step3":
-                      return Shield
-                    case "step4":
-                      return Briefcase
-                    case "step5":
-                    default:
-                      return FileText
-                  }
-                })()
+                  completed ? <CheckCircle className="h-4 w-4 text-green-600" /> : started ? <Clock className="h-4 w-4 text-orange-500" /> : <Clock className="h-4 w-4 text-slate-400" />
+                const Icon = section.icon
                 return (
                   <Card
                     key={section.key}
@@ -860,8 +858,8 @@ export function AdminDashboardClient({
                     {expandedSection === section.key && (
                       <InlineSectionEditor
                         applicationId={selected.app.id}
-                        sectionKey={section.key as keyof WizardData}
-                        data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                        sectionKey={section.key}
+                        data={selected.app.data?.[section.key] as Record<string, unknown>}
                         editingSection={editingSection}
                         setEditingSection={setEditingSection}
                         editFormData={editFormData}
@@ -900,17 +898,15 @@ export function AdminDashboardClient({
                       <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
                         <AdminSectionBlock
                           label={section.label}
-                          sectionKey={section.key as keyof WizardData}
+                          sectionKey={section.key as any}
                           applicationId={selected.app.id}
-                          data={selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>}
+                          data={selected.app.data?.[section.key] as Record<string, unknown>}
                       simple
                         >
                       {editingSection === section.key ? (
                         renderEditableSection(editFormData, setEditFormData)
                       ) : (
-                        renderSectionContent(
-                          (selected.app.data?.[section.key as keyof WizardData] as Record<string, unknown>) || {}
-                        )
+                        renderSectionContent((selected.app.data?.[section.key] as Record<string, unknown>) || {})
                       )}
                         </AdminSectionBlock>
                       </div>
@@ -929,15 +925,24 @@ export function AdminDashboardClient({
                   <div className="flex items-start gap-2 text-sm text-slate-700">
                     <AlertCircle className="mt-0.5 h-4 w-4 text-amber-500" />
                     <div>
-                      <div className="font-semibold">Missing steps:</div>
+                      <div className="font-semibold">Missing phases:</div>
                       <ul className="mt-1 list-disc space-y-1 pl-4 text-slate-600">
-                        {!selected.app.data?.step3 && (
-                          <li>Insurance: Add workers comp or waiver if no employees</li>
-                        )}
-                        {!selected.app.data?.step7 && <li>Review / Attestation: Complete final review and sign</li>}
-                        {selected.app.data?.step3 && selected.app.data?.step7 && (
-                          <li>All required steps have submissions</li>
-                        )}
+                        {[
+                          { id: 4, label: "Screening" },
+                          { id: 6, label: "Business Setup" },
+                          { id: 8, label: "Insurance Prep" },
+                          { id: 9, label: "WC Waiver Prep" },
+                          { id: 16, label: "Submission" },
+                        ].map((p) => {
+                          const done = Array.isArray(selected.app.data?.completedPhases)
+                            ? (selected.app.data.completedPhases as number[]).includes(p.id)
+                            : false
+                          return (
+                            <li key={p.id} className={done ? "line-through text-slate-400" : ""}>
+                              {p.label} {done ? "(complete)" : ""}
+                            </li>
+                          )
+                        })}
                       </ul>
                     </div>
                   </div>
