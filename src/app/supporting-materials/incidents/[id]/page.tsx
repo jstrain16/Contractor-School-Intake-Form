@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { LoaderThreeFullScreen } from "@/components/ui/loader"
 
 type Incident = {
   id: string
@@ -91,7 +92,7 @@ export default function IncidentDetailPage() {
   }, [incidents])
 
   if (loading) {
-    return <div className="p-6 text-sm text-slate-600">Loading incident…</div>
+    return <LoaderThreeFullScreen />
   }
 
   return (

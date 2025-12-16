@@ -31,6 +31,7 @@ import { ReminderActions } from "@/components/admin/ReminderActions"
 import { AttachmentList } from "@/components/admin/AttachmentList"
 import { buildStatus, getMissingSteps } from "@/lib/progress"
 import { useState as useReactState } from "react"
+import { LoaderThree } from "@/components/ui/loader"
 
 type ApplicationRow = {
   id: string
@@ -851,7 +852,7 @@ export function AdminDashboardClient({
               </Button>
             </div>
             <div className="max-h-[60vh] overflow-y-auto px-6 py-4 space-y-3">
-              {loadingAdmins && <div className="text-sm text-slate-600">Loading admins...</div>}
+              {loadingAdmins && <div className="flex justify-center py-4"><LoaderThree /></div>}
               {!loadingAdmins && admins.length === 0 && (
                 <div className="text-sm text-slate-600">No admins found.</div>
               )}

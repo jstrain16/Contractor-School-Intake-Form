@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { fetchWizardData } from "@/lib/wizard-api"
 import { buildStatus, PHASE_LABELS } from "@/lib/progress"
+import { LoaderThree } from "@/components/ui/loader"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -77,8 +78,8 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-white text-slate-900">
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-6 space-y-8">
         {loading && (
-          <Card className="border border-slate-200 bg-white shadow-sm">
-            <div className="px-6 py-5 space-y-2 text-sm text-slate-600">Loading your dashboard...</div>
+          <Card className="border border-slate-200 bg-white shadow-sm flex items-center justify-center py-12">
+            <LoaderThree />
           </Card>
         )}
         {!loading && (

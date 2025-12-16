@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { LoaderThreeFullScreen } from "@/components/ui/loader"
 
 type Incident = {
   id: string
@@ -99,7 +100,7 @@ export default function SupportingMaterialsPage() {
       ? PILL_COLOR.info
       : PILL_COLOR.warning
 
-  if (loading) return <div className="p-6">Loading supporting materials...</div>
+  if (loading) return <LoaderThreeFullScreen />
   if (!applicationId) return <div className="p-6">No application found.</div>
 
   return (

@@ -40,6 +40,7 @@ import { Phase16 } from './phases/Phase16';
 import { Phase17 } from './phases/Phase17';
 const logoImage = "/favicon.ico";
 import { FormData as AppFormData } from './types/ApplicationTypes';
+import { LoaderThreeFullScreen } from '@/components/ui/loader';
 
 interface ApplicationFormProps {
   onBack: () => void;
@@ -912,6 +913,10 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     
     return allTypesDocumented && allIncidentsComplete;
   };
+
+  if (loadingApp) {
+    return <LoaderThreeFullScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { IncidentDetailInline } from "./IncidentDetailInline"
+import { LoaderThree } from "@/components/ui/loader"
 
 type Incident = {
   id: string
@@ -224,7 +225,7 @@ export function SupportingMaterialsInline() {
     return hubJson.incidents ?? []
   }
 
-  if (loading) return <div className="p-6 text-sm text-slate-600">Loading supporting materials...</div>
+  if (loading) return <div className="flex justify-center p-12"><LoaderThree /></div>
   if (!applicationId) return <div className="p-6 text-sm text-slate-600">No application found.</div>
 
   const selectedIncident = incidents.find((i) => i.id === selectedIncidentId) || null
@@ -303,7 +304,7 @@ export function SupportingMaterialsInline() {
     </div>
   )
 
-  if (loading) return <div className="p-6 text-sm text-slate-600">Loading supporting materials...</div>
+  if (loading) return <div className="flex justify-center p-12"><LoaderThree /></div>
   if (!applicationId) return <div className="p-6 text-sm text-slate-600">No application found.</div>
 
   const currentView =

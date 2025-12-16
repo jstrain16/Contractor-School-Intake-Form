@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { Bell, Cog, Shield, Users, ArrowLeft } from "lucide-react"
 import ChatWidget from "@/components/chat/ChatWidget"
 import { useNotifications } from "@/hooks/useNotifications"
+import { LoaderThreeFullScreen } from "@/components/ui/loader"
 
 const marketingNavItems = [
   { label: "Portal Features", href: "/#features" },
@@ -51,7 +52,7 @@ export function Providers({ children }: ProvidersProps) {
       signUpFallbackRedirectUrl="/dashboard"
     >
       <ClerkLoading>
-        <div className="p-4 text-sm text-slate-600">Loading account...</div>
+        <LoaderThreeFullScreen />
       </ClerkLoading>
       <ClerkLoaded>
         <GlobalHeader />

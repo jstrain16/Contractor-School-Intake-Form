@@ -6,6 +6,7 @@ import { useUser } from "@clerk/nextjs"
 import { ChatKit, useChatKit } from "@openai/chatkit-react"
 import { MessageCircle } from "lucide-react"
 import { useRef } from "react"
+import { LoaderThree } from "@/components/ui/loader"
 
 function getOrCreateDeviceId() {
   if (typeof window === "undefined") return "unknown-device"
@@ -166,8 +167,8 @@ export function ChatWidget() {
         <div className="fixed bottom-24 right-4 z-40 w-80 h-[520px] rounded-xl shadow-2xl border border-slate-200 overflow-hidden bg-white">
           {error && <div className="p-4 text-sm text-red-600">Chat unavailable: {error}</div>}
           {!error && sdkError && <div className="p-4 text-sm text-red-600">{sdkError}</div>}
-          {!error && !sdkError && !sdkReady && <div className="p-4 text-sm text-slate-600">Loading chat...</div>}
-          {!error && !sdkError && sdkReady && loading && <div className="p-4 text-sm text-slate-600">Starting chat...</div>}
+          {!error && !sdkError && !sdkReady && <div className="p-8 flex justify-center"><LoaderThree /></div>}
+          {!error && !sdkError && sdkReady && loading && <div className="p-8 flex justify-center"><LoaderThree /></div>}
           {!error && !sdkError && sdkReady && !loading && <ChatKit control={control} className="h-full w-full" />}
           {!error && !sdkError && suggestedPrompt && (
             <div className="absolute top-3 right-3 z-50 max-w-[260px] rounded-lg border border-slate-200 bg-white/95 backdrop-blur-sm shadow-lg p-3 text-xs text-slate-800 space-y-2">

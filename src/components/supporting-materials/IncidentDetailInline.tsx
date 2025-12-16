@@ -2,6 +2,7 @@ import * as React from "react"
 import { useMemo, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { LoaderThree } from "@/components/ui/loader"
 
 type Incident = {
   id: string
@@ -164,11 +165,11 @@ export function IncidentDetailInline({ incident, slots, files, loading, onBack, 
                 </div>
               </div>
             )
-          })}
+          }          )}
           {slots.length === 0 && !loading && (
             <div className="px-6 py-5 text-sm text-slate-600">No document slots defined for this incident.</div>
           )}
-          {loading && <div className="px-6 py-5 text-sm text-slate-600">Loading incident details…</div>}
+          {loading && <div className="flex justify-center py-8"><LoaderThree /></div>}
         </div>
       </Card>
     </div>
