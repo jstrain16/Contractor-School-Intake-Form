@@ -1,6 +1,7 @@
-import { CheckCircle, Award, ChevronDown, ChevronUp, Info, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, Award, ChevronDown, ChevronUp, Info, ArrowRight, ChevronRight, Plus } from 'lucide-react';
 import { Label } from '../ui/label';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Checkbox } from '../ui/checkbox';
 import { PhaseComponentProps } from '../types/ApplicationTypes';
 
 export function Phase2({ 
@@ -12,17 +13,175 @@ export function Phase2({
   toggleSection 
 }: PhaseComponentProps) {
   const phaseId = 2;
+  const specialtyLimit = 3;
 
-  const handleLicenseSelection = (value: string) => {
-    const requiresExam = ['R100', 'B100', 'E100'].includes(value);
-    const classType = requiresExam ? '30-hour' : '25-hour';
-    
+  const generalOptions = [
+    { code: 'B100', name: 'General Building Contractor', desc: 'Supervise or perform construction of buildings.' },
+    { code: 'E100', name: 'General Engineering Contractor', desc: 'Fixed works like bridges, tunnels, flood control.' },
+    { code: 'R100', name: 'Residential/Small Commercial Contractor', desc: 'Single-family, small multi-family, commercial ≤3 stories/20k sq ft.' },
+  ];
+
+  const epOptions = [
+    { code: 'E200', name: 'General Electrical', desc: 'General electrical contracting.' },
+    { code: 'E201', name: 'Residential Electrical', desc: 'Residential electrical contracting.' },
+    { code: 'P200', name: 'General Plumbing', desc: 'General plumbing contracting.' },
+    { code: 'P201', name: 'Residential Plumbing', desc: 'Residential plumbing contracting.' },
+  ];
+
+  const specialtyOptions = [
+    { code: 'S202', name: 'Solar Photovoltaic' },
+    { code: 'S220', name: 'Carpentry & Flooring' },
+    { code: 'S230', name: 'Masonry, Siding, Stucco, Glass, Gutters' },
+    { code: 'S280', name: 'Roofing' },
+    { code: 'S310', name: 'Foundation, Excavation, Demolition' },
+    { code: 'S350', name: 'HVAC (Heating, Ventilation, Air Conditioning)' },
+    { code: 'S370', name: 'Fire Suppression Systems' },
+    { code: 'S410', name: 'Boiler, Pipeline, Wastewater' },
+    { code: 'S700', name: 'Specialty License Contractor (unique scopes)' },
+  ];
+
+  const handleGeneralSelect = (code: string) => {
     setFormData({
       ...formData,
-      licenseType: value,
-      requiresExam,
-      classType
+      licenseType: code,
+      requiresExam: ['R100', 'B100', 'E100'].includes(code),
+      classType: ['R100', 'B100', 'E100'].includes(code) ? '30-hour' : '25-hour',
+      specialtyLicenses: [],
     });
+  };
+
+  const handleEPSelect = (code: string) => {
+    setFormData({
+      ...formData,
+      licenseType: code,
+      requiresExam: ['R100', 'B100', 'E100'].includes(code),
+      classType: ['R100', 'B100', 'E100'].includes(code) ? '30-hour' : '25-hour',
+      specialtyLicenses: [],
+    });
+  };
+
+  const handleSpecialtyToggle = (code: string) => {
+    const current = formData.specialtyLicenses || [];
+    const isSelected = current.includes(code);
+    if (isSelected) {
+      setFormData({
+        ...formData,
+        specialtyLicenses: current.filter((c) => c !== code),
+      });
+      return;
+    }
+    if (current.length >= specialtyLimit) {
+      return;
+    }
+    setFormData({
+      ...formData,
+      licenseType: code, // last specialty selected becomes primary display
+      requiresExam: false,
+      classType: '25-hour',
+      specialtyLicenses: [...current, code],
+    });
+  };
+
+  const specialtyCount = (formData.specialtyLicenses || []).length;
+
+  const AccordionSection = ({
+    title,
+    description,
+    options,
+    selected,
+    onSelect,
+    selectedSpecialties,
+    onToggleSpecialty,
+    specialtyLimit,
+    type,
+  }: {
+    title: string;
+    description: string;
+    options: { code: string; name: string; desc?: string }[];
+    selected?: string;
+    onSelect?: (code: string) => void;
+    selectedSpecialties?: string[];
+    onToggleSpecialty?: (code: string) => void;
+    specialtyLimit?: number;
+    type: 'general' | 'ep' | 'specialty';
+  }) => {
+    const [open, setOpen] = useState(false);
+    const toggle = () => setOpen(!open);
+    return (
+      <div className="border border-gray-200 rounded-lg">
+        <button
+          type="button"
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+          onClick={toggle}
+        >
+          <div className="text-left">
+            <div className="text-gray-900 font-semibold">{title}</div>
+            <div className="text-xs text-gray-600">{description}</div>
+          </div>
+          <ChevronRight
+            className={`w-4 h-4 text-gray-500 transition-transform ${open ? 'rotate-90' : ''}`}
+          />
+        </button>
+        {open && (
+          <div className="border-t border-gray-200 p-3 space-y-2">
+            {type !== 'specialty' &&
+              options.map((opt) => (
+                <label
+                  key={opt.code}
+                  className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 ${
+                    selected === opt.code ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'
+                  }`}
+                  onClick={() => onSelect?.(opt.code)}
+                >
+                  <input
+                    type="radio"
+                    className="mt-1 h-4 w-4"
+                    checked={selected === opt.code}
+                    onChange={() => onSelect?.(opt.code)}
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {opt.code} — {opt.name}
+                    </div>
+                    {opt.desc && <div className="text-xs text-gray-600 mt-0.5">{opt.desc}</div>}
+                  </div>
+                </label>
+              ))}
+            {type === 'specialty' &&
+              options.map((opt) => {
+                const isChecked = selectedSpecialties?.includes(opt.code);
+                const disabled = !isChecked && (selectedSpecialties?.length || 0) >= (specialtyLimit || 3);
+                return (
+                  <label
+                    key={opt.code}
+                    className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 ${
+                      isChecked ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white'
+                    } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    onClick={() => !disabled && onToggleSpecialty?.(opt.code)}
+                  >
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() => !disabled && onToggleSpecialty?.(opt.code)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {opt.code} — {opt.name}
+                      </div>
+                      {opt.desc && <div className="text-xs text-gray-600 mt-0.5">{opt.desc}</div>}
+                    </div>
+                  </label>
+                );
+              })}
+            {type === 'specialty' && (
+              <div className="text-xs text-gray-600">
+                Selected {selectedSpecialties?.length || 0}/{specialtyLimit} (max 3)
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
   
   return (
@@ -84,102 +243,38 @@ export function Phase2({
               <p className="text-sm text-gray-600 mb-4">
                 Choose the classification you intend to apply for
               </p>
-              
-              <div className="space-y-3">
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-gray-900 mb-3">
-                    General & Exam Required (30 Hours)
-                  </h4>
-                  <RadioGroup
-                    value={formData.licenseType}
-                    onValueChange={handleLicenseSelection}
-                    className="space-y-2"
-                  >
-                    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                      <RadioGroupItem value="R100" id="R100" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="R100" className="cursor-pointer">
-                          <span className="text-gray-900">R100 - General Residential</span>
-                        </Label>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Requires PSI exam | 30-hour course
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                      <RadioGroupItem value="B100" id="B100" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="B100" className="cursor-pointer">
-                          <span className="text-gray-900">B100 - General Building</span>
-                        </Label>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Requires PSI exam | 30-hour course
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                      <RadioGroupItem value="E100" id="E100" className="mt-1" />
-                      <div className="flex-1">
-                        <Label htmlFor="E100" className="cursor-pointer">
-                          <span className="text-gray-900">E100 - General Engineering</span>
-                        </Label>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Requires PSI exam | 30-hour course
-                        </p>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
 
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-gray-900 mb-3">
-                    Specialty Classifications (25 Hours, No Exam)
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-3">
-                    All S-Series specialty contractor classifications
-                  </p>
-                  <RadioGroup
-                    value={formData.licenseType}
-                    onValueChange={handleLicenseSelection}
-                    className="space-y-2"
-                  >
-                    {[
-                      { value: 'S-02', label: 'S-02 - Asbestos Abatement' },
-                      { value: 'S-03', label: 'S-03 - Boiler, Hot-Water Heating and Steam Fitting' },
-                      { value: 'S-05', label: 'S-05 - Ceramic and Wall Tile' },
-                      { value: 'S-06', label: 'S-06 - Concrete' },
-                      { value: 'S-07', label: 'S-07 - Drywall' },
-                      { value: 'S-08', label: 'S-08 - Fire Protection Systems' },
-                      { value: 'S-09', label: 'S-09 - Floor Covering' },
-                      { value: 'S-11', label: 'S-11 - Glazing' },
-                      { value: 'S-13', label: 'S-13 - Insulation and Weather Stripping' },
-                      { value: 'S-14', label: 'S-14 - Lathing and Plastering' },
-                      { value: 'S-15', label: 'S-15 - Lock and Security Equipment' },
-                      { value: 'S-17', label: 'S-17 - Ornamental Metals' },
-                      { value: 'S-18', label: 'S-18 - Painting and Decorating' },
-                      { value: 'S-19', label: 'S-19 - Parking and Highway Improvement' },
-                      { value: 'S-20', label: 'S-20 - Pipeline' },
-                      { value: 'S-22', label: 'S-22 - Refrigeration' },
-                      { value: 'S-25', label: 'S-25 - Swimming Pool' },
-                      { value: 'S-27', label: 'S-27 - Warm-Air Heating, Ventilating and Air-Conditioning' },
-                      { value: 'S-28', label: 'S-28 - Water Conditioning' },
-                      { value: 'S-33', label: 'S-33 - Sanitation System' },
-                      { value: 'S-34', label: 'S-34 - Well Drilling' },
-                    ].map((option) => (
-                      <div key={option.value} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                        <RadioGroupItem value={option.value} id={option.value} className="mt-1" />
-                        <div className="flex-1">
-                          <Label htmlFor={option.value} className="cursor-pointer">
-                            <span className="text-gray-900">{option.label}</span>
-                          </Label>
-                          <p className="text-sm text-gray-600 mt-1">
-                            No exam required | 25-hour course
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
+              <div className="space-y-4">
+                {/* General */}
+                <AccordionSection
+                  title="General Contractor Classifications"
+                  description="B100, E100, R100"
+                  options={generalOptions}
+                  selected={formData.licenseType}
+                  onSelect={handleGeneralSelect}
+                  type="general"
+                />
+
+                {/* Electrical & Plumbing */}
+                <AccordionSection
+                  title="Electrical & Plumbing (General & Residential)"
+                  description="E200/E201, P200/P201"
+                  options={epOptions}
+                  selected={formData.licenseType}
+                  onSelect={handleEPSelect}
+                  type="ep"
+                />
+
+                {/* Specialty */}
+                <AccordionSection
+                  title="Specialty License Classifications (S-Codes)"
+                  description="Up to 3 specialty licenses"
+                  options={specialtyOptions}
+                  selectedSpecialties={formData.specialtyLicenses || []}
+                  onToggleSpecialty={handleSpecialtyToggle}
+                  specialtyLimit={specialtyLimit}
+                  type="specialty"
+                />
               </div>
 
               {formData.licenseType && (
@@ -187,6 +282,11 @@ export function Phase2({
                   <p className="text-sm text-green-900">
                     <strong>Selected:</strong> {formData.licenseType}
                   </p>
+                  {formData.specialtyLicenses && formData.specialtyLicenses.length > 0 && (
+                    <p className="text-sm text-green-800 mt-1">
+                      Specialty licenses: {formData.specialtyLicenses.join(", ")} (max 3)
+                    </p>
+                  )}
                   <p className="text-sm text-green-700 mt-1">
                     {formData.requiresExam ? 'PSI Exam Required' : 'No Exam Required'} • {formData.classType}
                   </p>

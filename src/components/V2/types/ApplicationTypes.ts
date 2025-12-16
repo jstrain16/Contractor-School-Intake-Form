@@ -76,6 +76,7 @@ export interface FormData {
   licenseType: string;
   requiresExam: boolean;
   classType: string;
+  specialtyLicenses?: string[];
   
   // Phase 3: Class Selection
   selectedClass: string;
