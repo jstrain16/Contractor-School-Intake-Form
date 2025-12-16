@@ -28,20 +28,6 @@ create table if not exists supporting_materials_plan (
 
 create index if not exists supporting_materials_plan_app_idx on supporting_materials_plan (application_id);
 
-create table if not exists screen4_responses (
-  id uuid primary key default gen_random_uuid(),
-  application_id uuid not null references applications(id) on delete cascade,
-  prior_discipline boolean,
-  pending_legal_matters boolean,
-  misdemeanor_10yr boolean,
-  felony_ever boolean,
-  financial_items_8yr boolean,
-  bankruptcy_7yr boolean,
-  updated_at timestamptz not null default now()
-);
-
-create index if not exists screen4_responses_app_idx on screen4_responses (application_id);
-
 create type incident_category as enum ('BACKGROUND', 'DISCIPLINE', 'FINANCIAL', 'BANKRUPTCY');
 create type incident_subtype as enum ('PENDING_CASE', 'MISDEMEANOR', 'FELONY', 'OTHER', 'DENIAL', 'SUSPENSION', 'REVOCATION', 'PROBATION', 'LIEN', 'JUDGMENT', 'CHILD_SUPPORT', 'CH7', 'CH11', 'CH13', 'UNKNOWN');
 

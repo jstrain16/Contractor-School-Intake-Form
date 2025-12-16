@@ -164,16 +164,6 @@ export type Step5FormValues = z.input<typeof step5Schema>
 export type Step6FormValues = z.input<typeof step6Schema>
 export type Step7FormValues = z.input<typeof step7Schema>
 
-// Phase 4 supporting materials
-export const screen4Schema = z.object({
-  prior_discipline: z.boolean().default(false),
-  pending_legal_matters: z.boolean().default(false),
-  misdemeanor_10yr: z.boolean().default(false),
-  felony_ever: z.boolean().default(false),
-  financial_items_8yr: z.boolean().default(false),
-  bankruptcy_7yr: z.boolean().default(false),
-})
-
 export const incidentSchema = z.object({
   id: z.string().uuid(),
   application_id: z.string().uuid(),
@@ -254,6 +244,3 @@ export const uploadedFileSchema = z.object({
   uploaded_at: z.string().optional(),
   uploaded_by_user_id: z.string().nullable().optional(),
 })
-
-export type Screen4Data = z.infer<typeof screen4Schema>
-

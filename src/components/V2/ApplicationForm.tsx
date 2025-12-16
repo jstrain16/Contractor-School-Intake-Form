@@ -4,7 +4,7 @@ import {
   ClipboardCheck, Send, AlertCircle, Upload, ChevronDown, ChevronUp,
   Users, CreditCard, BookOpen, Award, TrendingUp, Info, FileX, Trash2
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
@@ -72,6 +72,8 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
   const [expandedSections, setExpandedSections] = useState<number[]>([1]);
   const [showSupportingMaterials, setShowSupportingMaterials] = useState(false);
   const [supportingMaterialsComplete, setSupportingMaterialsComplete] = useState(false);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [loadingApp, setLoadingApp] = useState<boolean>(true);
 
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
@@ -194,6 +196,65 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     estimatedApprovalMin: '',
     estimatedApprovalMax: '',
   });
+
+  // Load application from backend on mount
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/application', { method: 'GET', credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to load application');
+        const json = await res.json();
+        if (!active) return;
+        setApplicationId(json.applicationId ?? null);
+        if (json.data?.formData) {
+          setFormData((prev) => ({ ...prev, ...json.data.formData }));
+        }
+        const savedCompleted = Array.isArray(json.data?.completedPhases) ? json.data.completedPhases : null;
+        if (savedCompleted) setCompletedPhases(savedCompleted);
+        const savedActive = typeof json.data?.active_phase === 'number' ? json.data.active_phase : null;
+        if (savedActive) setCurrentPhase(savedActive);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (active) setLoadingApp(false);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Auto-save on changes
+  useEffect(() => {
+    if (!applicationId) return;
+    const timer = setTimeout(() => {
+      const progress = Math.round((completedPhases.length / phases.length) * 100);
+      const payload = {
+        applicationId,
+        data: {
+          formData,
+          completedPhases,
+          active_phase: currentPhase,
+          progress,
+        },
+        progress,
+        activePhase: currentPhase,
+        licenseType: formData.licenseType ?? null,
+        primaryTrade: formData.classType ?? null,
+        hasEmployees: formData.hasEmployees ?? null,
+      };
+      fetch('/api/application', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      }).catch((err) => console.error('autosave error', err));
+    }, 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, completedPhases, currentPhase, applicationId]);
 
   // Mock class data from WooCommerce
   const mockClasses: ClassOption[] = [

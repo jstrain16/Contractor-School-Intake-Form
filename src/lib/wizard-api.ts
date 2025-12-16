@@ -1,6 +1,4 @@
-import { WizardData } from "./schemas"
-
-type WizardResponse = { data: WizardData | null; applicationId: string | null }
+type WizardResponse = { data: any; applicationId: string | null; status?: string }
 
 const DEFAULT_TIMEOUT_MS = 10000
 
@@ -21,11 +19,11 @@ export async function fetchWizardData(timeoutMs: number = DEFAULT_TIMEOUT_MS): P
   }
 }
 
-export async function saveWizardData(payload: Partial<WizardData>, applicationId: string | null) {
+export async function saveWizardData(payload: any, applicationId: string | null) {
   const res = await fetch("/api/application", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: payload, applicationId }),
+    body: JSON.stringify(payload),
     credentials: "include",
   })
   if (!res.ok) throw new Error("Failed to save application data")
