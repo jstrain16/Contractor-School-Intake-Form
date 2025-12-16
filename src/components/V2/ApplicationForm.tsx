@@ -204,7 +204,11 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
     let active = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/application', { method: 'GET', credentials: 'include' });
+        const res = await fetch('/api/application', {
+          method: 'GET',
+          credentials: 'include',
+          cache: 'no-store',
+        });
         if (!res.ok) throw new Error('Failed to load application');
         const json = await res.json();
         if (!active) return;
@@ -273,6 +277,7 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        cache: 'no-store',
         body: JSON.stringify(payload),
       }).catch((err) => console.error('autosave error', err));
     }, 800);

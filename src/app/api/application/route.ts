@@ -95,8 +95,18 @@ export async function POST(req: Request) {
     const status = (body?.status as string | undefined) ?? undefined
     const licenseType = (body?.licenseType as string | undefined) ?? (data as any)?.licenseType ?? null
     const primaryTrade = (body?.primaryTrade as string | undefined) ?? (data as any)?.primaryTrade ?? null
-    const hasEmployees = (body?.hasEmployees as boolean | undefined) ?? (data as any)?.hasEmployees ?? null
-    const qualifierDob = (body?.qualifierDob as string | undefined) ?? (data as any)?.qualifierDob ?? null
+
+    // normalize hasEmployees (can arrive as "yes"/"no"/""/boolean)
+    const normalizeHasEmployees = (val: unknown) => {
+      if (val === true || val === "yes") return true
+      if (val === false || val === "no") return false
+      return null
+    }
+    const hasEmployees = normalizeHasEmployees(body?.hasEmployees ?? (data as any)?.hasEmployees)
+
+    // normalize qualifierDob; empty string -> null
+    const rawQualifierDob = (body?.qualifierDob as string | undefined) ?? (data as any)?.qualifierDob ?? null
+    const qualifierDob = rawQualifierDob && String(rawQualifierDob).trim() !== "" ? rawQualifierDob : null
 
     if (!applicationId) {
       return NextResponse.json({ error: "Missing applicationId" }, { status: 400 })
