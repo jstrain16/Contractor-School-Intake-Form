@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { auth as clerkAuth } from "@clerk/nextjs/server"
+import { auth as clerkAuth, currentUser } from "@clerk/nextjs/server"
 import { createClient } from "@supabase/supabase-js"
 
 // Default skeleton for V2 phases
@@ -30,6 +30,11 @@ export async function GET() {
     const supabase = getSupabaseAdmin()
     const { userId: clerkUserId } = await clerkAuth()
     if (!clerkUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const clerkUser = await currentUser()
+    const email = clerkUser?.primaryEmailAddress?.emailAddress?.toLowerCase() || clerkUser?.emailAddresses?.[0]?.emailAddress?.toLowerCase()
+    const firstName = clerkUser?.firstName || ""
+    const lastName = clerkUser?.lastName || ""
+    const phone = clerkUser?.phoneNumbers?.[0]?.phoneNumber || ""
 
     const { data: existing, error: selectError } = await supabase
       .from("contractor_applications")
@@ -44,11 +49,28 @@ export async function GET() {
 
     if (existing) {
       const phased = ensurePhases(existing.data ?? {})
+      await ensureProfile(supabase, clerkUserId, clerkUser)
       return NextResponse.json({ data: phased, applicationId: existing.id })
     }
 
     // create new empty application scoped to this user
-    const initialData = { ...EMPTY_DATA }
+    const initialData = {
+      ...EMPTY_DATA,
+      phase1: {
+        firstName,
+        lastName,
+        phone,
+        email,
+        clerkUserId,
+      },
+      formData: {
+        firstName,
+        lastName,
+        phone,
+        email,
+        clerkUserId,
+      },
+    }
     const { data: created, error: insertError } = await supabase
       .from("contractor_applications")
       .insert({ user_id: clerkUserId, data: initialData })
@@ -59,6 +81,8 @@ export async function GET() {
       console.error("Supabase insert error", insertError)
       return NextResponse.json({ error: "Server error", detail: insertError.message }, { status: 500 })
     }
+
+    await ensureProfile(supabase, clerkUserId, clerkUser)
 
     // notify admins of new application (use applicant name instead of UUID)
     const applicantName = await getApplicantDisplayName(supabase, clerkUserId)
@@ -211,6 +235,43 @@ async function getAdminProfileIds(supabase: ReturnType<typeof getSupabaseAdmin>)
     })
     .map((a) => a.id)
     .filter(Boolean)
+}
+
+async function ensureProfile(supabase: ReturnType<typeof getSupabaseAdmin>, userId: string, user: any) {
+  const email =
+    user?.primaryEmailAddress?.emailAddress?.toLowerCase() || user?.emailAddresses?.[0]?.emailAddress?.toLowerCase() || null
+  const firstName = user?.firstName || null
+  const lastName = user?.lastName || null
+  const phone = user?.phoneNumbers?.[0]?.phoneNumber || null
+  const lastActive = user?.lastActiveAt ? new Date(user.lastActiveAt).toISOString() : new Date().toISOString()
+
+  const { data: existing, error: existingErr } = await supabase
+    .from("user_profiles")
+    .select("role")
+    .or(`email.eq.${email ?? ""},user_id.eq.${userId}`)
+    .maybeSingle()
+  if (existingErr) {
+    console.error("ensure profile existing lookup failed", existingErr)
+  }
+  const resolvedRole = existing?.role ?? "applicant"
+
+  await supabase
+    .from("user_profiles")
+    .upsert(
+      {
+        user_id: userId,
+        clerk_id: userId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        phone,
+        role: resolvedRole,
+        last_active_at: lastActive,
+        active: true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    )
 }
 
 function ensurePhases(data: any): any {

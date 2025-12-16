@@ -45,7 +45,7 @@ export async function POST() {
           active: true,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "email" }
+        { onConflict: "user_id" }
       )
       .select()
       .maybeSingle()
