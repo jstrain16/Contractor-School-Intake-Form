@@ -101,7 +101,7 @@ export default function HomePage() {
           <div className="relative">
             <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-[#dbe9ff] bg-white shadow-xl">
               <img
-                src="/images/contractor-site.jpg"
+                src="https://mdkkpjgujvksafwdqdun.supabase.co/storage/v1/object/sign/Website%20Content/Gemini%20Contractor%20image.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9jNjZlNjBmZi1iN2FiLTQ0MTEtYTVhNy1hOGFmZDJiNDdjMzIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJXZWJzaXRlIENvbnRlbnQvR2VtaW5pIENvbnRyYWN0b3IgaW1hZ2UucG5nIiwiaWF0IjoxNzY1OTI1ODI2LCJleHAiOjMzNDI3MjU4MjZ9.7yX7E2cqi9Eizz1umoqDlH-Fb-Gbj5UPJulmHNFYqh8"
                 alt="Dashboard preview"
                 className="h-full w-full object-cover"
               />
