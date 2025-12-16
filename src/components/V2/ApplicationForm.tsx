@@ -214,9 +214,30 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
         if (!active) return;
         setApplicationId(json.applicationId ?? null);
         const savedData = json.data ?? {};
-        if (savedData.formData) {
-          setFormData((prev) => ({ ...prev, ...savedData.formData }));
-        }
+
+        const mergedFormData = {
+          ...formData,
+          ...(savedData.phase1 || {}),
+          ...(savedData.phase2 || {}),
+          ...(savedData.phase3 || {}),
+          ...(savedData.phase4 || {}),
+          ...(savedData.phase5 || {}),
+          ...(savedData.phase6 || {}),
+          ...(savedData.phase7 || {}),
+          ...(savedData.phase8 || {}),
+          ...(savedData.phase9 || {}),
+          ...(savedData.phase10 || {}),
+          ...(savedData.phase11 || {}),
+          ...(savedData.phase12 || {}),
+          ...(savedData.phase13 || {}),
+          ...(savedData.phase14 || {}),
+          ...(savedData.phase15 || {}),
+          ...(savedData.phase16 || {}),
+          ...(savedData.phase17 || {}),
+          ...(savedData.formData || {}),
+        };
+
+        setFormData(mergedFormData);
         const savedCompleted = Array.isArray(savedData.completedPhases) ? savedData.completedPhases : null;
         if (savedCompleted) setCompletedPhases(savedCompleted);
         const savedActive = typeof savedData.active_phase === 'number' ? savedData.active_phase : null;
@@ -257,8 +278,140 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
   // Auto-save on changes
   useEffect(() => {
     if (!applicationId) return;
+    const buildPhases = (f: AppFormData) => ({
+      phase1: {
+        firstName: f.firstName,
+        lastName: f.lastName,
+        phone: f.phone,
+        email: f.email,
+        clerkUserId: f.clerkUserId,
+      },
+      phase2: {
+        licenseType: f.licenseType,
+        requiresExam: f.requiresExam,
+        classType: f.classType,
+      },
+      phase3: {
+        selectedClass: f.selectedClass,
+        classPaymentComplete: f.classPaymentComplete,
+      },
+      phase4: {
+        priorDiscipline: f.priorDiscipline,
+        pendingCharges: f.pendingCharges,
+        misdemeanors: f.misdemeanors,
+        felonies: f.felonies,
+        judgments: f.judgments,
+        bankruptcy: f.bankruptcy,
+        riskLevel: f.riskLevel,
+        requiredDocs: f.requiredDocs,
+        incidents: f.incidents,
+        incidentInformationComplete: f.incidentInformationComplete,
+      },
+      phase5: {
+        assistanceLevel: f.assistanceLevel,
+        assistancePaymentComplete: f.assistancePaymentComplete,
+      },
+      phase6: {
+        businessStatus: f.businessStatus,
+        businessName: f.businessName,
+        businessType: f.businessType,
+        businessAddress: f.businessAddress,
+        businessCity: f.businessCity,
+        businessState: f.businessState,
+        businessZip: f.businessZip,
+        businessPhone: f.businessPhone,
+        businessEmail: f.businessEmail,
+        feinStatus: f.feinStatus,
+        feinNumber: f.feinNumber,
+        bankingStatus: f.bankingStatus,
+        bankName: f.bankName,
+        accountNumber: f.accountNumber,
+        routingNumber: f.routingNumber,
+        businessDoc: f.businessDoc,
+        feinDoc: f.feinDoc,
+        bankAccountStatus: f.bankAccountStatus,
+        bankDoc: f.bankDoc,
+        owners: f.owners,
+        hasEmployees: f.hasEmployees,
+        needsWorkersComp: f.needsWorkersComp,
+        workersCompStatus: f.workersCompStatus,
+        wcProvider: f.wcProvider,
+        wcPolicyNumber: f.wcPolicyNumber,
+        wcExemptionReason: f.wcExemptionReason,
+      },
+      phase7: {
+        qualifierIsApplicant: f.qualifierIsApplicant,
+        qualifierName: f.qualifierName,
+        qualifierLicense: f.qualifierLicense,
+        qualifierInfo: f.qualifierInfo,
+        qualifierAffidavit: f.qualifierAffidavit,
+      },
+      phase8: {
+        insuranceNotified: f.insuranceNotified,
+        insuranceQuoteReceived: f.insuranceQuoteReceived,
+        insurancePaid: f.insurancePaid,
+        insuranceAmount: f.insuranceAmount,
+        insuranceCOI: f.insuranceCOI,
+        insuranceActive: f.insuranceActive,
+        certificateOfInsurance: f.certificateOfInsurance,
+        liabilityProvider: f.liabilityProvider,
+        liabilityPolicyNumber: f.liabilityPolicyNumber,
+        liabilityCoverage: f.liabilityCoverage,
+      },
+      phase9: {
+        wcWaiverSubmitted: f.wcWaiverSubmitted,
+        wcWaiverDoc: f.wcWaiverDoc,
+        wcWaiverDocs: f.wcWaiverDocs,
+        needsWorkersComp: f.needsWorkersComp,
+        workersCompStatus: f.workersCompStatus,
+        wcProvider: f.wcProvider,
+        wcPolicyNumber: f.wcPolicyNumber,
+        wcExemptionReason: f.wcExemptionReason,
+      },
+      phase10: {
+        classCompleted: f.classCompleted,
+        classCompletedDate: f.classCompletedDate,
+        educationComplete: f.educationComplete,
+      },
+      phase11: {
+        examStatus: f.examStatus,
+        examPassLetter: f.examPassLetter,
+        examPassedDate: f.examPassedDate,
+      },
+      phase12: {
+        insuranceActive: f.insuranceActive,
+        certificateOfInsurance: f.certificateOfInsurance,
+      },
+      phase13: {
+        wcWaiverSubmitted: f.wcWaiverSubmitted,
+        wcWaiverDoc: f.wcWaiverDoc,
+      },
+      phase14: {
+        doplApplicationReady: f.doplApplicationReady,
+        bondProvider: f.bondProvider,
+        bondAmount: f.bondAmount,
+        experienceYears: f.experienceYears,
+      },
+      phase15: {
+        salesforceCaseId: f.salesforceCaseId,
+        assignedStaff: f.assignedStaff,
+        staffReviewComplete: f.staffReviewComplete,
+      },
+      phase16: {
+        doplSubmissionStatus: f.doplSubmissionStatus,
+        doplSubmissionDate: f.doplSubmissionDate,
+        dcplApplicationNumber: f.dcplApplicationNumber,
+        dcplSubmissionDate: f.dcplSubmissionDate,
+      },
+      phase17: {
+        estimatedApprovalMin: f.estimatedApprovalMin,
+        estimatedApprovalMax: f.estimatedApprovalMax,
+      },
+    });
+
     const timer = setTimeout(() => {
       const progress = Math.round((completedPhases.length / phases.length) * 100);
+      const phasePayload = buildPhases(formData);
       const payload = {
         applicationId,
         data: {
@@ -266,6 +419,7 @@ export function ApplicationForm({ onBack }: ApplicationFormProps) {
           completedPhases,
           active_phase: currentPhase,
           progress,
+          ...phasePayload,
         },
         progress,
         activePhase: currentPhase,

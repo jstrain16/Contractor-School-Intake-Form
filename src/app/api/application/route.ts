@@ -43,13 +43,15 @@ export async function GET() {
     }
 
     if (existing) {
-      return NextResponse.json({ data: existing.data ?? null, applicationId: existing.id })
+      const phased = ensurePhases(existing.data ?? {})
+      return NextResponse.json({ data: phased, applicationId: existing.id })
     }
 
     // create new empty application scoped to this user
+    const initialData = { ...EMPTY_DATA }
     const { data: created, error: insertError } = await supabase
       .from("contractor_applications")
-      .insert({ user_id: clerkUserId, data: EMPTY_DATA })
+      .insert({ user_id: clerkUserId, data: initialData })
       .select()
       .single()
 
@@ -126,9 +128,15 @@ export async function POST(req: Request) {
     }
 
     const prevData = (existing?.data as Record<string, unknown> | null) ?? {}
+
+    const baseFormData = (data as any)?.formData || (prevData as any)?.formData || {}
+    const phasesFromPayload = ensurePhases(data)
+    const phasesFromPrev = ensurePhases(prevData)
     const mergedData = {
       ...prevData,
       ...data,
+      ...phasesFromPrev,
+      ...phasesFromPayload,
       progress: progress ?? (prevData as any).progress ?? 0,
       active_phase: activePhase ?? (prevData as any).active_phase ?? 1,
     }
@@ -203,5 +211,153 @@ async function getAdminProfileIds(supabase: ReturnType<typeof getSupabaseAdmin>)
     })
     .map((a) => a.id)
     .filter(Boolean)
+}
+
+function ensurePhases(data: any): any {
+  if (!data) return { ...EMPTY_DATA }
+  const hasPhases =
+    data.phase1 || data.phase2 || data.phase3 || data.phase4 || data.phase5 || data.phase6 || data.phase7 || data.phase8 ||
+    data.phase9 || data.phase10 || data.phase11 || data.phase12 || data.phase13 || data.phase14 || data.phase15 ||
+    data.phase16 || data.phase17
+  if (hasPhases) return data
+  const form = data.formData || data.form || {}
+  return {
+    ...data,
+    ...buildPhasesFromFormData(form),
+  }
+}
+
+function buildPhasesFromFormData(form: any) {
+  const f = form || {}
+  return {
+    phase1: {
+      firstName: f.firstName,
+      lastName: f.lastName,
+      phone: f.phone,
+      email: f.email,
+      clerkUserId: f.clerkUserId,
+    },
+    phase2: {
+      licenseType: f.licenseType,
+      requiresExam: f.requiresExam,
+      classType: f.classType,
+    },
+    phase3: {
+      selectedClass: f.selectedClass,
+      classPaymentComplete: f.classPaymentComplete,
+    },
+    phase4: {
+      priorDiscipline: f.priorDiscipline,
+      pendingCharges: f.pendingCharges,
+      misdemeanors: f.misdemeanors,
+      felonies: f.felonies,
+      judgments: f.judgments,
+      bankruptcy: f.bankruptcy,
+      riskLevel: f.riskLevel,
+      requiredDocs: f.requiredDocs,
+      incidents: f.incidents,
+      incidentInformationComplete: f.incidentInformationComplete,
+    },
+    phase5: {
+      assistanceLevel: f.assistanceLevel,
+      assistancePaymentComplete: f.assistancePaymentComplete,
+    },
+    phase6: {
+      businessStatus: f.businessStatus,
+      businessName: f.businessName,
+      businessType: f.businessType,
+      businessAddress: f.businessAddress,
+      businessCity: f.businessCity,
+      businessState: f.businessState,
+      businessZip: f.businessZip,
+      businessPhone: f.businessPhone,
+      businessEmail: f.businessEmail,
+      feinStatus: f.feinStatus,
+      feinNumber: f.feinNumber,
+      bankingStatus: f.bankingStatus,
+      bankName: f.bankName,
+      accountNumber: f.accountNumber,
+      routingNumber: f.routingNumber,
+      businessDoc: f.businessDoc,
+      feinDoc: f.feinDoc,
+      bankAccountStatus: f.bankAccountStatus,
+      bankDoc: f.bankDoc,
+      owners: f.owners,
+      hasEmployees: f.hasEmployees,
+      needsWorkersComp: f.needsWorkersComp,
+      workersCompStatus: f.workersCompStatus,
+      wcProvider: f.wcProvider,
+      wcPolicyNumber: f.wcPolicyNumber,
+      wcExemptionReason: f.wcExemptionReason,
+    },
+    phase7: {
+      qualifierIsApplicant: f.qualifierIsApplicant,
+      qualifierName: f.qualifierName,
+      qualifierLicense: f.qualifierLicense,
+      qualifierInfo: f.qualifierInfo,
+      qualifierAffidavit: f.qualifierAffidavit,
+    },
+    phase8: {
+      insuranceNotified: f.insuranceNotified,
+      insuranceQuoteReceived: f.insuranceQuoteReceived,
+      insurancePaid: f.insurancePaid,
+      insuranceAmount: f.insuranceAmount,
+      insuranceCOI: f.insuranceCOI,
+      insuranceActive: f.insuranceActive,
+      certificateOfInsurance: f.certificateOfInsurance,
+      liabilityProvider: f.liabilityProvider,
+      liabilityPolicyNumber: f.liabilityPolicyNumber,
+      liabilityCoverage: f.liabilityCoverage,
+    },
+    phase9: {
+      wcWaiverSubmitted: f.wcWaiverSubmitted,
+      wcWaiverDoc: f.wcWaiverDoc,
+      wcWaiverDocs: f.wcWaiverDocs,
+      needsWorkersComp: f.needsWorkersComp,
+      workersCompStatus: f.workersCompStatus,
+      wcProvider: f.wcProvider,
+      wcPolicyNumber: f.wcPolicyNumber,
+      wcExemptionReason: f.wcExemptionReason,
+    },
+    phase10: {
+      classCompleted: f.classCompleted,
+      classCompletedDate: f.classCompletedDate,
+      educationComplete: f.educationComplete,
+    },
+    phase11: {
+      examStatus: f.examStatus,
+      examPassLetter: f.examPassLetter,
+      examPassedDate: f.examPassedDate,
+    },
+    phase12: {
+      insuranceActive: f.insuranceActive,
+      certificateOfInsurance: f.certificateOfInsurance,
+    },
+    phase13: {
+      wcWaiverSubmitted: f.wcWaiverSubmitted,
+      wcWaiverDoc: f.wcWaiverDoc,
+    },
+    phase14: {
+      doplApplicationReady: f.doplApplicationReady,
+      bondProvider: f.bondProvider,
+      bondAmount: f.bondAmount,
+      experienceYears: f.experienceYears,
+    },
+    phase15: {
+      salesforceCaseId: f.salesforceCaseId,
+      assignedStaff: f.assignedStaff,
+      staffReviewComplete: f.staffReviewComplete,
+    },
+    phase16: {
+      doplSubmissionStatus: f.doplSubmissionStatus,
+      doplSubmissionDate: f.doplSubmissionDate,
+      dcplApplicationNumber: f.dcplApplicationNumber,
+      dcplSubmissionDate: f.dcplSubmissionDate,
+    },
+    phase17: {
+      estimatedApprovalMin: f.estimatedApprovalMin,
+      estimatedApprovalMax: f.estimatedApprovalMax,
+    },
+  }
 }
 
