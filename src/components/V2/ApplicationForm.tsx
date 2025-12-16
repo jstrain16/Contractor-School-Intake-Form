@@ -37,7 +37,7 @@ import { Phase14 } from './phases/Phase14';
 import { Phase15 } from './phases/Phase15';
 import { Phase16 } from './phases/Phase16';
 import { Phase17 } from './phases/Phase17';
-import logoImage from 'figma:asset/414fa9992179aa5ea488b45fcd1c60891fa1bfd6.png';
+const logoImage = "/favicon.ico";
 import { FormData as AppFormData } from './types/ApplicationTypes';
 
 interface ApplicationFormProps {
