@@ -353,26 +353,48 @@ function renderEditableSection(
   )
 }
 
-function formatValue(value: unknown): React.ReactNode {
+function formatValue(value: unknown, attachmentMap: Map<string, string>): React.ReactNode {
   if (value === null || value === undefined) return "—"
   if (typeof value === "boolean") return value ? "Yes" : "No"
   if (Array.isArray(value)) {
     if (value.length === 0) return "—"
-    return value.map((v, i) => (
-      <span key={i}>
-        {formatValue(v)}
-        {i < value.length - 1 ? ", " : ""}
-      </span>
-    ))
+    return (
+      <div className="flex flex-wrap gap-1">
+        {value.map((v, i) => (
+          <span key={i} className="inline-flex items-center gap-1">
+            {formatValue(v, attachmentMap)}
+            {i < value.length - 1 ? <span className="text-slate-400">,</span> : null}
+          </span>
+        ))}
+      </div>
+    )
   }
   if (typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>)
+    const obj = value as Record<string, unknown>
+    const isAttachment = "id" in obj || "path" in obj || "bucket" in obj
+    if (isAttachment) {
+      const attId = typeof obj.id === "string" ? obj.id : undefined
+      const signed = attId ? attachmentMap.get(attId) : undefined
+      const label = (obj as any).originalName || (obj as any).path || "attachment"
+      return (
+        <div className="flex items-center gap-2 text-xs">
+          {signed ? (
+            <a href={signed} target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:underline">
+              Download {label}
+            </a>
+          ) : (
+            <span className="text-slate-500">{String(label)}</span>
+          )}
+        </div>
+      )
+    }
+    const entries = Object.entries(obj)
     if (entries.length === 0) return "—"
     return (
       <div className="space-y-1">
         {entries.map(([k, v]) => (
           <div key={k}>
-            <span className="font-medium">{formatKey(k)}:</span> {formatValue(v)}
+            <span className="font-medium">{formatKey(k)}:</span> {formatValue(v, attachmentMap)}
           </div>
         ))}
       </div>
@@ -381,7 +403,7 @@ function formatValue(value: unknown): React.ReactNode {
   return String(value)
 }
 
-function renderSectionContent(data?: Record<string, unknown> | null) {
+function renderSectionContent(data: Record<string, unknown> | null | undefined, attachmentMap: Map<string, string>) {
   const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined)
   return (
     <div className="space-y-3 text-sm">
@@ -389,7 +411,7 @@ function renderSectionContent(data?: Record<string, unknown> | null) {
         {entries.map(([k, v]) => (
         <div key={k} className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
             <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{formatKey(k)}</div>
-            <div className="mt-1 text-slate-900">{formatValue(v)}</div>
+            <div className="mt-1 text-slate-900">{formatValue(v, attachmentMap)}</div>
           </div>
         ))}
       </div>
@@ -1014,7 +1036,7 @@ export function AdminDashboardClient({
                       {editingSection === section.key ? (
                         renderEditableSection(editFormData, setEditFormData, attachmentMap, selected.app.id, section.key)
                       ) : (
-                        renderSectionContent((selected.app.data?.[section.key] as Record<string, unknown>) || {})
+                        renderSectionContent((selected.app.data?.[section.key] as Record<string, unknown>) || {}, attachmentMap)
                       )}
                         </AdminSectionBlock>
                       </div>
