@@ -4,7 +4,7 @@ import {
   ClipboardCheck, Send, AlertCircle, Upload, ChevronDown, ChevronUp,
   Users, CreditCard, BookOpen, Award, TrendingUp, Info, FileX, Trash2
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -74,6 +74,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   const [currentPhase, setCurrentPhase] = useState(startingPhase);
   const [completedPhases, setCompletedPhases] = useState<number[]>([1]); // Phase 1 complete by default (Clerk authentication)
   const [expandedSections, setExpandedSections] = useState<number[]>([startingPhase]);
+  const phaseRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [showSupportingMaterials, setShowSupportingMaterials] = useState(false);
   const [supportingMaterialsComplete, setSupportingMaterialsComplete] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -493,6 +494,16 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     { id: 16, name: 'Submission', icon: Send, description: 'Submit to DOPL' },
     { id: 17, name: 'Tracking', icon: TrendingUp, description: 'Status Updates' },
   ];
+
+  // Scroll to current phase when it changes or expands
+  useEffect(() => {
+    const el = phaseRefs.current[currentPhase];
+    if (el) {
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [currentPhase, expandedSections]);
 
   const toggleSection = (phaseId: number) => {
     setExpandedSections(prev => 
@@ -1054,44 +1065,52 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
         </div>
 
         {/* Phase 1: User Authentication */}
-        <Phase1
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(1)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[1] = el; }}>
+          <Phase1
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(1)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
         {/* Phase 2: License Type Selection */}
-        <Phase2
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(2)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[2] = el; }}>
+          <Phase2
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(2)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
         {/* Phase 3: Class Selection & Payment */}
-        <Phase3
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(3)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[3] = el; }}>
+          <Phase3
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(3)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
         {/* Phase 4: Criminal & Financial Screening */}
-        <Phase4
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(4)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[4] = el; }}>
+          <Phase4
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(4)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
         {/* Phase 4.1: Incident Information (Conditional - only if hasIncidents) */}
         {hasIncidents && (
@@ -1471,131 +1490,157 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
         )}
 
         {/* Phase 5: Assistance Selection */}
-        <Phase5
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(5)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
-
-        {/* Phase 6: Business Setup (Pre-Class Tasks) */}
-        <Phase6
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(6)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-          handleFileUpload={handleFileUpload}
-        />
-
-        {/* PHASES 7-17 - Individual Components */}
-        <Phase7
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(7)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-          handleFileUpload={handleFileUpload}
-        />
-
-        <Phase8
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(8)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
-
-        <Phase9
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(9)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
-
-        <Phase10
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(10)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
-
-        {/* Conditional Phase 11 - Only for exam-required licenses */}
-        {['R100', 'B100', 'E100'].includes(formData.licenseType) && (
-          <Phase11
+        <div ref={(el) => { phaseRefs.current[5] = el; }}>
+          <Phase5
             formData={formData}
             setFormData={setFormData}
-            onComplete={() => completePhase(11)}
+            onComplete={() => completePhase(5)}
             expandedSections={expandedSections}
             completedPhases={completedPhases}
             toggleSection={toggleSection}
           />
+        </div>
+
+        {/* Phase 6: Business Setup (Pre-Class Tasks) */}
+        <div ref={(el) => { phaseRefs.current[6] = el; }}>
+          <Phase6
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(6)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+            handleFileUpload={handleFileUpload}
+          />
+        </div>
+
+        {/* PHASES 7-17 - Individual Components */}
+        <div ref={(el) => { phaseRefs.current[7] = el; }}>
+          <Phase7
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(7)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+            handleFileUpload={handleFileUpload}
+          />
+        </div>
+
+        <div ref={(el) => { phaseRefs.current[8] = el; }}>
+          <Phase8
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(8)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
+
+        <div ref={(el) => { phaseRefs.current[9] = el; }}>
+          <Phase9
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(9)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
+
+        <div ref={(el) => { phaseRefs.current[10] = el; }}>
+          <Phase10
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(10)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
+
+        {/* Conditional Phase 11 - Only for exam-required licenses */}
+        {['R100', 'B100', 'E100'].includes(formData.licenseType) && (
+          <div ref={(el) => { phaseRefs.current[11] = el; }}>
+            <Phase11
+              formData={formData}
+              setFormData={setFormData}
+              onComplete={() => completePhase(11)}
+              expandedSections={expandedSections}
+              completedPhases={completedPhases}
+              toggleSection={toggleSection}
+            />
+          </div>
         )}
 
-        <Phase12
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(12)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-          handleFileUpload={handleFileUpload}
-        />
+        <div ref={(el) => { phaseRefs.current[12] = el; }}>
+          <Phase12
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(12)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+            handleFileUpload={handleFileUpload}
+          />
+        </div>
 
-        <Phase13
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(13)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-          handleFileUpload={handleFileUpload}
-        />
+        <div ref={(el) => { phaseRefs.current[13] = el; }}>
+          <Phase13
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(13)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+            handleFileUpload={handleFileUpload}
+          />
+        </div>
 
-        <Phase14
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(14)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[14] = el; }}>
+          <Phase14
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(14)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
-        <Phase15
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(15)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[15] = el; }}>
+          <Phase15
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(15)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
-        <Phase16
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(16)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[16] = el; }}>
+          <Phase16
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(16)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
 
-        <Phase17
-          formData={formData}
-          setFormData={setFormData}
-          onComplete={() => completePhase(17)}
-          expandedSections={expandedSections}
-          completedPhases={completedPhases}
-          toggleSection={toggleSection}
-        />
+        <div ref={(el) => { phaseRefs.current[17] = el; }}>
+          <Phase17
+            formData={formData}
+            setFormData={setFormData}
+            onComplete={() => completePhase(17)}
+            expandedSections={expandedSections}
+            completedPhases={completedPhases}
+            toggleSection={toggleSection}
+          />
+        </div>
       </main>
     </div>
   );
