@@ -79,8 +79,14 @@ export interface FormData {
   specialtyLicenses?: string[];
   
   // Phase 3: Class Selection
+  educationMethod: 'new_class' | 'already_completed' | 'booked_external';
   selectedClass: string;
   classPaymentComplete: boolean;
+  externalProviderName?: string;
+  externalClassDate?: string;
+  externalClassCompletionDate?: string;
+  externalCertificateDoc?: AttachmentMeta | null;
+  externalBookingDoc?: AttachmentMeta | null;
   
   // Phase 4: Criminal & Financial
   priorDiscipline: string;

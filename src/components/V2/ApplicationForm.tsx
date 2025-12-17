@@ -101,8 +101,14 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     classType: '',
     
     // Phase 3: Class Selection
+    educationMethod: 'new_class',
     selectedClass: '',
     classPaymentComplete: false,
+    externalProviderName: '',
+    externalClassDate: '',
+    externalClassCompletionDate: '',
+    externalCertificateDoc: null,
+    externalBookingDoc: null,
     
     // Phase 4: Criminal & Financial
     priorDiscipline: '',
@@ -340,8 +346,14 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
         classType: f.classType,
       },
       phase3: {
+        educationMethod: f.educationMethod,
         selectedClass: f.selectedClass,
         classPaymentComplete: f.classPaymentComplete,
+        externalProviderName: f.externalProviderName,
+        externalClassDate: f.externalClassDate,
+        externalClassCompletionDate: f.externalClassCompletionDate,
+        externalCertificateDoc: f.externalCertificateDoc,
+        externalBookingDoc: f.externalBookingDoc,
       },
       phase4: {
         priorDiscipline: f.priorDiscipline,
@@ -1145,6 +1157,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
             completedPhases={completedPhases}
             toggleSection={toggleSection}
             applicationId={applicationId || undefined}
+            handleFileUpload={handleFileUpload}
           />
         </div>
 
