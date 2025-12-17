@@ -74,47 +74,17 @@ import { createClient } from '@supabase/supabase-js';
 // ... imports ...
 
 export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) {
-  // ... existing state ...
-
+  const { user } = useUser();
+  const startingPhase = initialPhase && initialPhase > 0 ? initialPhase : 1;
+  
+  const [currentPhase, setCurrentPhase] = useState(startingPhase);
+  const [completedPhases, setCompletedPhases] = useState<number[]>([1]); // Phase 1 complete by default (Clerk authentication)
+  const [expandedSections, setExpandedSections] = useState<number[]>([startingPhase]);
+  const [showSupportingMaterials, setShowSupportingMaterials] = useState(false);
+  const [supportingMaterialsComplete, setSupportingMaterialsComplete] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [loadingApp, setLoadingApp] = useState<boolean>(true);
-
-  // Realtime subscription for auto-updating payment status
-  useEffect(() => {
-    if (!applicationId) return;
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    const channel = supabase
-      .channel(`app-${applicationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'contractor_applications',
-          filter: `id=eq.${applicationId}`,
-        },
-        (payload) => {
-          const newData = payload.new.data as any;
-          if (newData?.phase3?.classPaymentComplete === true) {
-            setFormData((prev) => ({
-              ...prev,
-              classPaymentComplete: true,
-              // Merge other payment details if needed
-            }));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [applicationId]);
+  const phaseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
@@ -315,6 +285,43 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       };
     });
   }, [user]);
+
+  // Realtime subscription for auto-updating payment status
+  useEffect(() => {
+    if (!applicationId) return;
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const channel = supabase
+      .channel(`app-${applicationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'contractor_applications',
+          filter: `id=eq.${applicationId}`,
+        },
+        (payload) => {
+          const newData = payload.new.data as any;
+          if (newData?.phase3?.classPaymentComplete === true) {
+            setFormData((prev) => ({
+              ...prev,
+              classPaymentComplete: true,
+              // Merge other payment details if needed
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [applicationId]);
 
   // Auto-save on changes
   useEffect(() => {
