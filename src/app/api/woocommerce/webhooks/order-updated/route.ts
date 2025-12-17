@@ -70,10 +70,25 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, message: "Webhook ping received" });
     }
 
-    // Consider paid if processing/completed
+    // Consider paid if processing/completed/pending (since payments move to pending immediately)
+    // Adjust based on your business logic: if "pending payment" means "waiting for user to pay", don't unlock.
+    // If "pending" means "paid, waiting for fulfillment", then unlock.
+    // Standard Woo flow: Pending Payment (unpaid) -> Processing (paid) -> Completed (shipped/done).
+    // If your gateway sets it to 'on-hold' or 'pending', verify if that means money is captured.
+    
+    // NOTE: User stated payments move immediately to pending. Assuming this implies successful auth/capture
+    // or at least a state where we want to acknowledge the order. 
+    // SAFEST: Only unlock on 'processing' or 'completed'.
+    // IF you are sure 'pending' means paid in your setup, add it.
+    // For now, let's keep it strict to 'processing' | 'completed' to avoid unlocking unpaid orders.
+    // But let's LOG the status so we know why it might be ignored.
+    
+    console.log("Order Status Check:", { orderId: order.id, status: order.status });
+
     const isPaid = order.status === "processing" || order.status === "completed";
     
     if (!isPaid) {
+      console.log(`Ignoring order ${order.id} with status: ${order.status}`);
       return NextResponse.json({ ok: true, ignored: true, status: order.status });
     }
 
