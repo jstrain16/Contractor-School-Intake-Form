@@ -99,6 +99,7 @@ export function Phase5({
         jurisdiction: '',
         description: '',
         resolution: '',
+        outcome: '', // Ensure 'outcome' property is included
         documentSlots: generateDocumentSlots(category, subtype),
         narrativeSaveStatus: 'saved'
       };
@@ -470,7 +471,10 @@ export function Phase5({
                       caseNumber: '',
                       jurisdiction: '',
                       description: '',
-                      resolution: ''
+                      resolution: '',
+                      outcome: '',
+                      documentSlots: generateDocumentSlots(category, subtype),
+                      narrativeSaveStatus: 'saved'
                     };
                     addIncident(newIncident);
                     setSelectKey(prev => prev + 1);
