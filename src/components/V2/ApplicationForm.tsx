@@ -69,9 +69,51 @@ interface ClassOption {
   description: string;
 }
 
+import { createClient } from '@supabase/supabase-js';
+
+// ... imports ...
+
 export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) {
-  const { user } = useUser();
-  const startingPhase = initialPhase && initialPhase > 0 ? initialPhase : 1;
+  // ... existing state ...
+
+  // Realtime subscription for auto-updating payment status
+  useEffect(() => {
+    if (!applicationId) return;
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const channel = supabase
+      .channel(`app-${applicationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'contractor_applications',
+          filter: `id=eq.${applicationId}`,
+        },
+        (payload) => {
+          const newData = payload.new.data as any;
+          if (newData?.phase3?.classPaymentComplete === true) {
+            setFormData((prev) => ({
+              ...prev,
+              classPaymentComplete: true,
+              // Merge other payment details if needed
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [applicationId]);
+
+  // ... existing load useEffect ...
   const [currentPhase, setCurrentPhase] = useState(startingPhase);
   const [completedPhases, setCompletedPhases] = useState<number[]>([1]); // Phase 1 complete by default (Clerk authentication)
   const [expandedSections, setExpandedSections] = useState<number[]>([startingPhase]);
