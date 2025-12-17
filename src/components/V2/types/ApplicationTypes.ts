@@ -33,27 +33,31 @@ export interface IncidentDocument {
 
 export interface Incident {
   id: string;
-  type: 'discipline' | 'pending' | 'misdemeanor' | 'felony' | 'judgment' | 'bankruptcy';
+  type: string;
+  category?: string;
+  subtype?: string;
+  customName?: string;
   description: string;
   date: string;
   jurisdiction: string;
   caseNumber: string;
   outcome: string;
+  resolution?: string;
   documentSlots?: any[];
   narrative?: string;
   narrativeSaveStatus?: string;
-  documents: {
+  documents?: {
     BACKGROUND: IncidentDocument[];
     DISCIPLINE: IncidentDocument[];
     FINANCIAL: IncidentDocument[];
     BANKRUPTCY: IncidentDocument[];
   };
-  narratives: {
+  narratives?: {
     circumstances: string;
     resolution: string;
     rehabilitation: string;
   };
-  isComplete: boolean;
+  isComplete?: boolean;
 }
 
 export interface AttachmentMeta {
