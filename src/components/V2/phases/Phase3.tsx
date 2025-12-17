@@ -3,6 +3,7 @@ import { CheckCircle, Calendar, ChevronDown, ChevronUp, ArrowRight, Info, BookOp
 import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { PhaseComponentProps, ClassOption } from '../types/ApplicationTypes';
 import { LoaderThree } from '@/components/ui/loader';
 
@@ -20,6 +21,7 @@ export function Phase3({
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<'ALL' | 'SLC' | 'STG'>('ALL');
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -222,12 +224,33 @@ export function Phase3({
             {/* Method 1: Book New Class */}
             {formData.educationMethod === 'new_class' && (
               <div className="space-y-4 border-t border-gray-200 pt-6">
-                <Label>{formData.classPaymentComplete ? 'Purchased Class' : 'Available Classes'}</Label>
-                {!formData.classPaymentComplete && (
-                  <p className="text-sm text-gray-600">
-                    Select a class date that works for your schedule
-                  </p>
-                )}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <Label>{formData.classPaymentComplete ? 'Purchased Class' : 'Available Classes'}</Label>
+                    {!formData.classPaymentComplete && (
+                      <p className="text-sm text-gray-600">
+                        Select a class date that works for your schedule
+                      </p>
+                    )}
+                  </div>
+                  {!formData.classPaymentComplete && (
+                    <div className="w-full sm:w-[200px]">
+                      <Select
+                        value={selectedLocation}
+                        onValueChange={(val: 'ALL' | 'SLC' | 'STG') => setSelectedLocation(val)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by Location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All Locations</SelectItem>
+                          <SelectItem value="SLC">Salt Lake City</SelectItem>
+                          <SelectItem value="STG">St. George</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
 
                 <div className="space-y-3">
                   {loading ? (
@@ -242,10 +265,14 @@ export function Phase3({
                           
                           // Filter based on license type requirement (30-hour vs 25-hour)
                           if (formData.classType === '30-hour') {
-                              return c.sku?.includes('PL30');
+                              if (!c.sku?.includes('PL30')) return false;
                           } else if (formData.classType === '25-hour') {
-                              return c.sku?.includes('PL25');
+                              if (!c.sku?.includes('PL25')) return false;
                           }
+
+                          // Filter by Location
+                          if (selectedLocation === 'SLC' && !c.sku?.includes('SLC')) return false;
+                          if (selectedLocation === 'STG' && !c.sku?.includes('STG')) return false;
                           
                           // Fallback: show all if no specific type set or no SKU match found
                           return true;
