@@ -87,6 +87,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   const phaseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   const [selectKey, setSelectKey] = useState(0);
+  const [expandedIncidentIds, setExpandedIncidentIds] = useState<string[]>([]);
 
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
@@ -565,9 +566,13 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   const toggleSection = (phaseId: number) => {
     setExpandedSections(prev => 
       prev.includes(phaseId) 
-        ? prev.filter(id => id !== phaseId)
-        : [...prev, phaseId]
+        ? [] // Close the section if it's already open
+        : [phaseId] // Open only this section (accordion behavior)
     );
+    // Also update current phase to match
+    if (!completedPhases.includes(phaseId)) {
+        setCurrentPhase(phaseId);
+    }
   };
 
   const completePhase = (phaseId: number) => {
@@ -804,11 +809,12 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
 
   // Helper function to add new incident
   const addIncident = (incident: any) => {
+    const newId = Date.now().toString();
     setFormData({
       ...formData,
       incidents: [{ 
         ...incident, 
-        id: Date.now().toString(),
+        id: newId,
         customName: '', // Allow users to name their incidents
         category: incident.category || 'BACKGROUND',
         subtype: incident.subtype || '',
@@ -817,6 +823,8 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
         narrativeSaveStatus: 'saved'
       }, ...formData.incidents]
     });
+    // Automatically expand the new incident
+    setExpandedIncidentIds(prev => [newId, ...prev]);
   };
 
   // Helper function to remove incident
@@ -825,6 +833,14 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       ...formData,
       incidents: formData.incidents.filter((inc: any) => inc.id !== incidentId)
     });
+  };
+
+  const toggleIncident = (incidentId: string) => {
+    setExpandedIncidentIds(prev => 
+      prev.includes(incidentId)
+        ? prev.filter(id => id !== incidentId)
+        : [...prev, incidentId]
+    );
   };
 
   // Upload file to a specific document slot
@@ -1382,43 +1398,67 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                         ? `${categoryLabels[incident.category] || incident.category}${incident.subtype ? ' - ' + (subtypeLabels[incident.subtype] || incident.subtype) : ''}`
                         : typeLabels[incident.type] || incident.type;
                       
+                      const isExpanded = expandedIncidentIds.includes(incident.id);
+                      
                       return (
-                        <div key={incident.id} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
-                                  {displayLabel}
+                        <div key={incident.id} className="border border-gray-200 rounded-lg bg-white overflow-hidden transition-all duration-200">
+                          {/* Incident Header / Toggle */}
+                          <div 
+                            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 bg-gray-50/50 border-b border-gray-100"
+                            onClick={() => toggleIncident(incident.id)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+                                <ChevronDown className="w-5 h-5 text-gray-500" />
+                              </div>
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <span className="font-medium text-gray-900">
+                                  {incident.customName || `Incident #${formData.incidents.length - index}`}
                                 </span>
-                                <span className="text-sm text-gray-500">
-                                  {incident.customName || `Incident #${index + 1}`}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full whitespace-nowrap">
+                                    {displayLabel}
+                                  </span>
+                                  {/* Show document status in header if collapsed */}
+                                  {!isExpanded && (
+                                    <span className="text-xs text-gray-500">
+                                      {incident.date || 'No date'} • {incident.resolution || 'No status'}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                             <button
-                              onClick={() => removeIncident(incident.id)}
-                              className="text-red-600 hover:text-red-700 p-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeIncident(incident.id);
+                              }}
+                              className="text-gray-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors"
+                              title="Delete Incident"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                           
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div className="md:col-span-2">
-                              <Label className="text-sm">Incident Name / Label (Optional)</Label>
-                              <Input
-                                value={incident.customName || ''}
-                                onChange={(e) => {
-                                  const updated = formData.incidents.map((inc: any) =>
-                                    inc.id === incident.id ? { ...inc, customName: e.target.value } : inc
-                                  );
-                                  setFormData({ ...formData, incidents: updated });
-                                }}
-                                placeholder="e.g. 2018 Traffic Violation, 2020 Bankruptcy"
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm">Date of Incident</Label>
+                          {/* Incident Content */}
+                          {isExpanded && (
+                            <div className="p-4 space-y-6 animate-in slide-in-from-top-2 duration-200">
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                  <Label className="text-sm">Incident Name / Label (Optional)</Label>
+                                  <Input
+                                    value={incident.customName || ''}
+                                    onChange={(e) => {
+                                      const updated = formData.incidents.map((inc: any) =>
+                                        inc.id === incident.id ? { ...inc, customName: e.target.value } : inc
+                                      );
+                                      setFormData({ ...formData, incidents: updated });
+                                    }}
+                                    placeholder="e.g. 2018 Traffic Violation, 2020 Bankruptcy"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-sm">Date of Incident</Label>
                               <Input
                                 type="date"
                                 value={incident.date}
@@ -1506,6 +1546,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                             />
                           </div>
                         </div>
+                      </div>
                       );
                     })}
                   </div>
