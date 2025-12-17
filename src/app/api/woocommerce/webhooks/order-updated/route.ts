@@ -20,6 +20,15 @@ export async function POST(req: Request) {
 
     // 1. Validate Secret Availability
     const secret = process.env.WC_WEBHOOK_SECRET;
+    
+    // DEBUG LOGGING: Remove this after fixing the 401
+    console.log("Webhook Debug:", {
+        secretPresent: !!secret,
+        secretLength: secret?.length,
+        signatureReceived: signature,
+        bodyLength: rawBody.length
+    });
+
     if (!secret) {
       console.error("Missing WC_WEBHOOK_SECRET env var");
       return NextResponse.json({ error: "Server misconfiguration: WC_WEBHOOK_SECRET missing" }, { status: 500 });
@@ -34,6 +43,12 @@ export async function POST(req: Request) {
       .createHmac("sha256", secret)
       .update(rawBody, "utf8")
       .digest("base64");
+
+    console.log("Signature Debug:", {
+        calculated: digest,
+        received: signature,
+        match: digest === signature
+    });
 
     let isValid = false;
     try {
