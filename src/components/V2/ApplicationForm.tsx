@@ -994,27 +994,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="text-gray-900">CONTRACTORS SCHOOL</div>
-              <div className="text-xs text-gray-500">Licensing Application Portal</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-600 hidden sm:inline">
-              Phase {currentPhase} of {phases.length}
-            </span>
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Removed secondary header to condense into GlobalHeader */}
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
@@ -1027,10 +1007,22 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
             <ArrowLeft className="w-5 h-5" />
             Back to Dashboard
           </button>
-          <h1 className="text-gray-900 mb-2">Contractor Licensing Application</h1>
-          <p className="text-gray-600">
-            Complete all 17 phases to submit your application to DOPL
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-gray-900 mb-2">Contractor Licensing Application</h1>
+              <p className="text-gray-600">
+                Complete all 17 phases to submit your application to DOPL
+              </p>
+            </div>
+            <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
+              <span className="text-gray-600 font-medium">
+                Phase {currentPhase} of {phases.length}
+              </span>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Progress Overview with Navigation */}
