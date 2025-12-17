@@ -23,9 +23,6 @@ export function Phase3({
 
   useEffect(() => {
     const fetchClasses = async () => {
-      // Don't fetch if payment is already complete
-      if (formData.classPaymentComplete) return;
-
       setLoading(true);
       try {
         const res = await fetch('/api/woocommerce/products');
@@ -57,8 +54,6 @@ export function Phase3({
       }
     };
     
-    // Only fetch if we are expanding this section or it's active, to save requests? 
-    // Or just fetch on mount. Fetching on mount is simpler for now.
     fetchClasses();
   }, []);
   
@@ -133,43 +128,34 @@ export function Phase3({
       </div>
       {expandedSections.includes(phaseId) && (
         <div className="p-6 border-t border-gray-200">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <div className="flex gap-3">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-blue-900 mb-1">
-                  <strong>WooCommerce Integration</strong>
-                </p>
-                <p className="text-sm text-blue-700">
-                  Class dates are pulled from WooCommerce API. Payment processing syncs 
-                  your WooCommerce customer account with your Clerk user for single sign-on.
-                </p>
-              </div>
-            </div>
-          </div>
-
           <div className="space-y-6">
             <div className="space-y-4">
-              <Label>Available Classes</Label>
-              <p className="text-sm text-gray-600">
-                Select a class date that works for your schedule
-              </p>
+              <Label>{formData.classPaymentComplete ? 'Purchased Class' : 'Available Classes'}</Label>
+              {!formData.classPaymentComplete && (
+                <p className="text-sm text-gray-600">
+                  Select a class date that works for your schedule
+                </p>
+              )}
 
               <div className="space-y-3">
                 {loading ? (
                   <div className="py-8"><LoaderThree /></div>
                 ) : (
-                  displayClasses.map((classOption) => (
+                  displayClasses
+                    .filter(c => !formData.classPaymentComplete || c.id === formData.selectedClass)
+                    .map((classOption) => (
                   <div
                     key={classOption.id}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    className={`border rounded-lg p-4 transition-all ${
                       formData.selectedClass === classOption.id
                         ? 'border-orange-500 bg-orange-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-200 hover:border-gray-300 cursor-pointer'
                     }`}
-                    onClick={() =>
-                      setFormData({ ...formData, selectedClass: classOption.id })
-                    }
+                    onClick={() => {
+                      if (!formData.classPaymentComplete) {
+                        setFormData({ ...formData, selectedClass: classOption.id })
+                      }
+                    }}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -193,18 +179,20 @@ export function Phase3({
                             <span className="text-gray-500">Location:</span>{' '}
                             {classOption.location}
                           </div>
-                          <div>
-                            <span className="text-gray-500">Seats Available:</span>{' '}
-                            <span
-                              className={
-                                classOption.seatsAvailable < 5
-                                  ? 'text-red-600'
-                                  : 'text-green-600'
-                              }
-                            >
-                              {classOption.seatsAvailable}
-                            </span>
-                          </div>
+                          {!formData.classPaymentComplete && (
+                            <div>
+                              <span className="text-gray-500">Seats Available:</span>{' '}
+                              <span
+                                className={
+                                  classOption.seatsAvailable < 5
+                                    ? 'text-red-600'
+                                    : 'text-green-600'
+                                }
+                              >
+                                {classOption.seatsAvailable}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="text-right ml-4">
@@ -219,80 +207,78 @@ export function Phase3({
 
               {formData.selectedClass && (
                 <div className="border border-gray-200 rounded-lg p-4 mt-6">
-                  <h4 className="text-gray-900 mb-4">Payment</h4>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700">Course Fee</span>
-                      <span className="text-gray-900">
-                        $
-                        {
-                          displayClasses.find((c) => c.id === formData.selectedClass)
-                            ?.price
-                        }
-                      </span>
-                    </div>
-                    
-                    {/* Conditionally render Payment UI or Success State */}
-                    {!formData.classPaymentComplete ? (
-                        <>
-                            <div className="flex flex-col gap-2">
-                              <Label className="text-sm font-medium">Step 1: Complete Payment</Label>
-                              <a 
-                                href={`/api/checkout/start?productId=${formData.selectedClass}${applicationId ? `&appId=${applicationId}` : ''}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm ${
-                                    applicationId ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
-                                }`}
-                                onClick={(e) => {
-                                  if (!applicationId) {
-                                      e.preventDefault();
-                                      alert("Application ID missing. Please refresh the page.");
-                                  }
-                                }}
-                              >
-                                Pay on Contractor School Store <ArrowRight className="h-4 w-4" />
-                              </a>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Opens in a new tab. You will be redirected to our secure checkout.
-                              </p>
-                            </div>
+                  {/* Conditionally render Payment UI or Success State */}
+                  {!formData.classPaymentComplete ? (
+                      <>
+                        <h4 className="text-gray-900 mb-4">Payment</h4>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <span className="text-gray-700">Course Fee</span>
+                            <span className="text-gray-900">
+                              $
+                              {
+                                displayClasses.find((c) => c.id === formData.selectedClass)
+                                  ?.price
+                              }
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Label className="text-sm font-medium">Step 1: Complete Payment</Label>
+                            <a 
+                              href={`/api/checkout/start?productId=${formData.selectedClass}${applicationId ? `&appId=${applicationId}` : ''}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm ${
+                                  applicationId ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                              }`}
+                              onClick={(e) => {
+                                if (!applicationId) {
+                                    e.preventDefault();
+                                    alert("Application ID missing. Please refresh the page.");
+                                }
+                              }}
+                            >
+                              Pay on Contractor School Store <ArrowRight className="h-4 w-4" />
+                            </a>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Opens in a new tab. You will be redirected to our secure checkout.
+                            </p>
+                          </div>
 
-                            <div className="flex items-center space-x-2 pt-2 border-t border-gray-100 mt-2">
-                              <Checkbox
-                                id="classPayment"
-                                checked={formData.classPaymentComplete}
-                                disabled={true}
-                              />
-                              <Label
-                                htmlFor="classPayment"
-                                className={`text-sm ${formData.classPaymentComplete ? 'text-green-700 font-medium' : 'text-gray-500'}`}
-                              >
-                                Waiting for payment confirmation...
-                              </Label>
-                            </div>
-                            <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded flex items-center gap-2">
-                                <Info className="w-3 h-3" />
-                                <span>Payment status updates automatically. You may need to refresh the page after checkout.</span>
-                            </div>
-                        </>
-                    ) : (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-                            <CheckCircle className="w-6 h-6 text-green-600" />
-                            <div>
-                                <p className="text-sm font-medium text-green-900">Payment Confirmed</p>
-                                <p className="text-xs text-green-700">
-                                    Your enrollment in {displayClasses.find(c => c.id === formData.selectedClass)?.description || "the class"} is confirmed.
-                                </p>
-                            </div>
+                          <div className="flex items-center space-x-2 pt-2 border-t border-gray-100 mt-2">
+                            <Checkbox
+                              id="classPayment"
+                              checked={formData.classPaymentComplete}
+                              disabled={true}
+                            />
+                            <Label
+                              htmlFor="classPayment"
+                              className={`text-sm ${formData.classPaymentComplete ? 'text-green-700 font-medium' : 'text-gray-500'}`}
+                            >
+                              Waiting for payment confirmation...
+                            </Label>
+                          </div>
+                          <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded flex items-center gap-2">
+                              <Info className="w-3 h-3" />
+                              <span>Payment status updates automatically. You may need to refresh the page after checkout.</span>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Note: Payment is processed through WooCommerce. Confirmation email 
+                            will be sent after enrollment.
+                          </p>
                         </div>
-                    )}
-                    
-                    <p className="text-xs text-gray-500">
-                      Note: Payment is processed through WooCommerce. Confirmation email 
-                      will be sent after enrollment.
-                    </p>
-                  </div>
+                      </>
+                  ) : (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+                          <CheckCircle className="w-6 h-6 text-green-600" />
+                          <div>
+                              <p className="text-sm font-medium text-green-900">Payment Confirmed</p>
+                              <p className="text-xs text-green-700">
+                                  Your enrollment in {displayClasses.find(c => c.id === formData.selectedClass)?.description || "the class"} is confirmed.
+                              </p>
+                          </div>
+                      </div>
+                  )}
                 </div>
               )}
             </div>
