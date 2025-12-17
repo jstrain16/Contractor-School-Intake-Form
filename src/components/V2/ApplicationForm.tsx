@@ -1546,7 +1546,8 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                             />
                           </div>
                         </div>
-                      </div>
+                      )}
+                    </div>
                       );
                     })}
                   </div>
