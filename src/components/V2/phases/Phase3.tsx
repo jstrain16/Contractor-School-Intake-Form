@@ -23,6 +23,9 @@ export function Phase3({
 
   useEffect(() => {
     const fetchClasses = async () => {
+      // Don't fetch if payment is already complete
+      if (formData.classPaymentComplete) return;
+
       setLoading(true);
       try {
         const res = await fetch('/api/woocommerce/products');
