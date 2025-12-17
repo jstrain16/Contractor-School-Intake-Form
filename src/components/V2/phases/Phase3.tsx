@@ -105,8 +105,7 @@ export function Phase3({
     if (formData.educationMethod === 'booked_external') {
       return !!(
         formData.externalProviderName && 
-        formData.externalClassDate && 
-        formData.externalBookingDoc
+        formData.externalClassDate
       );
     }
     return false;
@@ -500,7 +499,7 @@ export function Phase3({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Booking Confirmation *</Label>
+                    <Label>Booking Confirmation (Optional)</Label>
                     <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors">
                       <Upload className="w-8 h-8 text-gray-400 mb-2" />
                       <p className="text-sm text-gray-600 mb-4">
