@@ -250,6 +250,7 @@ export function Phase3({
                           // Fallback: show all if no specific type set or no SKU match found
                           return true;
                       })
+                      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                       .map((classOption) => (
                     <div
                       key={classOption.id}
