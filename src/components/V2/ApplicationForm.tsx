@@ -806,7 +806,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   const addIncident = (incident: any) => {
     setFormData({
       ...formData,
-      incidents: [...formData.incidents, { 
+      incidents: [{ 
         ...incident, 
         id: Date.now().toString(),
         category: incident.category || 'BACKGROUND',
@@ -814,7 +814,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
         narrative: '',
         documentSlots: generateDocumentSlots(incident.category || 'BACKGROUND', incident.subtype || ''),
         narrativeSaveStatus: 'saved'
-      }]
+      }, ...formData.incidents]
     });
   };
 
@@ -1330,6 +1330,9 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                           <SelectItem value="BANKRUPTCY|CH13">Bankruptcy - Chapter 13</SelectItem>
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-green-600 mt-2">
+                        {selectKey > 0 && "✅ Incident added below. Please fill out the details."}
+                      </p>
                     </div>
                   </div>
                 </div>
