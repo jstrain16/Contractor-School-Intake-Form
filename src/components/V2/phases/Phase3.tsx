@@ -250,7 +250,37 @@ export function Phase3({
                           // Fallback: show all if no specific type set or no SKU match found
                           return true;
                       })
-                      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                      .sort((a, b) => {
+                        // Helper to parse date from SKU: PL25-SLC-DAY-2025-DEC-10
+                        const getDateFromSku = (sku?: string) => {
+                          if (!sku) return null;
+                          const parts = sku.split('-');
+                          if (parts.length < 6) return null; // Ensure we have enough parts
+                          
+                          // Format: TYPE-CITY-TIME-YEAR-MONTH-DAY
+                          // Index: 0    1    2    3    4     5
+                          const year = parseInt(parts[3]);
+                          const monthStr = parts[4].toUpperCase();
+                          const day = parseInt(parts[5]);
+                          
+                          const months: {[key: string]: number} = {
+                            'JAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAY': 4, 'JUN': 5,
+                            'JUL': 6, 'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DEC': 11
+                          };
+                          
+                          const month = months[monthStr];
+                          
+                          if (!isNaN(year) && month !== undefined && !isNaN(day)) {
+                            return new Date(year, month, day).getTime();
+                          }
+                          return null;
+                        };
+
+                        const dateA = getDateFromSku(a.sku) || new Date(a.date).getTime();
+                        const dateB = getDateFromSku(b.sku) || new Date(b.date).getTime();
+                        
+                        return dateA - dateB;
+                      })
                       .map((classOption) => (
                     <div
                       key={classOption.id}
