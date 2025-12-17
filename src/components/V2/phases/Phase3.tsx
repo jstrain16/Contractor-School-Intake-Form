@@ -45,6 +45,10 @@ export function Phase3({
                 location: getAttr('location') || 'Online / TBD'
             };
         });
+        
+        // Sort classes by date (soonest first)
+        mapped.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
         setClasses(mapped);
       } catch (err) {
         console.error(err);
