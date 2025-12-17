@@ -74,7 +74,7 @@ export function Phase17({
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="approval-min" className="text-sm text-gray-700">
+                        <Label htmlFor="approval-min" className="text-sm text-gray-700 mb-2">
                           Minimum (weeks)
                         </Label>
                         <Input
@@ -88,7 +88,7 @@ export function Phase17({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="approval-max" className="text-sm text-gray-700">
+                        <Label htmlFor="approval-max" className="text-sm text-gray-700 mb-2">
                           Maximum (weeks)
                         </Label>
                         <Input

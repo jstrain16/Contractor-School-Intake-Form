@@ -149,7 +149,7 @@ export function Phase6({
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="business-status">Entity Formation Status *</Label>
+                  <Label htmlFor="business-status" className="mb-2">Entity Formation Status *</Label>
                   <Select
                     value={formData.businessStatus}
                     onValueChange={(value: string) => setFormData({ ...formData, businessStatus: value })}
@@ -185,7 +185,7 @@ export function Phase6({
                 )}
 
                 <div>
-                  <Label htmlFor="business-name">Legal Business Name *</Label>
+                  <Label htmlFor="business-name" className="mb-2">Legal Business Name *</Label>
                   <Input
                     id="business-name"
                     value={formData.businessName}
@@ -195,7 +195,7 @@ export function Phase6({
                 </div>
 
                 <div>
-                  <Label htmlFor="business-type">Entity Type *</Label>
+                  <Label htmlFor="business-type" className="mb-2">Entity Type *</Label>
                   <Select
                     value={formData.businessType}
                     onValueChange={(value: string) => setFormData({ ...formData, businessType: value })}
@@ -215,7 +215,7 @@ export function Phase6({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <Label htmlFor="business-address">Business Address *</Label>
+                    <Label htmlFor="business-address" className="mb-2">Business Address *</Label>
                     <Input
                       id="business-address"
                       value={formData.businessAddress}
@@ -224,7 +224,7 @@ export function Phase6({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="business-city">City *</Label>
+                    <Label htmlFor="business-city" className="mb-2">City *</Label>
                     <Input
                       id="business-city"
                       value={formData.businessCity}
@@ -233,7 +233,7 @@ export function Phase6({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="business-state">State *</Label>
+                    <Label htmlFor="business-state" className="mb-2">State *</Label>
                     <Input
                       id="business-state"
                       value={formData.businessState || 'UT'}
@@ -242,7 +242,7 @@ export function Phase6({
                     />
                   </div>
                   <div>
-                    <Label htmlFor="business-zip">ZIP Code *</Label>
+                    <Label htmlFor="business-zip" className="mb-2">ZIP Code *</Label>
                     <Input
                       id="business-zip"
                       value={formData.businessZip}
@@ -290,7 +290,7 @@ export function Phase6({
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="fein-status">FEIN Status *</Label>
+                  <Label htmlFor="fein-status" className="mb-2">FEIN Status *</Label>
                   <Select
                     value={formData.feinStatus}
                     onValueChange={(value: string) => setFormData({ ...formData, feinStatus: value })}
@@ -363,7 +363,7 @@ export function Phase6({
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="bank-status">Bank Account Status *</Label>
+                  <Label htmlFor="bank-status" className="mb-2">Bank Account Status *</Label>
                   <Select
                     value={formData.bankAccountStatus}
                     onValueChange={(value: string) => setFormData({ ...formData, bankAccountStatus: value })}
@@ -469,7 +469,7 @@ export function Phase6({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm">Full Legal Name *</Label>
+                        <Label className="text-sm mb-2">Full Legal Name *</Label>
                         <Input
                           value={owner.name}
                           onChange={(e) => updateOwner(owner.id, 'name', e.target.value)}
@@ -478,7 +478,7 @@ export function Phase6({
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Date of Birth *</Label>
+                        <Label className="text-sm mb-2">Date of Birth *</Label>
                         <Input
                           type="date"
                           value={owner.dob}
@@ -487,7 +487,7 @@ export function Phase6({
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Social Security Number</Label>
+                        <Label className="text-sm mb-2">Social Security Number</Label>
                         <Input
                           value={owner.ssn}
                           onChange={(e) => updateOwner(owner.id, 'ssn', e.target.value)}
@@ -496,7 +496,7 @@ export function Phase6({
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Phone Number</Label>
+                        <Label className="text-sm mb-2">Phone Number</Label>
                         <Input
                           value={owner.phone}
                           onChange={(e) => updateOwner(owner.id, 'phone', e.target.value)}
@@ -505,7 +505,7 @@ export function Phase6({
                         />
                       </div>
                       <div className="md:col-span-2">
-                        <Label className="text-sm">Address</Label>
+                        <Label className="text-sm mb-2">Address</Label>
                         <Input
                           value={owner.address}
                           onChange={(e) => updateOwner(owner.id, 'address', e.target.value)}
@@ -514,7 +514,7 @@ export function Phase6({
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Citizenship Status</Label>
+                        <Label className="text-sm mb-2">Citizenship Status</Label>
                         <Select
                           value={owner.citizenship}
                           onValueChange={(value: string) => updateOwner(owner.id, 'citizenship', value)}
@@ -530,7 +530,7 @@ export function Phase6({
                         </Select>
                       </div>
                       <div>
-                        <Label className="text-sm">Driver's License #</Label>
+                        <Label className="text-sm mb-2">Driver's License #</Label>
                         <Input
                           value={owner.driverLicense}
                           onChange={(e) => updateOwner(owner.id, 'driverLicense', e.target.value)}
@@ -539,7 +539,7 @@ export function Phase6({
                         />
                       </div>
                       <div>
-                        <Label className="text-sm">Ownership Percentage * (%)</Label>
+                        <Label className="text-sm mb-2">Ownership Percentage * (%)</Label>
                         <Input
                           type="number"
                           min="0"
@@ -587,7 +587,7 @@ export function Phase6({
               
               <div className="space-y-4">
                 <div>
-                  <Label>Will you have employees? *</Label>
+                  <Label className="mb-2">Will you have employees? *</Label>
                   <RadioGroup
                     value={formData.hasEmployees}
                     onValueChange={(value: string) => {

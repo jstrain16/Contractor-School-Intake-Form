@@ -65,7 +65,7 @@ export function Phase7({
             </div>
 
             <div className="space-y-4">
-              <Label>Is the applicant the qualifier?</Label>
+              <Label className="mb-2">Is the applicant the qualifier?</Label>
               <RadioGroup
                 value={formData.qualifierIsApplicant ? 'yes' : 'no'}
               onValueChange={(value: string) =>
@@ -97,7 +97,7 @@ export function Phase7({
                     {!formData.qualifierIsApplicant && (
                       <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg">
                         <div className="space-y-2">
-                          <Label className="text-sm">Qualifier Full Name</Label>
+                          <Label className="text-sm mb-2">Qualifier Full Name</Label>
                           <Input
                             value={formData.qualifierName}
                             onChange={(e) =>
@@ -108,7 +108,7 @@ export function Phase7({
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm">Qualifier Contact Information</Label>
+                          <Label className="text-sm mb-2">Qualifier Contact Information</Label>
                           <Textarea
                             value={formData.qualifierInfo}
                             onChange={(e) =>

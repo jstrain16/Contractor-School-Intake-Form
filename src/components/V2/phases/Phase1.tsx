@@ -68,7 +68,7 @@ export function Phase1({
           <div className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName" className="mb-2">First Name</Label>
                 <Input
                   id="firstName"
                   value={formData.firstName}
@@ -81,7 +81,7 @@ export function Phase1({
                 <p className="text-xs text-gray-500">Auto-filled from Clerk</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName" className="mb-2">Last Name</Label>
                 <Input
                   id="lastName"
                   value={formData.lastName}
@@ -97,7 +97,7 @@ export function Phase1({
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="mb-2">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -111,7 +111,7 @@ export function Phase1({
                 <p className="text-xs text-gray-500">Auto-filled from Clerk</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="mb-2">Phone Number</Label>
                 <Input
                   id="phone"
                   type="tel"

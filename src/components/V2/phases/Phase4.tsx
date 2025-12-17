@@ -128,7 +128,7 @@ export function Phase4({
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="border border-gray-200 rounded-lg p-4">
-                <Label className="text-gray-900">
+                <Label className="text-gray-900 mb-2">
                   Have you had prior license disciplinary action?
                 </Label>
                 <RadioGroup
@@ -154,7 +154,7 @@ export function Phase4({
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <Label className="text-gray-900">
+                <Label className="text-gray-900 mb-2">
                   Do you have any pending criminal charges?
                 </Label>
                 <RadioGroup
@@ -180,7 +180,7 @@ export function Phase4({
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <Label className="text-gray-900">
+                <Label className="text-gray-900 mb-2">
                   Any misdemeanor convictions within the last 10 years?
                 </Label>
                 <RadioGroup
@@ -206,7 +206,7 @@ export function Phase4({
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <Label className="text-gray-900">
+                <Label className="text-gray-900 mb-2">
                   Any felony convictions?
                 </Label>
                 <RadioGroup
@@ -232,7 +232,7 @@ export function Phase4({
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <Label className="text-gray-900">
+                <Label className="text-gray-900 mb-2">
                   Any judgments, liens, or child support delinquencies (last 8 years)?
                 </Label>
                 <RadioGroup
@@ -258,7 +258,7 @@ export function Phase4({
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <Label className="text-gray-900">
+                <Label className="text-gray-900 mb-2">
                   Any bankruptcy in the last 7 years?
                 </Label>
                 <RadioGroup
