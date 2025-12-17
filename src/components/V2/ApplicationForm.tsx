@@ -86,6 +86,8 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   const [loadingApp, setLoadingApp] = useState<boolean>(true);
   const phaseRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
+  const [selectKey, setSelectKey] = useState(0);
+
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
     // Phase 1: User Authentication
@@ -1278,7 +1280,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                     <div>
                       <Label>Incident Category *</Label>
                       <Select
-                        value=""
+                        key={selectKey}
                         onValueChange={(categorySubtype: string) => {
                           const [category, subtype] = categorySubtype.split('|');
                           // Map old type to category for backwards compatibility
@@ -1306,6 +1308,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                             resolution: ''
                           };
                           addIncident(newIncident);
+                          setSelectKey(prev => prev + 1);
                         }}
                       >
                         <SelectTrigger>
