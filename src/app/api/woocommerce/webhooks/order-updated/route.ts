@@ -92,18 +92,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, ignored: true, status: order.status });
     }
 
-    // 4. Extract App ID
-    const appId =
-      order.meta_data?.find((m) => m.key === "application_id")?.value ??
-      order.meta_data?.find((m) => m.key === "app_id")?.value;
+    // Safely extract meta data for debugging
+    const metaData = order.meta_data || [];
+    console.log("Meta Data Check:", { 
+        count: metaData.length, 
+        keys: metaData.map((m: any) => m.key) 
+    });
 
-    console.log("App ID Lookup:", {
+    // Pull application_id meta written by your WP snippet
+    const appId =
+      metaData.find((m: any) => m.key === "application_id")?.value ??
+      metaData.find((m: any) => m.key === "app_id")?.value;
+
+    console.log("App ID Lookup Result:", {
         found: !!appId,
-        value: appId,
-        metaKeys: order.meta_data?.map(m => m.key)
+        value: appId
     });
 
     if (!appId) {
+      console.error("Missing application_id on order meta for order", order.id);
       return NextResponse.json(
         { error: "Missing application_id on order meta", orderId: order.id },
         { status: 400 }
