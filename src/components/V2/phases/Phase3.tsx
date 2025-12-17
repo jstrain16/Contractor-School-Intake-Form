@@ -257,20 +257,23 @@ export function Phase3({
                       <Checkbox
                         id="classPayment"
                         checked={formData.classPaymentComplete}
-                        onCheckedChange={(checked: boolean) =>
-                          setFormData({
-                            ...formData,
-                            classPaymentComplete: checked as boolean
-                          })
-                        }
+                        disabled={true}
                       />
                       <Label
                         htmlFor="classPayment"
-                        className="cursor-pointer text-sm"
+                        className={`text-sm ${formData.classPaymentComplete ? 'text-green-700 font-medium' : 'text-gray-500'}`}
                       >
-                        I have completed payment through WooCommerce
+                        {formData.classPaymentComplete 
+                          ? "Payment confirmed via WooCommerce" 
+                          : "Waiting for payment confirmation..."}
                       </Label>
                     </div>
+                    {!formData.classPaymentComplete && (
+                        <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded flex items-center gap-2">
+                            <Info className="w-3 h-3" />
+                            <span>Payment status updates automatically. You may need to refresh the page after checkout.</span>
+                        </div>
+                    )}
                     <p className="text-xs text-gray-500">
                       Note: Payment is processed through WooCommerce. Confirmation email 
                       will be sent after enrollment.
