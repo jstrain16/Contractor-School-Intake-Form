@@ -809,6 +809,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       incidents: [{ 
         ...incident, 
         id: Date.now().toString(),
+        customName: '', // Allow users to name their incidents
         category: incident.category || 'BACKGROUND',
         subtype: incident.subtype || '',
         narrative: '',
@@ -1275,7 +1276,10 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
 
                 {/* Add New Incident Form */}
                 <div className="border border-gray-200 rounded-lg p-6 mb-6">
-                  <h4 className="text-gray-900 mb-4">Add Incident Details</h4>
+                  <h4 className="text-gray-900 mb-2">Add New Incident</h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Select a category below to add a new incident record to your list. You can then fill in the details.
+                  </p>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label>Incident Category *</Label>
@@ -1382,11 +1386,13 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                         <div key={incident.id} className="border border-gray-200 rounded-lg p-4">
                           <div className="flex items-start justify-between mb-4">
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 mb-2">
                                 <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded">
                                   {displayLabel}
                                 </span>
-                                <span className="text-sm text-gray-500">Incident #{index + 1}</span>
+                                <span className="text-sm text-gray-500">
+                                  {incident.customName || `Incident #${index + 1}`}
+                                </span>
                               </div>
                             </div>
                             <button
@@ -1398,6 +1404,19 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                           </div>
                           
                           <div className="grid md:grid-cols-2 gap-4">
+                            <div className="md:col-span-2">
+                              <Label className="text-sm">Incident Name / Label (Optional)</Label>
+                              <Input
+                                value={incident.customName || ''}
+                                onChange={(e) => {
+                                  const updated = formData.incidents.map((inc: any) =>
+                                    inc.id === incident.id ? { ...inc, customName: e.target.value } : inc
+                                  );
+                                  setFormData({ ...formData, incidents: updated });
+                                }}
+                                placeholder="e.g. 2018 Traffic Violation, 2020 Bankruptcy"
+                              />
+                            </div>
                             <div>
                               <Label className="text-sm">Date of Incident</Label>
                               <Input
