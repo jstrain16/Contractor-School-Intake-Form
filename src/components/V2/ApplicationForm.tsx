@@ -221,6 +221,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
 
         const mergedFormData = {
           ...formData,
+          ...(savedData.formData || {}), // Load legacy/flat data first
           ...(savedData.phase1 || {}),
           ...(savedData.phase2 || {}),
           ...(savedData.phase3 || {}),
@@ -238,7 +239,6 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
           ...(savedData.phase15 || {}),
           ...(savedData.phase16 || {}),
           ...(savedData.phase17 || {}),
-          ...(savedData.formData || {}),
         };
 
         setFormData(mergedFormData);
