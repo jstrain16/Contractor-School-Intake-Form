@@ -76,6 +76,9 @@ import { createClient } from '@supabase/supabase-js';
 export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) {
   // ... existing state ...
 
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [loadingApp, setLoadingApp] = useState<boolean>(true);
+
   // Realtime subscription for auto-updating payment status
   useEffect(() => {
     if (!applicationId) return;
@@ -112,16 +115,6 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       supabase.removeChannel(channel);
     };
   }, [applicationId]);
-
-  // ... existing load useEffect ...
-  const [currentPhase, setCurrentPhase] = useState(startingPhase);
-  const [completedPhases, setCompletedPhases] = useState<number[]>([1]); // Phase 1 complete by default (Clerk authentication)
-  const [expandedSections, setExpandedSections] = useState<number[]>([startingPhase]);
-  const phaseRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const [showSupportingMaterials, setShowSupportingMaterials] = useState(false);
-  const [supportingMaterialsComplete, setSupportingMaterialsComplete] = useState(false);
-  const [applicationId, setApplicationId] = useState<string | null>(null);
-  const [loadingApp, setLoadingApp] = useState<boolean>(true);
 
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
