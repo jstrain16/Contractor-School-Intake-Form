@@ -225,7 +225,28 @@ export function Phase3({
                         }
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    
+                    {/* WooCommerce Checkout Button */}
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-sm font-medium">Step 1: Complete Payment</Label>
+                      <a 
+                        href={`/api/checkout/start?productId=${formData.selectedClass}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+                        onClick={(e) => {
+                          // Optional: we can automatically check the checkbox if they click this,
+                          // but usually better to let them confirm they finished.
+                        }}
+                      >
+                        Pay on Contractor School Store <ArrowRight className="h-4 w-4" />
+                      </a>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Opens in a new tab. You will be redirected to our secure checkout.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-2 pt-2 border-t border-gray-100 mt-2">
                       <Checkbox
                         id="classPayment"
                         checked={formData.classPaymentComplete}
