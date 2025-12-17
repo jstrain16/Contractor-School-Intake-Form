@@ -236,6 +236,19 @@ function NotificationsBell() {
 function AdminPortalBadge() {
   const { user } = useUser()
   const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()).filter(Boolean) ?? []
+  
+  // Check if actually an admin (you might have a more robust check in your app)
+  // For now, if the path doesn't start with /admin, we probably shouldn't show this at all for normal users
+  // OR we just hide the "Admin" text/shield for non-admins.
+  
+  // The user requested: "On the main header- the user logo shouldn't say admin if they are just an applicant. there should be no user logo with a shelid"
+  // This implies this entire badge component might be intended ONLY for admins.
+  
+  const pathname = usePathname()
+  const isAdminArea = pathname?.startsWith("/admin")
+
+  if (!isAdminArea) return null;
+
   const name = user?.fullName || emails[0] || "Admin"
   return (
     <div className="flex items-center gap-2 rounded-full bg-blue-500 px-3 py-2 text-white">
