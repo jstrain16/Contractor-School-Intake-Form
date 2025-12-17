@@ -11,9 +11,12 @@ export function Phase3({
   onComplete, 
   expandedSections, 
   completedPhases, 
-  toggleSection 
-}: PhaseComponentProps) {
+  toggleSection,
+  applicationId // Assuming this prop is passed down now, or we need to access it
+}: PhaseComponentProps & { applicationId?: string }) { // Extended prop type locally for now
   const phaseId = 3;
+  // ... rest of component
+
   const [classes, setClasses] = useState<ClassOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -230,13 +233,17 @@ export function Phase3({
                     <div className="flex flex-col gap-2">
                       <Label className="text-sm font-medium">Step 1: Complete Payment</Label>
                       <a 
-                        href={`/api/checkout/start?productId=${formData.selectedClass}`}
+                        href={`/api/checkout/start?productId=${formData.selectedClass}${applicationId ? `&appId=${applicationId}` : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+                        className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm ${
+                            applicationId ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                        }`}
                         onClick={(e) => {
-                          // Optional: we can automatically check the checkbox if they click this,
-                          // but usually better to let them confirm they finished.
+                          if (!applicationId) {
+                              e.preventDefault();
+                              alert("Application ID missing. Please refresh the page.");
+                          }
                         }}
                       >
                         Pay on Contractor School Store <ArrowRight className="h-4 w-4" />

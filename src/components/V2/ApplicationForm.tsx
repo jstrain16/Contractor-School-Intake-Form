@@ -1102,6 +1102,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
             expandedSections={expandedSections}
             completedPhases={completedPhases}
             toggleSection={toggleSection}
+            applicationId={applicationId || undefined}
           />
         </div>
 
