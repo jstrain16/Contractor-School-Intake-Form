@@ -173,6 +173,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Supabase update failed", details: updateError.message }, { status: 500 });
     }
 
+    console.log("Supabase update success for App ID:", appId);
     return NextResponse.json({ ok: true, orderId: order.id, appId, status: "updated" });
 
   } catch (err: any) {
