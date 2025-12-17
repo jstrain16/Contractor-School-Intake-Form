@@ -4,6 +4,106 @@ import { Label } from '../ui/label';
 import { Checkbox } from '../ui/checkbox';
 import { PhaseComponentProps } from '../types/ApplicationTypes';
 
+const AccordionSection = ({
+  title,
+  description,
+  options,
+  selected,
+  onSelect,
+  selectedSpecialties,
+  onToggleSpecialty,
+  specialtyLimit,
+  type,
+}: {
+  title: string;
+  description: string;
+  options: { code: string; name: string; desc?: string }[];
+  selected?: string;
+  onSelect?: (code: string) => void;
+  selectedSpecialties?: string[];
+  onToggleSpecialty?: (code: string) => void;
+  specialtyLimit?: number;
+  type: 'general' | 'ep' | 'specialty';
+}) => {
+  const [open, setOpen] = useState(false);
+  const toggle = () => setOpen(!open);
+  return (
+    <div className="border border-gray-200 rounded-lg">
+      <button
+        type="button"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+        onClick={toggle}
+      >
+        <div className="text-left">
+          <div className="text-gray-900 font-semibold">{title}</div>
+          <div className="text-xs text-gray-600">{description}</div>
+        </div>
+        <ChevronRight
+          className={`w-4 h-4 text-gray-500 transition-transform ${open ? 'rotate-90' : ''}`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-gray-200 p-3 space-y-2">
+          {type !== 'specialty' &&
+            options.map((opt) => (
+              <label
+                key={opt.code}
+                className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 ${
+                  selected === opt.code ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'
+                }`}
+                onClick={() => onSelect?.(opt.code)}
+              >
+                <input
+                  type="radio"
+                  className="mt-1 h-4 w-4"
+                  checked={selected === opt.code}
+                  onChange={() => onSelect?.(opt.code)}
+                />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-gray-900">
+                    {opt.code} — {opt.name}
+                  </div>
+                  {opt.desc && <div className="text-xs text-gray-600 mt-0.5">{opt.desc}</div>}
+                </div>
+              </label>
+            ))}
+          {type === 'specialty' &&
+            options.map((opt) => {
+              const isChecked = selectedSpecialties?.includes(opt.code);
+              const disabled = !isChecked && (selectedSpecialties?.length || 0) >= (specialtyLimit || 3);
+              return (
+                <label
+                  key={opt.code}
+                  className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 ${
+                    isChecked ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white'
+                  } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  onClick={() => !disabled && onToggleSpecialty?.(opt.code)}
+                >
+                  <Checkbox
+                    checked={isChecked}
+                    onCheckedChange={() => !disabled && onToggleSpecialty?.(opt.code)}
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-900">
+                      {opt.code} — {opt.name}
+                    </div>
+                    {opt.desc && <div className="text-xs text-gray-600 mt-0.5">{opt.desc}</div>}
+                  </div>
+                </label>
+              );
+            })}
+          {type === 'specialty' && (
+            <div className="text-xs text-gray-600">
+              Selected {selectedSpecialties?.length || 0}/{specialtyLimit} (max 3)
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export function Phase2({ 
   formData, 
   setFormData, 
@@ -84,106 +184,6 @@ export function Phase2({
 
   const specialtyCount = (formData.specialtyLicenses || []).length;
 
-  const AccordionSection = ({
-    title,
-    description,
-    options,
-    selected,
-    onSelect,
-    selectedSpecialties,
-    onToggleSpecialty,
-    specialtyLimit,
-    type,
-  }: {
-    title: string;
-    description: string;
-    options: { code: string; name: string; desc?: string }[];
-    selected?: string;
-    onSelect?: (code: string) => void;
-    selectedSpecialties?: string[];
-    onToggleSpecialty?: (code: string) => void;
-    specialtyLimit?: number;
-    type: 'general' | 'ep' | 'specialty';
-  }) => {
-    const [open, setOpen] = useState(false);
-    const toggle = () => setOpen(!open);
-    return (
-      <div className="border border-gray-200 rounded-lg">
-        <button
-          type="button"
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-          onClick={toggle}
-        >
-          <div className="text-left">
-            <div className="text-gray-900 font-semibold">{title}</div>
-            <div className="text-xs text-gray-600">{description}</div>
-          </div>
-          <ChevronRight
-            className={`w-4 h-4 text-gray-500 transition-transform ${open ? 'rotate-90' : ''}`}
-          />
-        </button>
-        {open && (
-          <div className="border-t border-gray-200 p-3 space-y-2">
-            {type !== 'specialty' &&
-              options.map((opt) => (
-                <label
-                  key={opt.code}
-                  className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 ${
-                    selected === opt.code ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'
-                  }`}
-                  onClick={() => onSelect?.(opt.code)}
-                >
-                  <input
-                    type="radio"
-                    className="mt-1 h-4 w-4"
-                    checked={selected === opt.code}
-                    onChange={() => onSelect?.(opt.code)}
-                  />
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {opt.code} — {opt.name}
-                    </div>
-                    {opt.desc && <div className="text-xs text-gray-600 mt-0.5">{opt.desc}</div>}
-                  </div>
-                </label>
-              ))}
-            {type === 'specialty' &&
-              options.map((opt) => {
-                const isChecked = selectedSpecialties?.includes(opt.code);
-                const disabled = !isChecked && (selectedSpecialties?.length || 0) >= (specialtyLimit || 3);
-                return (
-                  <label
-                    key={opt.code}
-                    className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer hover:bg-gray-50 ${
-                      isChecked ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white'
-                    } ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
-                    onClick={() => !disabled && onToggleSpecialty?.(opt.code)}
-                  >
-                    <Checkbox
-                      checked={isChecked}
-                      onCheckedChange={() => !disabled && onToggleSpecialty?.(opt.code)}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-gray-900">
-                        {opt.code} — {opt.name}
-                      </div>
-                      {opt.desc && <div className="text-xs text-gray-600 mt-0.5">{opt.desc}</div>}
-                    </div>
-                  </label>
-                );
-              })}
-            {type === 'specialty' && (
-              <div className="text-xs text-gray-600">
-                Selected {selectedSpecialties?.length || 0}/{specialtyLimit} (max 3)
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-  
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
       <div
