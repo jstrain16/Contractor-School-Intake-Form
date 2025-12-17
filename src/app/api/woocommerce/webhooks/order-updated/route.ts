@@ -97,6 +97,12 @@ export async function POST(req: Request) {
       order.meta_data?.find((m) => m.key === "application_id")?.value ??
       order.meta_data?.find((m) => m.key === "app_id")?.value;
 
+    console.log("App ID Lookup:", {
+        found: !!appId,
+        value: appId,
+        metaKeys: order.meta_data?.map(m => m.key)
+    });
+
     if (!appId) {
       return NextResponse.json(
         { error: "Missing application_id on order meta", orderId: order.id },
