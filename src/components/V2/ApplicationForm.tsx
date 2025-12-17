@@ -500,6 +500,14 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, completedPhases, currentPhase, applicationId]);
 
+  // Determine if user answered "yes" to any Phase 4 screening questions
+  const hasIncidents = formData.priorDiscipline === 'yes' || 
+    formData.pendingCharges === 'yes' || 
+    formData.misdemeanors === 'yes' || 
+    formData.felonies === 'yes' || 
+    formData.judgments === 'yes' || 
+    formData.bankruptcy === 'yes';
+
   // Mock class data from WooCommerce
   const mockClasses: ClassOption[] = [
     {
@@ -760,14 +768,6 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     if (phaseId === currentPhase) return 'active';
     return 'pending';
   };
-
-  // Determine if user answered "yes" to any Phase 4 screening questions
-  const hasIncidents = formData.priorDiscipline === 'yes' || 
-    formData.pendingCharges === 'yes' || 
-    formData.misdemeanors === 'yes' || 
-    formData.felonies === 'yes' || 
-    formData.judgments === 'yes' || 
-    formData.bankruptcy === 'yes';
 
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
