@@ -12,6 +12,7 @@ export interface Owner {
 
 export interface ClassOption {
   id: string;
+  sku?: string;
   date: string;
   time: string;
   price: number;

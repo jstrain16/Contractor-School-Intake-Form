@@ -37,6 +37,7 @@ export function Phase3({
 
             return {
                 id: String(p.id),
+                sku: p.sku,
                 description: p.name,
                 price: parseFloat(p.price || '0'),
                 seatsAvailable: p.stock_quantity ?? 20, // Default if not managed
@@ -65,6 +66,7 @@ export function Phase3({
   const mockClasses: ClassOption[] = [
     {
       id: '1',
+      sku: 'PL30-MOCK-1',
       date: '2026-01-15',
       time: '9:00 AM - 5:00 PM',
       price: 599,
@@ -74,6 +76,7 @@ export function Phase3({
     },
     {
       id: '2',
+      sku: 'PL25-MOCK-1',
       date: '2026-01-22',
       time: '9:00 AM - 5:00 PM',
       price: 499,
@@ -83,6 +86,7 @@ export function Phase3({
     },
     {
       id: '3',
+      sku: 'PL25-MOCK-2',
       date: '2026-02-05',
       time: '9:00 AM - 4:00 PM',
       price: 449,
@@ -230,7 +234,22 @@ export function Phase3({
                     <div className="py-8"><LoaderThree /></div>
                   ) : (
                     displayClasses
-                      .filter(c => !formData.classPaymentComplete || c.id === formData.selectedClass)
+                      .filter(c => {
+                          // If payment is complete, only show the purchased class
+                          if (formData.classPaymentComplete) {
+                              return c.id === formData.selectedClass;
+                          }
+                          
+                          // Filter based on license type requirement (30-hour vs 25-hour)
+                          if (formData.classType === '30-hour') {
+                              return c.sku?.includes('PL30');
+                          } else if (formData.classType === '25-hour') {
+                              return c.sku?.includes('PL25');
+                          }
+                          
+                          // Fallback: show all if no specific type set or no SKU match found
+                          return true;
+                      })
                       .map((classOption) => (
                     <div
                       key={classOption.id}

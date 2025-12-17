@@ -141,21 +141,23 @@ export function Phase2({
   ];
 
   const handleGeneralSelect = (code: string) => {
+    const is30Hour = ['B100', 'E100', 'R100', 'E200', 'P200'].includes(code);
     setFormData({
       ...formData,
       licenseType: code,
-      requiresExam: ['R100', 'B100', 'E100'].includes(code),
-      classType: ['R100', 'B100', 'E100'].includes(code) ? '30-hour' : '25-hour',
+      requiresExam: is30Hour,
+      classType: is30Hour ? '30-hour' : '25-hour',
       specialtyLicenses: [],
     });
   };
 
   const handleEPSelect = (code: string) => {
+    const is30Hour = ['B100', 'E100', 'R100', 'E200', 'P200'].includes(code);
     setFormData({
       ...formData,
       licenseType: code,
-      requiresExam: ['R100', 'B100', 'E100'].includes(code),
-      classType: ['R100', 'B100', 'E100'].includes(code) ? '30-hour' : '25-hour',
+      requiresExam: is30Hour,
+      classType: is30Hour ? '30-hour' : '25-hour',
       specialtyLicenses: [],
     });
   };
