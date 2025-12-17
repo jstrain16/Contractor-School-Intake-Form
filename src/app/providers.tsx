@@ -133,6 +133,7 @@ function GlobalHeader() {
       </div>
 
       <div className="hidden flex-1 items-center justify-center gap-6 text-sm font-semibold text-slate-800 md:flex">
+        <div id="application-header-portal" />
         <SignedOut>
           {marketingNavItems.map((item) => (
             <Link key={item.label} href={item.href} className="hover:text-slate-500">

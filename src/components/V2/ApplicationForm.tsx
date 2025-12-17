@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { 
   ArrowLeft, ArrowRight, CheckCircle, Circle, GraduationCap, User, 
   Building2, FileText, DollarSign, Briefcase, Shield, Calendar,
@@ -987,44 +988,33 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     return allTypesDocumented && allIncidentsComplete;
   };
 
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.getElementById('application-header-portal'));
+  }, []);
+
   if (loadingApp) {
     return <LoaderThreeFullScreen />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navigation */}
-      {/* Removed secondary header to condense into GlobalHeader */}
+      {/* Portal for Header Content */}
+      {portalTarget && createPortal(
+        <div className="flex items-center gap-4">
+          <span className="text-gray-600 font-medium hidden sm:inline">
+            Phase {currentPhase} of {phases.length}
+          </span>
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-white" />
+          </div>
+        </div>,
+        portalTarget
+      )}
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Dashboard
-          </button>
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-gray-900 mb-2">Contractor Licensing Application</h1>
-              <p className="text-gray-600">
-                Complete all 17 phases to submit your application to DOPL
-              </p>
-            </div>
-            <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
-              <span className="text-gray-600 font-medium">
-                Phase {currentPhase} of {phases.length}
-              </span>
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Progress Overview with Navigation */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
           {/* Logo and Progress Header */}
