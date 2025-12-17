@@ -100,31 +100,12 @@ export function Phase4({
                   <strong>Important Disclosure</strong>
                 </p>
                 <p className="text-sm text-yellow-700">
-                  Answer all questions honestly. "Yes" answers will trigger Phase 4.1: 
-                  Incident Information, where you must provide detailed documentation 
-                  for each incident before continuing your application.
+                  Answer all questions honestly. "Yes" answers will require detailed incident documentation in a later step.
                 </p>
               </div>
             </div>
           </div>
           
-          {hasIncidents && (
-            <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-4 mb-6">
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-orange-900 mb-1">
-                    <strong>Phase 4.1 Required: Incident Information</strong>
-                  </p>
-                  <p className="text-sm text-orange-700">
-                    You've answered "Yes" to one or more screening questions. After completing 
-                    this phase, you'll be directed to provide detailed information about each incident.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="space-y-6">
             <div className="space-y-4">
               <div className="border border-gray-200 rounded-lg p-4">
@@ -339,7 +320,7 @@ export function Phase4({
                 disabled={!formData.riskLevel}
                 className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {hasIncidents ? 'Continue to Incident Information' : 'Continue to Assistance Selection'}
+                Continue to Assistance Selection
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
