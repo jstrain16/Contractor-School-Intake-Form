@@ -33,6 +33,45 @@ import { buildStatus, getMissingSteps } from "@/lib/progress"
 import { useState as useReactState } from "react"
 import { LoaderThree } from "@/components/ui/loader"
 
+function SalesforceIndicator({ email }: { email: string | null }) {
+  const [exists, setExists] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (!email || email === "No email" || email === "Unknown user") {
+      setExists(false)
+      return
+    }
+    const check = async () => {
+      try {
+        console.log(`Checking Salesforce for ${email}...`)
+        const res = await fetch(`/api/admin/salesforce/check?email=${encodeURIComponent(email)}`)
+        if (res.ok) {
+          const json = await res.json()
+          console.log(`Salesforce result for ${email}:`, json)
+          setExists(json.exists)
+        } else {
+          console.error(`Salesforce API error for ${email}:`, res.status, res.statusText)
+          setExists(false)
+        }
+      } catch (e) {
+        console.error("Failed to check Salesforce status", e)
+        setExists(false)
+      }
+    }
+    check()
+  }, [email])
+
+  if (!exists) return null
+
+  return (
+    <div title="Connected to Salesforce Contact">
+      <svg className="h-5 w-5 text-[#00A1E0]" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.9 12.3c0-.9-.3-1.7-.8-2.3.5-1.1.8-2.4.8-3.6 0-3.5-2.9-6.4-6.4-6.4-2.4 0-4.6 1.4-5.7 3.4C6.2 3.2 5.6 3 5 3 2.2 3 0 5.2 0 8c0 1.2.4 2.3 1.1 3.2C.4 11.8 0 12.6 0 13.5c0 2.5 2 4.5 4.5 4.5h14c3 0 5.5-2.5 5.5-5.5 0-2.8-2.1-5.1-4.9-5.4-.1.1-.1.2-.2.2z" />
+      </svg>
+    </div>
+  )
+}
+
 type ApplicationRow = {
   id: string
   user_id: string
@@ -365,7 +404,7 @@ function formatValue(value: unknown, attachmentMap: Map<string, string>): React.
           <span key={i} className="inline-flex items-center gap-1">
             {formatValue(v, attachmentMap)}
             {i < value.length - 1 ? <span className="text-slate-400">,</span> : null}
-          </span>
+      </span>
         ))}
       </div>
     )
@@ -767,7 +806,10 @@ export function AdminDashboardClient({
                     <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="font-semibold text-slate-900">{user.name}</div>
-                        <div className="text-xs text-slate-600">{user.email}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-xs text-slate-600">{user.email}</div>
+                          <SalesforceIndicator email={user.email} />
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
