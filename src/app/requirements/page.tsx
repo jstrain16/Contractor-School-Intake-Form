@@ -9,54 +9,60 @@ import {
   ShieldCheck, 
   GraduationCap, 
   FileText, 
-  Building2, 
   Users, 
-  AlertTriangle,
   Phone,
   Mail,
   BookOpen,
-  TrendingUp,
-  CheckSquare
+  CheckSquare,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function RequirementsPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white font-sans">
       {/* Hero Section */}
-      <section className="bg-slate-50 border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-4 py-20 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
+      <section 
+        className="relative pt-[80px] pb-[160px] px-4 overflow-hidden"
+        style={{ backgroundImage: "linear-gradient(152.35deg, #155DFC 0%, #193CB8 100%)" }}
+      >
+        <div className="max-w-[896px] mx-auto text-center relative z-10">
+          <h1 className="text-[40px] md:text-[60px] leading-[1.1] font-normal text-white mb-6">
             Getting Licensed Is Complicated.
           </h1>
-          <h2 className="text-2xl md:text-3xl font-bold text-orange-600 mb-8">
+          <h2 className="text-[28px] md:text-[36px] leading-[1.2] font-normal text-[#DBEAFE] mb-8">
             We Make It Simple.
           </h2>
-          <div className="max-w-3xl mx-auto text-lg text-slate-700 mb-12">
-            <p>
-              Utah requires <span className="font-bold text-slate-900">15 separate requirements</span> across personal identity, business formation, education, and insurance.
+          
+          <div className="max-w-[768px] mx-auto mb-12">
+            <p className="text-[18px] md:text-[20px] text-[#DBEAFE] leading-[1.4]">
+              Utah requires <span className="font-bold text-white">15 separate requirements</span> across personal identity, business formation, education, insurance, and compliance—all with specific documentation that must match perfectly.
             </p>
           </div>
           
-          <div className="max-w-2xl mx-auto bg-white rounded-xl border border-slate-200 p-8 shadow-sm text-left">
-            <div className="flex items-start gap-4 mb-4">
-              <AlertCircle className="w-6 h-6 text-orange-500 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-slate-900 text-lg mb-2">Here's the reality:</h3>
-                <ul className="space-y-3 text-slate-600">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                    <span>Most applicants miss critical documents or submit incomplete forms.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                    <span>A single error can delay your license by weeks or months.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 flex-shrink-0" />
-                    <span>The state doesn't tell you what you need until it's too late.</span>
-                  </li>
-                </ul>
+          <div className="bg-white/10 border border-white/20 rounded-[16px] p-8 text-left max-w-[672px] mx-auto backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <AlertCircle className="w-6 h-6 text-white" />
+              <span className="text-[20px] text-white">Here's the reality:</span>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center mt-1 flex-shrink-0">
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                </div>
+                <p className="text-[18px] text-[#EFF6FF]">Most applicants miss critical documents or submit mismatched information</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center mt-1 flex-shrink-0">
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                </div>
+                <p className="text-[18px] text-[#EFF6FF]">A single error can delay your license by weeks or months</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center mt-1 flex-shrink-0">
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                </div>
+                <p className="text-[18px] text-[#EFF6FF]">The state doesn't tell you what you need until it's too late</p>
               </div>
             </div>
           </div>
@@ -64,166 +70,146 @@ export default function RequirementsPage() {
       </section>
 
       {/* Short Version Section */}
-      <section className="py-20 max-w-6xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-slate-900 mb-4">What Utah Requires (The Short Version)</h2>
-          <p className="text-lg text-slate-600">The licensing process covers 4 major areas with 15 specific requirements.</p>
+      <section className="py-[80px] px-4 max-w-[1207px] mx-auto">
+        <div className="mb-[40px]">
+          <h2 className="text-[36px] text-[#101828] text-center mb-4 font-normal">What Utah Requires (The Short Version)</h2>
+          <p className="text-[20px] text-[#4A5565] text-center">The licensing process covers 4 major areas with 15 total requirements</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
-              <Users className="w-6 h-6" />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Personal & Business Identity</h3>
-            <p className="text-sm text-slate-600 mb-4">Verify who you are and establish your business entity.</p>
-            <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded-full">5 requirements</span>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
-              <GraduationCap className="w-6 h-6" />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Education & Experience</h3>
-            <p className="text-sm text-slate-600 mb-4">Complete required training and prove your industry experience.</p>
-            <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded-full">3 requirements</span>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Insurance & Compliance</h3>
-            <p className="text-sm text-slate-600 mb-4">Secure proper coverage and meet state regulations.</p>
-            <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded-full">4 requirements</span>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
-              <FileText className="w-6 h-6" />
-            </div>
-            <h3 className="font-bold text-slate-900 mb-2">Application & Approval</h3>
-            <p className="text-sm text-slate-600 mb-4">Submit documentation and pass background checks.</p>
-            <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-1 rounded-full">3 requirements</span>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <Card 
+            icon={<Users className="w-6 h-6 text-white" />}
+            gradient="linear-gradient(135deg, #2B7FFF 0%, #155DFC 100%)"
+            title="Personal & Business Identity"
+            description="Verify who you are and establish your business entity"
+            count="5 requirements"
+          />
+          <Card 
+            icon={<GraduationCap className="w-6 h-6 text-white" />}
+            gradient="linear-gradient(135deg, #2B7FFF 0%, #155DFC 100%)"
+            title="Education & Experience"
+            description="Complete required training and prove your industry knowledge"
+            count="3 requirements"
+          />
+          <Card 
+            icon={<ShieldCheck className="w-6 h-6 text-white" />}
+            gradient="linear-gradient(135deg, #2B7FFF 0%, #155DFC 100%)"
+            title="Insurance & Compliance"
+            description="Secure proper coverage and meet state regulations"
+            count="4 requirements"
+          />
+          <Card 
+            icon={<FileText className="w-6 h-6 text-white" />}
+            gradient="linear-gradient(135deg, #2B7FFF 0%, #155DFC 100%)"
+            title="Application & Approval"
+            description="Submit documentation and pass background checks"
+            count="3 requirements"
+          />
         </div>
 
-        <div className="text-center mt-12">
-          <Button variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50" onClick={() => document.getElementById('breakdown')?.scrollIntoView({ behavior: 'smooth' })}>
-            See all 15 requirements in detail <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+        <div className="text-center">
+          <button 
+            onClick={() => document.getElementById('breakdown')?.scrollIntoView({ behavior: 'smooth' })}
+            className="inline-flex items-center gap-2 text-[#155DFC] text-[18px] hover:underline"
+          >
+            See all 15 requirements in detail <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </section>
 
       {/* Value Prop Section */}
-      <section className="bg-slate-900 text-white py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How Contractor School Simplifies Everything</h2>
-            <p className="text-lg text-slate-300">We've guided thousands of contractors through this exact process.</p>
+      <section 
+        className="py-[80px] px-4"
+        style={{ backgroundImage: "linear-gradient(142.48deg, #EFF6FF 0%, #FFFFFF 100%)" }}
+      >
+        <div className="max-w-[1207px] mx-auto">
+          <div className="mb-12">
+            <h2 className="text-[36px] text-[#101828] text-center mb-4 font-normal">How Contractor School Simplifies Everything</h2>
+            <p className="text-[20px] text-[#4A5565] text-center">We've guided thousands of contractors through this process</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CheckSquare className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Step-by-Step Guidance</h3>
-                  <p className="text-slate-300 mb-4">Our portal tells you exactly what you need, when you need it.</p>
-                  <ul className="space-y-2 text-sm text-slate-400">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Clear checklists for each requirement</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Real-time progress tracking</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Automatic document organization</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">State-Approved Education</h3>
-                  <p className="text-slate-300 mb-4">Complete your required pre-licensure course with us.</p>
-                  <ul className="space-y-2 text-sm text-slate-400">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Approved by Utah DOPL</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Flexible scheduling options</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Certificate delivered immediately</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <ShieldCheck className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Expert Review Before Submission</h3>
-                  <p className="text-slate-300 mb-4">Choose our Assisted Review option and have licensing pros check your work.</p>
-                  <ul className="space-y-2 text-sm text-slate-400">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Catch errors before the state sees them</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Verify all documentation matches</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Avoid costly delays and rejections</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Personal Support When You Need It</h3>
-                  <p className="text-slate-300 mb-4">Questions? Stuck on a requirement? Our licensing specialists are here.</p>
-                  <ul className="space-y-2 text-sm text-slate-400">
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Phone and email support</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Assistance with complex situations</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-400" /> Guidance on background disclosures</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-[1024px] mx-auto">
+            <ValueCard 
+              icon={<CheckSquare className="w-7 h-7 text-white" />}
+              iconBg="linear-gradient(135deg, #00C950 0%, #00A63E 100%)"
+              title="Step-by-Step Guidance"
+              description="Our portal tells you exactly what you need, when you need it, and in what order. No guessing. No confusion."
+              items={[
+                "Clear checklists for each requirement",
+                "Real-time progress tracking",
+                "Automatic document organization"
+              ]}
+            />
+            <ValueCard 
+              icon={<ShieldCheck className="w-7 h-7 text-white" />}
+              iconBg="linear-gradient(135deg, #FF6900 0%, #F54900 100%)"
+              title="Expert Review Before Submission"
+              description="Choose our Assisted Review option and have licensing professionals check everything before you submit."
+              items={[
+                "Catch errors before the state sees them",
+                "Verify all documentation matches",
+                "Avoid costly delays and rejections"
+              ]}
+            />
+            <ValueCard 
+              icon={<BookOpen className="w-7 h-7 text-white" />}
+              iconBg="linear-gradient(135deg, #2B7FFF 0%, #155DFC 100%)"
+              title="State-Approved Education"
+              description="Complete your required pre-licensure course with us and automatically check off one of the biggest requirements."
+              items={[
+                "Approved by Utah DOPL",
+                "Flexible scheduling options",
+                "Certificate delivered immediately"
+              ]}
+            />
+            <ValueCard 
+              icon={<Phone className="w-7 h-7 text-white" />}
+              iconBg="linear-gradient(135deg, #AD46FF 0%, #9810FA 100%)"
+              title="Personal Support When You Need It"
+              description="Questions? Stuck on a requirement? Our licensing specialists are here to help every step of the way."
+              items={[
+                "Phone and email support",
+                "Assistance with complex situations",
+                "Guidance on background disclosures"
+              ]}
+            />
           </div>
         </div>
       </section>
 
       {/* CTA 1 */}
-      <section className="py-20 bg-blue-600 text-white text-center">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
-          <p className="text-lg text-blue-100 mb-8">
+      <section className="py-[80px] px-4 text-center bg-white">
+        <div className="max-w-[896px] mx-auto">
+          <h2 className="text-[36px] text-[#101828] mb-6 font-normal">Ready to Get Started?</h2>
+          <p className="text-[20px] text-[#4A5565] mb-8">
             Don't navigate this complex process alone. Let us guide you to your license.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
             <Link href="/application">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 w-full sm:w-auto font-bold">
-                Start Your Application <ArrowRight className="ml-2 w-4 h-4" />
+              <Button size="lg" className="bg-[#155DFC] hover:bg-[#155DFC]/90 text-white h-[60px] px-8 text-[18px] rounded-[8px]">
+                Start Your Application <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="/application?phase=3">
-              <Button size="lg" variant="outline" className="border-blue-400 text-white hover:bg-blue-700 w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="border-[#E5E7EB] text-[#344054] hover:bg-gray-50 h-[60px] px-8 text-[18px] rounded-[8px]">
                 Book a Class
               </Button>
             </Link>
           </div>
-          <p className="text-sm text-blue-200">
-            Or <button onClick={() => document.getElementById('breakdown')?.scrollIntoView({ behavior: 'smooth' })} className="underline hover:text-white">scroll down to see all 15 requirements in detail</button>
+          <p className="text-[#155DFC] text-[16px]">
+            Or <button onClick={() => document.getElementById('breakdown')?.scrollIntoView({ behavior: 'smooth' })} className="underline hover:text-[#155DFC]/80">scroll down to see all 15 requirements in detail</button>
           </p>
         </div>
       </section>
 
       {/* Detailed Breakdown */}
-      <section id="breakdown" className="py-20 max-w-5xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-slate-900 mb-4">Complete Requirements Breakdown</h2>
-          <p className="text-lg text-slate-600">Here's everything the state requires, organized and explained.</p>
+      <section id="breakdown" className="py-[80px] px-4 max-w-[1207px] mx-auto">
+        <div className="mb-[60px]">
+          <h2 className="text-[36px] text-[#101828] text-center mb-4 font-normal">Complete Requirements Breakdown</h2>
+          <p className="text-[20px] text-[#4A5565] text-center">Here's everything the state requires, organized and explained.</p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-[40px]">
           <RequirementItem 
             number="1"
             title="Personal Information & Identity Verification"
@@ -408,46 +394,36 @@ export default function RequirementsPage() {
       </section>
 
       {/* Delays Section */}
-      <section className="py-20 bg-orange-50 border-y border-orange-100">
-        <div className="max-w-4xl mx-auto px-4">
+      <section 
+        className="py-[80px] px-4"
+        style={{ backgroundImage: "linear-gradient(152.22deg, #FFF7ED 0%, #FEF2F2 100%)" }}
+      >
+        <div className="max-w-[896px] mx-auto">
           <div className="text-center mb-12">
-            <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Why Most Applications Get Delayed</h2>
-            <p className="text-lg text-slate-600">These are the mistakes that cost applicants weeks of waiting.</p>
+            <div className="w-[64px] h-[64px] bg-[#FF6900]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="w-8 h-8 text-[#FF6900]" />
+            </div>
+            <h2 className="text-[36px] text-[#101828] mb-4 font-normal">Why Most Applications Get Delayed</h2>
+            <p className="text-[20px] text-[#4A5565]">These are the mistakes that cost applicants weeks or months</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-orange-200 p-8 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6">Common pitfalls we help you avoid:</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <span className="text-slate-700">Missing or incomplete documents</span>
-              </div>
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <span className="text-slate-700">Information doesn't match across forms</span>
-              </div>
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <span className="text-slate-700">Background disclosures were incomplete or inaccurate</span>
-              </div>
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <span className="text-slate-700">Business setup wasn't finished early enough</span>
-              </div>
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <span className="text-slate-700">Wrong license type selected</span>
-              </div>
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <span className="text-slate-700">Workers' comp waiver not approved in time</span>
-              </div>
+          <div 
+            className="bg-white/50 border border-[#FFD6A7] rounded-[14px] p-8"
+            style={{ backgroundImage: "linear-gradient(152.22deg, #FFF7ED 0%, #FEF2F2 100%)" }}
+          >
+            <h3 className="text-[20px] text-[#101828] mb-6">Common pitfalls we help you avoid:</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <DelayCard text="Missing or incomplete documents" />
+              <DelayCard text="Information doesn't match across forms" />
+              <DelayCard text="Background disclosures were incomplete or inaccurate" />
+              <DelayCard text="Business setup wasn't finished early enough" />
+              <DelayCard text="Wrong license type selected" />
+              <DelayCard text="Workers' comp waiver not approved in time" />
             </div>
             
-            <div className="mt-8 pt-6 border-t border-orange-100 text-center">
-              <p className="text-lg text-slate-800">
-                <span className="font-bold text-orange-600">Contractor School catches these issues before you submit,</span> so you get licensed faster, not later.
+            <div className="mt-8 border-2 border-[#155DFC] rounded-[10px] p-6 bg-white">
+              <p className="text-[16px] text-[#101828] text-center">
+                <span className="font-bold text-[#155DFC]">Contractor School catches these issues before you submit—</span> so you get licensed faster, not later.
               </p>
             </div>
           </div>
@@ -455,44 +431,98 @@ export default function RequirementsPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 text-center">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-slate-900 mb-6">Stop Stressing. Start Building.</h2>
-          <p className="text-lg text-slate-600 mb-8">
+      <section className="py-[80px] px-4 text-center bg-white">
+        <div className="max-w-[896px] mx-auto">
+          <h2 className="text-[36px] text-[#101828] mb-6 font-normal">Stop Stressing. Start Building.</h2>
+          <p className="text-[20px] text-[#4A5565] mb-8">
             The licensing process doesn't have to be overwhelming. We're here to help you every step of the way.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
             <Link href="/application">
-              <Button size="lg" className="bg-orange-500 text-white hover:bg-orange-600 w-full sm:w-auto font-bold">
-                Start Your Application
+              <Button size="lg" className="bg-[#155DFC] hover:bg-[#155DFC]/90 text-white h-[60px] px-8 text-[18px] rounded-[8px]">
+                Start Your Application <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="/application?phase=3">
-              <Button size="lg" variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="border-[#E5E7EB] text-[#344054] hover:bg-gray-50 h-[60px] px-8 text-[18px] rounded-[8px]">
                 Book a Class
               </Button>
             </Link>
             <Link href="/#support">
-              <Button size="lg" variant="ghost" className="text-blue-600 hover:bg-blue-50 w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="border-[#E5E7EB] text-[#344054] hover:bg-gray-50 h-[60px] px-8 text-[18px] rounded-[8px]">
                 Talk to a Specialist
               </Button>
             </Link>
           </div>
           
-          <div className="border-t border-slate-200 pt-8">
-            <p className="text-slate-600 mb-2">Questions? We're here to help.</p>
-            <div className="flex justify-center items-center gap-4 text-sm font-semibold text-slate-800">
+          <div className="border-t border-[#E5E7EB] pt-8">
+            <p className="text-[#4A5565] mb-2">Questions? We're here to help.</p>
+            <div className="flex justify-center items-center gap-4 text-sm font-semibold text-[#101828]">
               <span className="flex items-center gap-2"><Phone className="w-4 h-4" /> (801) 467-1800</span>
-              <span className="text-slate-300">|</span>
+              <span className="text-[#D0D5DD]">|</span>
               <span className="flex items-center gap-2"><Mail className="w-4 h-4" /> info@beacontractor.com</span>
             </div>
           </div>
         </div>
       </section>
       
-      <div className="bg-slate-50 py-4 text-center text-xs text-slate-500 italic">
+      <div className="bg-[#F9FAFB] py-4 text-center text-xs text-[#667085] italic">
         Contractor School is an approved education provider.
       </div>
+    </div>
+  );
+}
+
+function Card({ icon, gradient, title, description, count }: { 
+  icon: React.ReactNode, 
+  gradient: string, 
+  title: string, 
+  description: string, 
+  count: string 
+}) {
+  return (
+    <div 
+      className="border-2 border-[#E5E7EB] rounded-[14px] p-6 h-full flex flex-col items-start"
+      style={{ backgroundImage: "linear-gradient(137.5deg, #F9FAFB 0%, #FFFFFF 100%)" }}
+    >
+      <div 
+        className="w-[48px] h-[48px] rounded-[10px] flex items-center justify-center mb-4 flex-shrink-0"
+        style={{ backgroundImage: gradient }}
+      >
+        {icon}
+      </div>
+      <h3 className="text-[20px] text-[#101828] mb-2 font-normal leading-[1.4]">{title}</h3>
+      <p className="text-[16px] text-[#4A5565] mb-4 flex-grow leading-[1.5]">{description}</p>
+      <span className="text-[14px] text-[#155DFC]">{count}</span>
+    </div>
+  );
+}
+
+function ValueCard({ icon, iconBg, title, description, items }: { 
+  icon: React.ReactNode, 
+  iconBg: string, 
+  title: string, 
+  description: string, 
+  items: string[] 
+}) {
+  return (
+    <div className="bg-white border border-[#BEDBFF] rounded-[14px] p-8 shadow-sm h-full flex flex-col items-start">
+      <div 
+        className="w-[56px] h-[56px] rounded-[14px] flex items-center justify-center mb-6 flex-shrink-0"
+        style={{ backgroundImage: iconBg }}
+      >
+        {icon}
+      </div>
+      <h3 className="text-[24px] text-[#101828] mb-4 font-normal leading-[1.3]">{title}</h3>
+      <p className="text-[16px] text-[#4A5565] mb-6 leading-[1.5]">{description}</p>
+      <ul className="space-y-2 mt-auto">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-2 text-[16px] text-[#364153]">
+            <CheckSquare className="w-5 h-5 text-[#155DFC] flex-shrink-0 mt-0.5" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -505,34 +535,44 @@ function RequirementItem({ number, title, description, items, why }: {
   why: string 
 }) {
   return (
-    <div className="flex flex-col md:flex-row gap-6 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-      <div className="flex-shrink-0">
-        <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center font-bold text-xl text-slate-400">
-          {number}
-        </div>
+    <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex-shrink-0 w-[64px] flex justify-center">
+        <span className="text-[32px] text-[#101828] font-normal">{number}</span>
       </div>
-      <div className="flex-grow">
-        <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
-        <p className="text-slate-600 mb-6">{description}</p>
-        
-        <div className="bg-slate-50 rounded-lg p-5 mb-6">
-          <h4 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-3">You'll need:</h4>
-          <ul className="grid sm:grid-cols-2 gap-3">
-            {items.map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                <CheckSquare className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="flex-grow border-b border-[#E5E7EB] pb-8 last:border-0">
+        <div className="flex flex-col md:flex-row gap-8">
+          <div className="flex-1">
+            <h3 className="text-[32px] text-[#101828] mb-4 font-normal leading-[1.2]">{title}</h3>
+            <p className="text-[24px] text-[#4A5565] leading-[1.4] mb-4">{description}</p>
+          </div>
+          
+          <div className="flex-1 bg-[#F9FAFB] rounded-[12px] p-6">
+            <h4 className="text-[16px] font-bold text-[#101828] uppercase tracking-wide mb-4">You'll need:</h4>
+            <ul className="space-y-3">
+              {items.map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-[16px] text-[#344054]">
+                  <CheckSquare className="w-5 h-5 text-[#155DFC] mt-0.5 flex-shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
         
-        <div className="flex gap-3 text-sm">
-          <span className="font-bold text-slate-900 flex-shrink-0">Why it matters:</span>
-          <span className="text-slate-600">{why}</span>
+        <div className="mt-6 flex gap-2 items-start">
+          <span className="font-bold text-[#101828] text-[16px] flex-shrink-0">Why it matters:</span>
+          <span className="text-[#4A5565] text-[16px]">{why}</span>
         </div>
       </div>
     </div>
   );
 }
 
+function DelayCard({ text }: { text: string }) {
+  return (
+    <div className="bg-white border border-[#FFEDD4] rounded-[10px] p-4 flex items-start gap-3">
+      <AlertTriangle className="w-5 h-5 text-[#FF6900] mt-0.5 flex-shrink-0" />
+      <span className="text-[16px] text-[#364153]">{text}</span>
+    </div>
+  );
+}
