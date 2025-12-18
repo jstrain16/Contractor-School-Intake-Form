@@ -22,7 +22,7 @@ import { LoaderThreeFullScreen } from "@/components/ui/loader"
 
 const marketingNavItems = [
   { label: "Portal Features", href: "/#features" },
-  { label: "Requirements", href: "/#requirements" },
+  { label: "Requirements", href: "/requirements" },
   { label: "Pricing", href: "/pricing" },
   { label: "Support", href: "/#support" },
   { label: "FAQs", href: "/#faqs" },
