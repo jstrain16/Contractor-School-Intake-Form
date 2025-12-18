@@ -7,6 +7,39 @@ import { ReminderActions } from "@/components/admin/ReminderActions"
 import { AttachmentList } from "@/components/admin/AttachmentList"
 import type { WizardData } from "@/lib/schemas"
 
+function SalesforceIndicator({ email }: { email: string | null }) {
+  const [exists, setExists] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (!email) {
+      setExists(false)
+      return
+    }
+    const check = async () => {
+      try {
+        const res = await fetch(`/api/admin/salesforce/check?email=${encodeURIComponent(email)}`)
+        if (res.ok) {
+          const json = await res.json()
+          setExists(json.exists)
+        }
+      } catch (e) {
+        console.error("Failed to check Salesforce status", e)
+      }
+    }
+    check()
+  }, [email])
+
+  if (!exists) return null
+
+  return (
+    <div title="Connected to Salesforce Contact">
+      <svg className="h-5 w-5 text-[#00A1E0]" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.9 12.3c0-.9-.3-1.7-.8-2.3.5-1.1.8-2.4.8-3.6 0-3.5-2.9-6.4-6.4-6.4-2.4 0-4.6 1.4-5.7 3.4C6.2 3.2 5.6 3 5 3 2.2 3 0 5.2 0 8c0 1.2.4 2.3 1.1 3.2C.4 11.8 0 12.6 0 13.5c0 2.5 2 4.5 4.5 4.5h14c3 0 5.5-2.5 5.5-5.5 0-2.8-2.1-5.1-4.9-5.4-.1.1-.1.2-.2.2z" />
+      </svg>
+    </div>
+  )
+}
+
 type ApplicationRow = {
   id: string
   user_id: string
@@ -233,7 +266,10 @@ export function AdminListClient({ rows }: { rows: AdminRow[] }) {
                 <span className="text-slate-500 transition-transform duration-200 group-open:rotate-90">▶</span>
                 <div className="flex flex-col">
                   <span className="text-lg font-semibold text-slate-900">{user.name}</span>
-                  <span className="text-sm text-slate-600">{user.email}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-600">{user.email}</span>
+                    <SalesforceIndicator email={user.email} />
+                  </div>
                   <span className="text-xs text-slate-500">
                     Updated: {app.updated_at ? new Date(app.updated_at).toLocaleString() : "—"}
                   </span>
