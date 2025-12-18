@@ -12,20 +12,20 @@ function SalesforceIndicator({ email }: { email: string | null }) {
 
   useEffect(() => {
     // Log mount
-    console.log("SalesforceIndicator mounted for:", email)
+    // console.log("SalesforceIndicator mounted for:", email)
 
     if (!email || email === "No email on file") {
-      console.log("SalesforceIndicator: No valid email, skipping")
+      // console.log("SalesforceIndicator: No valid email, skipping")
       setExists(false)
       return
     }
     const check = async () => {
       try {
-        console.log(`Checking Salesforce for ${email}...`)
+        // console.log(`Checking Salesforce for ${email}...`)
         const res = await fetch(`/api/admin/salesforce/check?email=${encodeURIComponent(email)}`)
         if (res.ok) {
           const json = await res.json()
-          console.log(`Salesforce result for ${email}:`, json)
+          // console.log(`Salesforce result for ${email}:`, json)
           setExists(json.exists)
         } else {
           console.error(`Salesforce API error for ${email}:`, res.status, res.statusText)
