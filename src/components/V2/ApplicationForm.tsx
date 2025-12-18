@@ -3,7 +3,8 @@ import {
   ArrowLeft, ArrowRight, CheckCircle, Circle, GraduationCap, User, 
   Building2, FileText, DollarSign, Briefcase, Shield, Calendar,
   ClipboardCheck, Send, AlertCircle, Upload, ChevronDown, ChevronUp,
-  Users, CreditCard, BookOpen, Award, TrendingUp, Info, FileX, Trash2
+  Users, CreditCard, BookOpen, Award, TrendingUp, Info, FileX, Trash2,
+  CheckSquare
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
@@ -27,6 +28,7 @@ import { Phase3 } from './phases/Phase3';
 import { Phase4 } from './phases/Phase4';
 import { Phase5 } from './phases/Phase5';
 import { AssistanceSelection } from './phases/AssistanceSelection';
+import { InteractiveChecklist } from './phases/InteractiveChecklist';
 import { Phase6 } from './phases/Phase6';
 import { Phase7 } from './phases/Phase7';
 import { Phase8 } from './phases/Phase8';
@@ -86,6 +88,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [loadingApp, setLoadingApp] = useState<boolean>(true);
   const phaseRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const CHECKLIST_PHASE_ID = 4.6;
 
   // Form data state
   const [formData, setFormData] = useState<AppFormData>({
@@ -128,6 +131,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     // Phase 5: Assistance
     assistanceLevel: '',
     assistancePaymentComplete: false,
+    checklistProgress: {},
     
     // Phase 6: Pre-Class Tasks
     businessStatus: '',
@@ -371,6 +375,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       phase5: {
         assistanceLevel: f.assistanceLevel,
         assistancePaymentComplete: f.assistancePaymentComplete,
+        checklistProgress: f.checklistProgress,
       },
       phase6: {
         businessStatus: f.businessStatus,
@@ -508,6 +513,9 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     formData.judgments === 'yes' || 
     formData.bankruptcy === 'yes';
 
+  // Determine if user is in "Free" tier
+  const isFreeTier = formData.assistanceLevel === 'free';
+
   // Mock class data from WooCommerce
   const mockClasses: ClassOption[] = [
     {
@@ -539,11 +547,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     }
   ];
 
-  const phases = [
-    { id: 1, name: 'Authentication', icon: User, description: 'Basic Information' },
-    { id: 2, name: 'License Type', icon: Award, description: 'Select Classification' },
-    { id: 3, name: 'Class Booking', icon: Calendar, description: 'Schedule & Payment' },
-    { id: 4, name: 'Screening', icon: ClipboardCheck, description: 'Criminal & Financial' },
+  const standardPhases = [
     // Phase 5 (Incidents) only appears if required
     ...(hasIncidents ? [{ id: 5, name: 'Incident Info', icon: AlertCircle, description: 'Required Documentation' }] : []),
     { id: 6, name: 'Business Setup', icon: Building2, description: 'Pre-Class Tasks' },
@@ -560,9 +564,21 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     { id: 17, name: 'Tracking', icon: TrendingUp, description: 'Status Updates' },
   ];
 
+  const phases = [
+    { id: 1, name: 'Authentication', icon: User, description: 'Basic Information' },
+    { id: 2, name: 'License Type', icon: Award, description: 'Select Classification' },
+    { id: 3, name: 'Class Booking', icon: Calendar, description: 'Schedule & Payment' },
+    { id: 4, name: 'Screening', icon: ClipboardCheck, description: 'Criminal & Financial' },
+    // If free tier, allow access to checklist, else show standard flow
+    ...(isFreeTier 
+      ? [{ id: CHECKLIST_PHASE_ID, name: 'Checklist', icon: CheckSquare, description: 'Self-Guided' }]
+      : standardPhases
+    )
+  ];
+
   // Scroll to current phase when it changes or expands
   useEffect(() => {
-    // Handle floating phase ID (4.5) by scrolling to specific ref if exists, else fallback
+    // Handle floating phase ID (4.5 or 4.6) by scrolling to specific ref if exists, else fallback
     const el = phaseRefs.current[currentPhase] || phaseRefs.current[Math.floor(currentPhase)];
     if (el) {
       requestAnimationFrame(() => {
@@ -572,6 +588,9 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   }, [currentPhase, expandedSections]);
 
   const toggleSection = (phaseId: number) => {
+    // Prevent toggling locked phases (e.g. if Free tier, can't toggle 5+)
+    if (isFreeTier && phaseId >= 5) return;
+
     setExpandedSections(prev => 
       prev.includes(phaseId) 
         ? [] // Close the section if it's already open
@@ -597,6 +616,13 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
     
     // After Assistance Selection (4.5)
     if (phaseId === 4.5) {
+      if (formData.assistanceLevel === 'free') {
+          // Go to Interactive Checklist
+          setCurrentPhase(CHECKLIST_PHASE_ID);
+          setExpandedSections([CHECKLIST_PHASE_ID]);
+          return;
+      }
+
       if (hasIncidents) {
         // Go to Incident Information
         setCurrentPhase(5);
@@ -622,7 +648,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       const nextPhaseId = phases[currentIndex + 1].id;
       setCurrentPhase(nextPhaseId);
       setExpandedSections([nextPhaseId]);
-    } else if (phaseId < 17) {
+    } else if (phaseId < 17 && !isFreeTier) {
         // Fallback for gaps (like if we are at 3 and want to go to 4)
         setCurrentPhase(phaseId + 1);
         setExpandedSections([phaseId + 1]);
@@ -630,6 +656,9 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
   };
 
   const goToPhase = (phaseId: number) => {
+    // Prevent navigation to hidden/gated phases
+    if (isFreeTier && phaseId >= 5) return;
+    
     setCurrentPhase(phaseId);
     setExpandedSections([phaseId]);
   };
@@ -785,7 +814,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
       {portalTarget && createPortal(
         <div className="flex items-center gap-4">
           <span className="text-gray-600 font-medium hidden sm:inline">
-            Phase {currentPhase} of {phases.length}
+            Phase {Math.floor(currentPhase)} of {phases.length}
           </span>
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
             <User className="w-4 h-4 text-white" />
@@ -860,45 +889,7 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
                   </button>
                   
                   {/* Phase 4.1: Incident Information (Conditional - appears right after Phase 4) */}
-                  {phase.id === 4 && hasIncidents && (
-                    <button
-                      onClick={() => {
-                        setCurrentPhase(4.1);
-                        setExpandedSections([4.1]);
-                      }}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                        formData.incidentInformationComplete
-                          ? 'bg-green-50 border-green-200 hover:bg-green-100'
-                          : currentPhase === 4.1
-                          ? 'bg-orange-50 border-orange-400 hover:bg-orange-100 shadow-md'
-                          : 'bg-orange-50/50 border-orange-300 hover:bg-orange-100'
-                      }`}
-                    >
-                      <FileX
-                        className={`w-5 h-5 ${
-                          formData.incidentInformationComplete
-                            ? 'text-green-600'
-                            : currentPhase === 4.1
-                            ? 'text-orange-600'
-                            : 'text-orange-500'
-                        }`}
-                      />
-                      <span
-                        className={`text-xs text-center ${
-                          formData.incidentInformationComplete
-                            ? 'text-green-700'
-                            : currentPhase === 4.1
-                            ? 'text-orange-700'
-                            : 'text-orange-600'
-                        }`}
-                      >
-                        Incident Info
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-orange-200 text-orange-800 rounded-full">
-                        REQ
-                      </span>
-                    </button>
-                  )}
+                  {/* NOTE: We removed the old 4.1 button logic since it's now handled by the new flow or Phase 5 */}
                 </React.Fragment>
               );
             })}
@@ -967,164 +958,189 @@ export function ApplicationForm({ onBack, initialPhase }: ApplicationFormProps) 
           />
         </div>
 
-        {/* Phase 5: Incident Information (Conditional) */}
-        {hasIncidents && (
-          <div ref={(el) => { phaseRefs.current[5] = el; }}>
-            <Phase5
-              formData={formData}
-              setFormData={setFormData}
-              onComplete={() => completePhase(5)}
-              expandedSections={expandedSections}
-              completedPhases={completedPhases}
-              toggleSection={toggleSection}
-              onBack={() => {
-                setCurrentPhase(4.5);
-                setExpandedSections([4.5]);
-              }}
-            />
-          </div>
+        {/* Interactive Checklist (Free Tier Only) */}
+        {isFreeTier && (
+            <div ref={(el) => { if (el) phaseRefs.current[CHECKLIST_PHASE_ID] = el; }}>
+              <InteractiveChecklist
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => {}} // No "next" step for checklist
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+                onUpgrade={() => {
+                    // Logic to upgrade: jump back to Assistance Selection to allow picking a paid tier
+                    // We don't necessarily need to clear 'free' yet, user will change it in AssistanceSelection
+                    setCurrentPhase(4.5);
+                    setExpandedSections([4.5]);
+                }}
+              />
+            </div>
         )}
 
-        {/* Phase 6: Business Setup (Pre-Class Tasks) */}
-        <div ref={(el) => { phaseRefs.current[6] = el; }}>
-          <Phase6
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(6)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-            handleFileUpload={handleFileUpload}
-          />
-        </div>
+        {/* Standard Flow (Gated) */}
+        {!isFreeTier && (
+          <>
+            {/* Phase 5: Incident Information (Conditional) */}
+            {hasIncidents && (
+              <div ref={(el) => { phaseRefs.current[5] = el; }}>
+                <Phase5
+                  formData={formData}
+                  setFormData={setFormData}
+                  onComplete={() => completePhase(5)}
+                  expandedSections={expandedSections}
+                  completedPhases={completedPhases}
+                  toggleSection={toggleSection}
+                  onBack={() => {
+                    setCurrentPhase(4.5);
+                    setExpandedSections([4.5]);
+                  }}
+                />
+              </div>
+            )}
 
-        {/* PHASES 7-17 - Individual Components */}
-        <div ref={(el) => { phaseRefs.current[7] = el; }}>
-          <Phase7
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(7)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-            handleFileUpload={handleFileUpload}
-          />
-        </div>
+            {/* Phase 6: Business Setup (Pre-Class Tasks) */}
+            <div ref={(el) => { phaseRefs.current[6] = el; }}>
+              <Phase6
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(6)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+                handleFileUpload={handleFileUpload}
+              />
+            </div>
 
-        <div ref={(el) => { phaseRefs.current[8] = el; }}>
-          <Phase8
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(8)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
+            {/* PHASES 7-17 - Individual Components */}
+            <div ref={(el) => { phaseRefs.current[7] = el; }}>
+              <Phase7
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(7)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+                handleFileUpload={handleFileUpload}
+              />
+            </div>
 
-        <div ref={(el) => { phaseRefs.current[9] = el; }}>
-          <Phase9
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(9)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
+            <div ref={(el) => { phaseRefs.current[8] = el; }}>
+              <Phase8
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(8)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
 
-        <div ref={(el) => { phaseRefs.current[10] = el; }}>
-          <Phase10
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(10)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
+            <div ref={(el) => { phaseRefs.current[9] = el; }}>
+              <Phase9
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(9)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
 
-        {/* Conditional Phase 11 - Only for exam-required licenses */}
-        {['R100', 'B100', 'E100'].includes(formData.licenseType) && (
-          <div ref={(el) => { phaseRefs.current[11] = el; }}>
-            <Phase11
-              formData={formData}
-              setFormData={setFormData}
-              onComplete={() => completePhase(11)}
-              expandedSections={expandedSections}
-              completedPhases={completedPhases}
-              toggleSection={toggleSection}
-            />
-          </div>
+            <div ref={(el) => { phaseRefs.current[10] = el; }}>
+              <Phase10
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(10)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
+
+            {/* Conditional Phase 11 - Only for exam-required licenses */}
+            {['R100', 'B100', 'E100'].includes(formData.licenseType) && (
+              <div ref={(el) => { phaseRefs.current[11] = el; }}>
+                <Phase11
+                  formData={formData}
+                  setFormData={setFormData}
+                  onComplete={() => completePhase(11)}
+                  expandedSections={expandedSections}
+                  completedPhases={completedPhases}
+                  toggleSection={toggleSection}
+                />
+              </div>
+            )}
+
+            <div ref={(el) => { phaseRefs.current[12] = el; }}>
+              <Phase12
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(12)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+                handleFileUpload={handleFileUpload}
+              />
+            </div>
+
+            <div ref={(el) => { phaseRefs.current[13] = el; }}>
+              <Phase13
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(13)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+                handleFileUpload={handleFileUpload}
+              />
+            </div>
+
+            <div ref={(el) => { phaseRefs.current[14] = el; }}>
+              <Phase14
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(14)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
+
+            <div ref={(el) => { phaseRefs.current[15] = el; }}>
+              <Phase15
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(15)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
+
+            <div ref={(el) => { phaseRefs.current[16] = el; }}>
+              <Phase16
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(16)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
+
+            <div ref={(el) => { phaseRefs.current[17] = el; }}>
+              <Phase17
+                formData={formData}
+                setFormData={setFormData}
+                onComplete={() => completePhase(17)}
+                expandedSections={expandedSections}
+                completedPhases={completedPhases}
+                toggleSection={toggleSection}
+              />
+            </div>
+          </>
         )}
-
-        <div ref={(el) => { phaseRefs.current[12] = el; }}>
-          <Phase12
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(12)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-            handleFileUpload={handleFileUpload}
-          />
-        </div>
-
-        <div ref={(el) => { phaseRefs.current[13] = el; }}>
-          <Phase13
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(13)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-            handleFileUpload={handleFileUpload}
-          />
-        </div>
-
-        <div ref={(el) => { phaseRefs.current[14] = el; }}>
-          <Phase14
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(14)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
-
-        <div ref={(el) => { phaseRefs.current[15] = el; }}>
-          <Phase15
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(15)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
-
-        <div ref={(el) => { phaseRefs.current[16] = el; }}>
-          <Phase16
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(16)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
-
-        <div ref={(el) => { phaseRefs.current[17] = el; }}>
-          <Phase17
-            formData={formData}
-            setFormData={setFormData}
-            onComplete={() => completePhase(17)}
-            expandedSections={expandedSections}
-            completedPhases={completedPhases}
-            toggleSection={toggleSection}
-          />
-        </div>
       </main>
     </div>
   );

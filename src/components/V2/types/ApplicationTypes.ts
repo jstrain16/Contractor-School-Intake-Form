@@ -110,6 +110,7 @@ export interface FormData {
   // Phase 5: Assistance
   assistanceLevel: string;
   assistancePaymentComplete: boolean;
+  checklistProgress?: Record<string, boolean>;
   
   // Phase 6: Pre-Class Tasks
   businessStatus: string;
