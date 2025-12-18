@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { fetchWizardData } from "@/lib/wizard-api"
 import { buildStatus, PHASE_LABELS } from "@/lib/progress"
 import { LoaderThree } from "@/components/ui/loader"
+import { Tooltip } from "@/components/ui/tooltip-card"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -89,7 +90,13 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
               <p className="text-lg font-semibold text-slate-900">Contractor School</p>
-              <p className="text-sm text-slate-600">Track your licensing intake, progress, and documents in one place.</p>
+              <p className="text-sm text-slate-600">
+                Track your licensing intake, progress, and{" "}
+                <Tooltip content="Documents are critical for DOPL to approve your application.">
+                  <span className="cursor-pointer font-bold">documents</span>
+                </Tooltip>{" "}
+                in one place.
+              </p>
             </div>
             <Button
               onClick={goToApplication}

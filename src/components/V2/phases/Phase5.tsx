@@ -342,7 +342,7 @@ export function Phase5({
     
     return allTypesDocumented && allIncidentsComplete;
   };
-
+  
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-4">
       <div
@@ -420,8 +420,8 @@ export function Phase5({
                       isDocumented
                         ? 'bg-green-50 border-green-200'
                         : 'bg-gray-50 border-gray-200'
-                    }`}
-                  >
+                }`}
+              >
                     <div className="flex items-center gap-2">
                       {isDocumented ? (
                         <CheckCircle className="w-4 h-4 text-green-600" />
@@ -433,8 +433,8 @@ export function Phase5({
                   </div>
                 );
               })}
-            </div>
-          </div>
+                </div>
+              </div>
 
           {/* Add New Incident Form */}
           <div className="border border-gray-200 rounded-lg p-6 mb-6">
@@ -479,7 +479,7 @@ export function Phase5({
                     addIncident(newIncident);
                     setSelectKey(prev => prev + 1);
                   }}
-                >
+              >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Incident Category & Type to Add" />
                   </SelectTrigger>
@@ -671,8 +671,8 @@ export function Phase5({
                               placeholder="Provide a complete explanation of the incident, circumstances, and outcome..."
                               rows={4}
                             />
-                          </div>
-                        </div>
+                </div>
+              </div>
 
                         {/* Category and Subtype Display */}
                         {incident.category && (
@@ -681,7 +681,7 @@ export function Phase5({
                               {incident.category}
                               {incident.subtype && ` - ${incident.subtype.replace('_', ' ')}`}
                             </span>
-                          </div>
+                </div>
                         )}
 
                         {/* Slot-Based Document Upload Section */}
@@ -693,8 +693,8 @@ export function Phase5({
                             onRemoveFile={removeFileFromSlot}
                             onUpdateNarrative={updateIncidentNarrative}
                           />
-                        </div>
-                      </div>
+                </div>
+              </div>
                     )}
                   </div>
                 );
@@ -715,26 +715,26 @@ export function Phase5({
                     You've provided information and supporting documents for all {getRequiredIncidentTypes().length} required incident type(s).
                   </p>
                 </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Warning if documents are missing */}
           {formData.incidents.length > 0 && !allIncidentsDocumented() && (
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-              <div className="flex gap-3">
+                <div className="flex gap-3">
                 <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                <div>
+                  <div>
                   <p className="text-sm text-orange-900 mb-1">
                     <strong>Action Required</strong>
-                  </p>
+                    </p>
                   <p className="text-sm text-orange-700">
                     Please ensure each incident has detailed information filled out and at least one supporting document uploaded before continuing.
-                  </p>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="flex justify-between pt-4">
             <button
@@ -744,7 +744,7 @@ export function Phase5({
               <ArrowLeft className="w-4 h-4" />
               Back to Assistance Selection
             </button>
-            <button
+              <button
               onClick={() => {
                 if (allIncidentsDocumented() && formData.incidents.length > 0) {
                   setFormData({ ...formData, incidentInformationComplete: true });
@@ -752,11 +752,11 @@ export function Phase5({
                 }
               }}
               disabled={!allIncidentsDocumented() || formData.incidents.length === 0}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Continue to Business Setup
-              <ArrowRight className="w-4 h-4" />
-            </button>
+                className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Continue to Business Setup
+                <ArrowRight className="w-4 h-4" />
+              </button>
           </div>
         </div>
       )}

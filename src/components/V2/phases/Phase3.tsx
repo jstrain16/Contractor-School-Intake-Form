@@ -187,19 +187,19 @@ export function Phase3({
               <p className="text-sm text-gray-600">
                 Utah requires contractor education before licensing. Choose your situation:
               </p>
-              
+
               <div className="space-y-3">
                 {methods.map((method) => {
                   const isSelected = formData.educationMethod === method.id;
                   return (
-                    <div
+                  <div
                       key={method.id}
                       onClick={() => setFormData({ ...formData, educationMethod: method.id as any })}
                       className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                         isSelected
-                          ? 'border-orange-500 bg-orange-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
                     >
                       <div className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center ${
                         isSelected ? 'border-orange-500' : 'border-gray-400'
@@ -318,74 +318,74 @@ export function Phase3({
                       }`}
                       onClick={() => {
                         if (!formData.classPaymentComplete) {
-                          setFormData({ ...formData, selectedClass: classOption.id })
-                        }
+                      setFormData({ ...formData, selectedClass: classOption.id })
+                    }
                       }}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-gray-900 mb-1">
-                            {classOption.description}
-                          </h4>
-                          <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mt-2">
-                            <div>
-                              <span className="text-gray-500">Date:</span>{' '}
-                              {new Date(classOption.date).toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Time:</span> {classOption.time}
-                            </div>
-                            <div>
-                              <span className="text-gray-500">Location:</span>{' '}
-                              {classOption.location}
-                            </div>
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="text-gray-900 mb-1">
+                          {classOption.description}
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mt-2">
+                          <div>
+                            <span className="text-gray-500">Date:</span>{' '}
+                            {new Date(classOption.date).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Time:</span> {classOption.time}
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Location:</span>{' '}
+                            {classOption.location}
+                          </div>
                             {!formData.classPaymentComplete && (
-                              <div>
-                                <span className="text-gray-500">Seats Available:</span>{' '}
-                                <span
-                                  className={
-                                    classOption.seatsAvailable < 5
-                                      ? 'text-red-600'
-                                      : 'text-green-600'
-                                  }
-                                >
-                                  {classOption.seatsAvailable}
-                                </span>
-                              </div>
+                          <div>
+                            <span className="text-gray-500">Seats Available:</span>{' '}
+                            <span
+                              className={
+                                classOption.seatsAvailable < 5
+                                  ? 'text-red-600'
+                                  : 'text-green-600'
+                              }
+                            >
+                              {classOption.seatsAvailable}
+                            </span>
+                          </div>
                             )}
-                          </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <div className="text-2xl text-gray-900">
-                            ${classOption.price}
-                          </div>
+                      </div>
+                      <div className="text-right ml-4">
+                        <div className="text-2xl text-gray-900">
+                          ${classOption.price}
                         </div>
                       </div>
                     </div>
+                  </div>
                   )))}
-                </div>
+              </div>
 
-                {formData.selectedClass && (
-                  <div className="border border-gray-200 rounded-lg p-4 mt-6">
+              {formData.selectedClass && (
+                <div className="border border-gray-200 rounded-lg p-4 mt-6">
                     {!formData.classPaymentComplete ? (
                         <>
-                          <h4 className="text-gray-900 mb-4">Payment</h4>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <span className="text-gray-700">Course Fee</span>
-                              <span className="text-gray-900">
-                                $
-                                {
+                  <h4 className="text-gray-900 mb-4">Payment</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-700">Course Fee</span>
+                      <span className="text-gray-900">
+                        $
+                        {
                                   displayClasses.find((c) => c.id === formData.selectedClass)
-                                    ?.price
-                                }
-                              </span>
-                            </div>
+                            ?.price
+                        }
+                      </span>
+                    </div>
                             <div className="flex flex-col gap-2">
                               <Label className="text-sm font-medium">Step 1: Complete Payment</Label>
                               <a 
@@ -410,26 +410,26 @@ export function Phase3({
                             </div>
 
                             <div className="flex items-center space-x-2 pt-2 border-t border-gray-100 mt-2">
-                              <Checkbox
-                                id="classPayment"
-                                checked={formData.classPaymentComplete}
+                      <Checkbox
+                        id="classPayment"
+                        checked={formData.classPaymentComplete}
                                 disabled={true}
-                              />
-                              <Label
-                                htmlFor="classPayment"
+                      />
+                      <Label
+                        htmlFor="classPayment"
                                 className={`text-sm ${formData.classPaymentComplete ? 'text-green-700 font-medium' : 'text-gray-500'}`}
-                              >
+                      >
                                 Waiting for payment confirmation...
-                              </Label>
-                            </div>
+                      </Label>
+                    </div>
                             <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded flex items-center gap-2">
                                 <Info className="w-3 h-3" />
                                 <span>Payment status updates automatically. You may need to refresh the page after checkout.</span>
                             </div>
-                            <p className="text-xs text-gray-500">
-                              Note: Payment is processed through WooCommerce. Confirmation email 
-                              will be sent after enrollment.
-                            </p>
+                    <p className="text-xs text-gray-500">
+                      Note: Payment is processed through WooCommerce. Confirmation email 
+                      will be sent after enrollment.
+                    </p>
                           </div>
                         </>
                     ) : (
@@ -605,9 +605,9 @@ export function Phase3({
                         <div className="mt-4 flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
                           <CheckCircle className="w-4 h-4" />
                           <span className="truncate max-w-[200px]">{formData.externalBookingDoc.originalName}</span>
-                        </div>
-                      )}
-                    </div>
+                </div>
+              )}
+            </div>
                   </div>
                 </div>
 
