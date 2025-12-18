@@ -35,6 +35,7 @@ import { LoaderThree } from "@/components/ui/loader"
 
 function SalesforceIndicator({ email }: { email: string | null }) {
   const [exists, setExists] = useState<boolean | null>(null)
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     if (!email || email === "No email" || email === "Unknown user") {
@@ -43,14 +44,11 @@ function SalesforceIndicator({ email }: { email: string | null }) {
     }
     const check = async () => {
       try {
-        console.log(`Checking Salesforce for ${email}...`)
         const res = await fetch(`/api/admin/salesforce/check?email=${encodeURIComponent(email)}`)
         if (res.ok) {
           const json = await res.json()
-          console.log(`Salesforce result for ${email}:`, json)
           setExists(json.exists)
         } else {
-          console.error(`Salesforce API error for ${email}:`, res.status, res.statusText)
           setExists(false)
         }
       } catch (e) {
@@ -61,14 +59,43 @@ function SalesforceIndicator({ email }: { email: string | null }) {
     check()
   }, [email])
 
+  const createOpp = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!email || !confirm("Create a 'B100 Licensing Opportunity' for this contact in Salesforce?")) return
+    
+    setCreating(true)
+    try {
+      const res = await fetch("/api/admin/salesforce/create-opportunity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || "Failed")
+      
+      alert(`Opportunity created! ID: ${json.opportunityId}`)
+    } catch (err: any) {
+      alert(`Error: ${err.message}`)
+    } finally {
+      setCreating(false)
+    }
+  }
+
   if (!exists) return null
 
   return (
-    <div title="Connected to Salesforce Contact">
-      <svg className="h-5 w-5 text-[#00A1E0]" viewBox="0 0 24 24" fill="currentColor">
+    <button 
+      onClick={createOpp}
+      disabled={creating}
+      title="Connected to Salesforce Contact. Click to create B100 Opportunity."
+      className="hover:bg-blue-50 rounded p-1 transition-colors"
+    >
+      <svg className={`h-5 w-5 ${creating ? "text-slate-400 animate-pulse" : "text-[#00A1E0]"}`} viewBox="0 0 24 24" fill="currentColor">
         <path d="M18.9 12.3c0-.9-.3-1.7-.8-2.3.5-1.1.8-2.4.8-3.6 0-3.5-2.9-6.4-6.4-6.4-2.4 0-4.6 1.4-5.7 3.4C6.2 3.2 5.6 3 5 3 2.2 3 0 5.2 0 8c0 1.2.4 2.3 1.1 3.2C.4 11.8 0 12.6 0 13.5c0 2.5 2 4.5 4.5 4.5h14c3 0 5.5-2.5 5.5-5.5 0-2.8-2.1-5.1-4.9-5.4-.1.1-.1.2-.2.2z" />
       </svg>
-    </div>
+    </button>
   )
 }
 
