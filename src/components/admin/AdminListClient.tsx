@@ -11,7 +11,11 @@ function SalesforceIndicator({ email }: { email: string | null }) {
   const [exists, setExists] = useState<boolean | null>(null)
 
   useEffect(() => {
-    if (!email) {
+    // Log mount
+    console.log("SalesforceIndicator mounted for:", email)
+
+    if (!email || email === "No email on file") {
+      console.log("SalesforceIndicator: No valid email, skipping")
       setExists(false)
       return
     }
@@ -25,9 +29,11 @@ function SalesforceIndicator({ email }: { email: string | null }) {
           setExists(json.exists)
         } else {
           console.error(`Salesforce API error for ${email}:`, res.status, res.statusText)
+          setExists(false)
         }
       } catch (e) {
         console.error("Failed to check Salesforce status", e)
+        setExists(false)
       }
     }
     check()

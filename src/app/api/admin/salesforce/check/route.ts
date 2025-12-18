@@ -5,16 +5,17 @@ import { findContactByEmail } from "@/lib/salesforce"
 export const dynamic = "force-dynamic"
 
 export async function GET(req: Request) {
+  console.log("Admin SF check API invoked")
   try {
-    const { isAllowed } = await requireAdminEmail()
-    if (!isAllowed) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { searchParams } = new URL(req.url)
     const email = searchParams.get("email")
-
     console.log("Admin SF check for:", email)
+
+    const { isAllowed } = await requireAdminEmail()
+    if (!isAllowed) {
+      console.log("Admin SF check unauthorized")
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
     if (!email) {
       return NextResponse.json({ exists: false })
