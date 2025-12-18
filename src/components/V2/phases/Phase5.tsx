@@ -444,7 +444,7 @@ export function Phase5({
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label>Incident Category *</Label>
+                <Label className="mb-2 block">Incident Category *</Label>
                 <Select
                   key={selectKey}
                   onValueChange={(categorySubtype: string) => {
@@ -481,7 +481,7 @@ export function Phase5({
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select incident category & type to add" />
+                    <SelectValue placeholder="Select Incident Category & Type to Add" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="BACKGROUND|PENDING_CASE">Background - Pending Legal Matter</SelectItem>
