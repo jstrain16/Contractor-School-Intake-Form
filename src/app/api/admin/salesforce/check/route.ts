@@ -14,11 +14,14 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const email = searchParams.get("email")
 
+    console.log("Admin SF check for:", email)
+
     if (!email) {
       return NextResponse.json({ exists: false })
     }
 
     const exists = await findContactByEmail(email)
+    console.log("Admin SF check result:", email, exists)
     return NextResponse.json({ exists })
   } catch (error: any) {
     console.error("Admin Salesforce check error:", error)

@@ -17,10 +17,14 @@ function SalesforceIndicator({ email }: { email: string | null }) {
     }
     const check = async () => {
       try {
+        console.log(`Checking Salesforce for ${email}...`)
         const res = await fetch(`/api/admin/salesforce/check?email=${encodeURIComponent(email)}`)
         if (res.ok) {
           const json = await res.json()
+          console.log(`Salesforce result for ${email}:`, json)
           setExists(json.exists)
+        } else {
+          console.error(`Salesforce API error for ${email}:`, res.status, res.statusText)
         }
       } catch (e) {
         console.error("Failed to check Salesforce status", e)
